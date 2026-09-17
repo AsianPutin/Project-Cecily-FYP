@@ -37,30 +37,68 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FlightInfo flight = flights.get(position);
         holder.tvFlightNum.setText(flight.flightNumber);
-        holder.tvStatus.setText(flight.status);
         holder.tvDep.setText(flight.depAirport);
         holder.tvArr.setText(flight.arrAirport);
         
         String dateStr = DateFormat.format("MMM dd, HH:mm", flight.depTimeMillis).toString();
         holder.tvETA.setText("Departure: " + dateStr);
 
-        // Styling based on status
-        if ("LANDED".equals(flight.status)) {
-            holder.card.setAlpha(0.6f);
-            holder.tvStatus.setBackgroundColor(0xFFEEEEEE);
-            holder.tvStatus.setTextColor(0xFF666666);
-            holder.btnTrack.setVisibility(View.GONE);
-        } else if ("DELAYED".equals(flight.status)) {
-            holder.card.setAlpha(1.0f);
-            holder.tvStatus.setBackgroundColor(0xFFFFEBEE);
-            holder.tvStatus.setTextColor(0xFFD32F2F);
-            holder.btnTrack.setVisibility(View.VISIBLE);
+        // --- HARD LOGIC OVERRIDE ---
+        // We ignore the string in Firebase and calculate status LIVE based on time
+        String displayStatus;
+        int bgColor;
+        int textColor;
+        float cardAlpha = 1.0f;
+
+        long now = System.currentTimeMillis();
+        long depTime = flight.depTimeMillis;
+        long arrTime = depTime + (110 * 60 * 1000); // 1h 50m duration
+
+        if (now > arrTime + (30 * 60 * 1000)) { 
+            // Truly Landed (30 mins after expected arrival)
+            displayStatus = "LANDED";
+            bgColor = 0xFFE8F5E9; // Green
+            textColor = 0xFF2E7D32;
+            cardAlpha = 0.6f;
+        } else if (now > depTime) {
+            // In the air
+            long timeUntilArrival = arrTime - now;
+            if (timeUntilArrival < (45 * 60 * 1000)) {
+                displayStatus = "ARRIVING";
+                bgColor = 0xFFFFF9C4; // Yellow
+                textColor = 0xFF856404;
+            } else {
+                displayStatus = "FLYING";
+                bgColor = 0xFFEEEEEE; // Grey
+                textColor = 0xFF666666;
+            }
         } else {
-            holder.card.setAlpha(1.0f);
-            holder.tvStatus.setBackgroundColor(0xFFE8F5E9);
-            holder.tvStatus.setTextColor(0xFF2E7D32);
-            holder.btnTrack.setVisibility(View.VISIBLE);
+            // Future flight
+            long timeUntilDep = depTime - now;
+            if (timeUntilDep < (60 * 60 * 1000)) {
+                displayStatus = "DEPARTING";
+                bgColor = 0xFFFFF9C4; // Yellow
+                textColor = 0xFF856404;
+            } else {
+                displayStatus = "AWAITING";
+                bgColor = 0xFFEEEEEE; // Grey
+                textColor = 0xFF666666;
+            }
         }
+
+        // Emergency Override for API specific errors
+        if ("CANCELLED".equalsIgnoreCase(flight.status)) {
+            displayStatus = "CANCELLED";
+            bgColor = 0xFFFFEBEE;
+            textColor = 0xFFD32F2F;
+        }
+
+        holder.tvStatus.setText(displayStatus);
+        holder.tvStatus.setBackgroundColor(bgColor);
+        holder.tvStatus.setTextColor(textColor);
+        holder.card.setAlpha(cardAlpha);
+
+        holder.btnTrack.setVisibility("LANDED".equals(displayStatus) ? View.GONE : View.VISIBLE);
 
         holder.btnTrack.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), FlightMapActivity.class);
@@ -69,19 +107,17 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
         });
 
         holder.btnRefresh.setOnClickListener(v -> {
-            Toast.makeText(v.getContext(), "Refreshing status...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(v.getContext(), "Refreshing live data...", Toast.LENGTH_SHORT).show();
             apiHelper.getFlightStatus(flight.flightNumber, new AviationStackHelper.FlightCallback() {
                 @Override
                 public void onSuccess(JsonObject data) {
-                    String status = data.get("flight_status").getAsString().toUpperCase();
+                    String apiStatus = data.get("flight_status").getAsString().toUpperCase();
                     FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                            .getReference("flights").child(flight.id).child("status").setValue(status);
-                    Toast.makeText(v.getContext(), "Status Updated: " + status, Toast.LENGTH_SHORT).show();
+                            .getReference("flights").child(flight.id).child("status").setValue(apiStatus);
                 }
-
                 @Override
                 public void onError(String message) {
-                    Toast.makeText(v.getContext(), "Error: " + message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(v.getContext(), "API: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -103,7 +139,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             tvArr = itemView.findViewById(R.id.tvArrAirport);
             tvETA = itemView.findViewById(R.id.tvFlightETA);
             btnTrack = itemView.findViewById(R.id.btnTrackLive);
-            btnRefresh = itemView.findViewById(R.id.btnRefreshStatus); // New ID
+            btnRefresh = itemView.findViewById(R.id.btnRefreshStatus);
             card = itemView.findViewById(R.id.flightCard);
         }
     }

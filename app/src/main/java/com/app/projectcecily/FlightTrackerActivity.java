@@ -146,6 +146,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         });
 
         etDate.setOnClickListener(v -> {
+            Calendar now = Calendar.getInstance();
             new DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
                 selectedDateTime.set(Calendar.YEAR, year);
                 selectedDateTime.set(Calendar.MONTH, month);
@@ -155,7 +156,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     selectedDateTime.set(Calendar.MINUTE, m);
                     etDate.setText(android.text.format.DateFormat.format("MMM dd, HH:mm", selectedDateTime));
                 }, 12, 0, true).show();
-            }, 2026, 0, 1).show();
+            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show();
         });
 
         new MaterialAlertDialogBuilder(this)
