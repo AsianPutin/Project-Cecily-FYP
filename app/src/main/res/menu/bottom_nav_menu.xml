@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_swipe"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Swipe" />
+    <item
+        android:id="@+id/nav_location"
+        android:icon="@android:drawable/ic_menu_mylocation"
+        android:title="Tracking" />
+    <item
+        android:id="@+id/nav_flight"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="Flight" />
+    <item
+        android:id="@+id/nav_health"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Health" />
+    <item
+        android:id="@+id/nav_account"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Account" />
+</menu>

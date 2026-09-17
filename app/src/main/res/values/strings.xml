@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Project Cecily</string>
+    <string name="launch_swipe_test">Launch Swipe Feature Test 🚀</string>
+    <string name="decide_food">Decide Food 🍔</string>
+    <string name="kuching_laksa">Kuching Laksa 🍜</string>
+    <string name="local_classic">Local Classic</string>
+    <string name="its_a_match">It\'s a Match! 🎉</string>
+    <string name="cafe_hopping_match">You both want to go here! ☕</string>
+    <string name="keep_rolling">Keep Rolling</string>
+    <string name="desc_pass">Pass</string>
+    <string name="desc_like">Like</string>
+    <string name="match_details_template">You both want to go for:\n%1$s</string>
+    <string name="no_more_options">No More Options!</string>
+    <string name="check_back_later">Check back with your partner later.</string>
+</resources>

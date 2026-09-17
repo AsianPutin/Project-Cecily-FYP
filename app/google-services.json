@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546478685263",
+    "project_id": "i-must-finish-this-in-2026",
+    "storage_bucket": "i-must-finish-this-in-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546478685263:android:da9b9ae8fa1d16f2277e3a",
+        "android_client_info": {
+          "package_name": "com.app.projectcecily"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4VevrotifkiWNNBvv229eGXf-tNcFiU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,18 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.ProjectCecily" parent="Theme.Material3.DayNight">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/nav_selected</item>
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
+
+        <!-- Fix for readable text in Material 3 Buttons in Light Mode -->
+        <item name="colorOnSecondaryContainer">@color/nav_selected</item>
+    </style>
+
+    <style name="Theme.ProjectCecily" parent="Base.Theme.ProjectCecily" />
+
+    <style name="CircleImage">
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>
