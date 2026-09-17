@@ -1,4 +1,4 @@
-name: Android Build
+name: Android Build & Distribute
 
 on:
   push:
@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,27 +24,16 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Upload to Firebase App Distribution
+        # Note: This will fail until FIREBASE_APP_DISTRIBUTION_CREDENTIALS or GITHUB_TOKEN with appropriate setup is added
+        # For now, we'll keep the build artifact as a fallback
+        run: ./gradlew appDistributionUploadDebug
+        continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: build-${{ steps.date.outputs.date }}
-          release_name: Build ${{ steps.date.outputs.date }}
-          draft: false
-          prerelease: false
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.CREDENTIAL_FILE }}
 
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload APK Artifact (Fallback)
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/debug/app-debug.apk
-          asset_name: app-debug.apk
-          asset_content_type: application/vnd.android.package-archive
+          name: project-cecily-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
