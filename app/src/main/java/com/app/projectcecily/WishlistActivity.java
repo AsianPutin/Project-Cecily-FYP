@@ -73,7 +73,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         rv.setAdapter(adapter);
 
         View fab = findViewById(R.id.fabAddWishlist);
-        fab.setOnClickListener(v -> showAddItemDialog());
+        fab.setOnClickListener(v -> showItemDialog(null));
         
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
@@ -98,7 +98,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         });
     }
 
-    private void showAddItemDialog() {
+    private void showItemDialog(WishlistItem existingItem) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_wishlist, null);
         TextInputEditText etName = view.findViewById(R.id.etItemName);
         TextInputEditText etLink = view.findViewById(R.id.etItemLink);
@@ -111,6 +111,29 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         dialogImageViews[0] = view.findViewById(R.id.ivSelect1);
         dialogImageViews[1] = view.findViewById(R.id.ivSelect2);
         dialogImageViews[2] = view.findViewById(R.id.ivSelect3);
+
+        // Reset selected images
+        selectedBase64Images = new String[]{"", "", ""};
+
+        if (existingItem != null) {
+            etName.setText(existingItem.name);
+            etLink.setText(existingItem.link);
+            
+            // Handle existing images
+            if (existingItem.img1 != null && existingItem.img1.startsWith("data:")) {
+                selectedBase64Images[0] = existingItem.img1;
+                toggle.check(R.id.btnSourceGallery);
+                layoutGallery.setVisibility(View.VISIBLE);
+                layoutUrl.setVisibility(View.GONE);
+                // Preview logic would go here, but for now we'll just keep the base64
+            } else if (existingItem.img1 != null && !existingItem.img1.isEmpty()) {
+                etImg1.setText(existingItem.img1);
+                toggle.check(R.id.btnSourceUrl);
+            }
+            
+            selectedBase64Images[1] = existingItem.img2 != null ? existingItem.img2 : "";
+            selectedBase64Images[2] = existingItem.img3 != null ? existingItem.img3 : "";
+        }
 
         for (int i = 0; i < 3; i++) {
             final int index = i;
@@ -134,13 +157,13 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         });
 
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Add to Wishlist")
+                .setTitle(existingItem == null ? "Add to Wishlist" : "Edit Item")
                 .setView(view)
-                .setPositiveButton("Add", (dialog, which) -> {
+                .setPositiveButton(existingItem == null ? "Add" : "Save", (dialog, which) -> {
                     String name = etName.getText().toString();
                     String link = etLink.getText().toString();
                     
-                    String id = dbRef.push().getKey();
+                    String id = (existingItem != null) ? existingItem.id : dbRef.push().getKey();
                     String img1, img2, img3;
 
                     if (toggle.getCheckedButtonId() == R.id.btnSourceUrl) {
@@ -154,6 +177,11 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
                     if (!name.isEmpty()) {
                         WishlistItem item = new WishlistItem(id, name, link, userId, img1, img2, img3);
+                        // Preserve bought/received status if editing
+                        if (existingItem != null) {
+                            item.isBought = existingItem.isBought;
+                            item.isReceived = existingItem.isReceived;
+                        }
                         dbRef.child(id).setValue(item);
                     }
                 })
@@ -191,6 +219,11 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
     public void onReceived(WishlistItem item) {
         dbRef.child(item.id).child("isReceived").setValue(true);
         Toast.makeText(this, "Gift received! ❤️", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onEdit(WishlistItem item) {
+        showItemDialog(item);
     }
 
     @Override

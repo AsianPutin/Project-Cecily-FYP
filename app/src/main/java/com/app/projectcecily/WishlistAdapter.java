@@ -21,6 +21,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
     public interface OnItemActionListener {
         void onBought(WishlistItem item);
         void onReceived(WishlistItem item);
+        void onEdit(WishlistItem item);
         void onDelete(WishlistItem item);
     }
 
@@ -57,7 +58,8 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
         // Received is for owner if bought but not received
         holder.btnReceived.setVisibility(isOwner && item.isBought && !item.isReceived ? View.VISIBLE : View.GONE);
 
-        // Delete is ALWAYS for Owner, but never for partner
+        // Edit/Delete are ALWAYS for Owner, but never for partner
+        holder.btnEdit.setVisibility(isOwner ? View.VISIBLE : View.GONE);
         holder.btnDelete.setVisibility(isOwner ? View.VISIBLE : View.GONE);
 
         // Styling
@@ -76,6 +78,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
         holder.btnBought.setOnClickListener(v -> listener.onBought(item));
         holder.btnReceived.setOnClickListener(v -> listener.onReceived(item));
+        holder.btnEdit.setOnClickListener(v -> listener.onEdit(item));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
     }
 
@@ -93,7 +96,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvLink;
-        Button btnBought, btnReceived, btnDelete;
+        Button btnBought, btnReceived, btnEdit, btnDelete;
         ImageView iv1, iv2, iv3;
         MaterialCardView card;
 
@@ -103,6 +106,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
             tvLink = itemView.findViewById(R.id.tvItemLink);
             btnBought = itemView.findViewById(R.id.btnMarkBought);
             btnReceived = itemView.findViewById(R.id.btnMarkReceived);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             iv1 = itemView.findViewById(R.id.iv1);
             iv2 = itemView.findViewById(R.id.iv2);
