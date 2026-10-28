@@ -109,6 +109,7 @@ public class AccountActivity extends AppCompatActivity {
         findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
+        findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
     }
@@ -337,6 +338,7 @@ public class AccountActivity extends AppCompatActivity {
                         Toast.makeText(AccountActivity.this, "Paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
                         if (dialog.isShowing()) dialog.dismiss();
                         updatePairingUI();
+                        showRelationshipDetailsDialog();
                     } else {
                         tvGeneratedCode.setText(codeOrResult);
                         btnGenerate.setEnabled(true);
@@ -362,6 +364,7 @@ public class AccountActivity extends AppCompatActivity {
                     Toast.makeText(AccountActivity.this, "Successfully paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
                     if (dialog.isShowing()) dialog.dismiss();
                     updatePairingUI();
+                    showRelationshipDetailsDialog();
                 }
 
                 @Override
@@ -373,6 +376,92 @@ public class AccountActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private void showRelationshipDetailsDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_relationship_details, null);
+        TextInputEditText etYourBirthday = view.findViewById(R.id.etYourBirthday);
+        TextInputEditText etPartnerBirthday = view.findViewById(R.id.etPartnerBirthday);
+        TextInputEditText etAnniversaryDate = view.findViewById(R.id.etAnniversaryDate);
+        TextInputEditText etMilestones = view.findViewById(R.id.etMilestones);
+
+        MaterialButtonToggleGroup toggleYourGender = view.findViewById(R.id.toggleYourGender);
+        MaterialButtonToggleGroup togglePartnerGender = view.findViewById(R.id.togglePartnerGender);
+
+        RelationshipManager.Details currentDetails = RelationshipManager.getLocalDetails(this);
+
+        etYourBirthday.setText(currentDetails.yourBirthday);
+        etPartnerBirthday.setText(currentDetails.partnerBirthday);
+        etAnniversaryDate.setText(currentDetails.anniversaryDate);
+        etMilestones.setText(currentDetails.milestones);
+
+        final long[] selectedAnniversaryTs = {currentDetails.anniversaryTimestamp};
+
+        // Your Gender selection
+        if ("Female (She/Her)".equals(currentDetails.yourGender)) toggleYourGender.check(R.id.btnYourFemale);
+        else if ("Prefer not to say (They/Them)".equals(currentDetails.yourGender)) toggleYourGender.check(R.id.btnYourThey);
+        else toggleYourGender.check(R.id.btnYourMale);
+
+        // Partner Gender selection
+        if ("Female (She/Her)".equals(currentDetails.partnerGender)) togglePartnerGender.check(R.id.btnPartnerFemale);
+        else if ("Prefer not to say (They/Them)".equals(currentDetails.partnerGender)) togglePartnerGender.check(R.id.btnPartnerThey);
+        else togglePartnerGender.check(R.id.btnPartnerMale);
+
+        // Date Pickers
+        etYourBirthday.setOnClickListener(v -> openDatePickerDialog(etYourBirthday, null));
+        etPartnerBirthday.setOnClickListener(v -> openDatePickerDialog(etPartnerBirthday, null));
+        etAnniversaryDate.setOnClickListener(v -> openDatePickerDialog(etAnniversaryDate, ts -> selectedAnniversaryTs[0] = ts));
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        view.findViewById(R.id.btnSaveRelationship).setOnClickListener(v -> {
+            RelationshipManager.Details newDetails = new RelationshipManager.Details();
+            newDetails.yourBirthday = etYourBirthday.getText() != null ? etYourBirthday.getText().toString().trim() : "";
+            newDetails.partnerBirthday = etPartnerBirthday.getText() != null ? etPartnerBirthday.getText().toString().trim() : "";
+            newDetails.anniversaryDate = etAnniversaryDate.getText() != null ? etAnniversaryDate.getText().toString().trim() : "";
+            newDetails.anniversaryTimestamp = selectedAnniversaryTs[0];
+            newDetails.milestones = etMilestones.getText() != null ? etMilestones.getText().toString().trim() : "";
+
+            int yourCheck = toggleYourGender.getCheckedButtonId();
+            if (yourCheck == R.id.btnYourFemale) newDetails.yourGender = "Female (She/Her)";
+            else if (yourCheck == R.id.btnYourThey) newDetails.yourGender = "Prefer not to say (They/Them)";
+            else newDetails.yourGender = "Male (He/Him)";
+
+            int partnerCheck = togglePartnerGender.getCheckedButtonId();
+            if (partnerCheck == R.id.btnPartnerFemale) newDetails.partnerGender = "Female (She/Her)";
+            else if (partnerCheck == R.id.btnPartnerThey) newDetails.partnerGender = "Prefer not to say (They/Them)";
+            else newDetails.partnerGender = "Male (He/Him)";
+
+            RelationshipManager.syncWithFirebase(this, newDetails);
+            Toast.makeText(this, "Relationship details saved! ❤️", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private interface DateSelectedCallback {
+        void onDateSelected(long timestamp);
+    }
+
+    private void openDatePickerDialog(TextInputEditText targetEditText, DateSelectedCallback callback) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        android.app.DatePickerDialog datePicker = new android.app.DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    cal.set(year, month, dayOfMonth, 0, 0, 0);
+                    String dateStr = String.format(java.util.Locale.ENGLISH, "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    targetEditText.setText(dateStr);
+                    if (callback != null) callback.onDateSelected(cal.getTimeInMillis());
+                },
+                cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH),
+                cal.get(java.util.Calendar.DAY_OF_MONTH)
+        );
+        datePicker.show();
     }
 
     private void unpairPartner() {

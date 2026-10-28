@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private String partnerId;
     private long startTime;
 
-    private TextView tvDistance, tvWishlist, tvFlightSummary;
+    private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +71,19 @@ public class MainActivity extends AppCompatActivity {
         tvDistance = findViewById(R.id.tvLiveDistance);
         tvWishlist = findViewById(R.id.tvWishlistSummary);
         tvFlightSummary = findViewById(R.id.tvFlightSummary);
+        tvTogetherDays = findViewById(R.id.tvTogetherDays);
+        tvBirthdaysSummary = findViewById(R.id.tvBirthdaysSummary);
+
+        RelationshipManager.listenFromFirebase(this, details -> {
+            tvTogetherDays.setText(RelationshipManager.formatDaysTogether(details.anniversaryTimestamp));
+            StringBuilder bdaySb = new StringBuilder();
+            if (!details.yourBirthday.isEmpty()) bdaySb.append("You: ").append(details.yourBirthday);
+            if (!details.partnerBirthday.isEmpty()) {
+                if (bdaySb.length() > 0) bdaySb.append(" | ");
+                bdaySb.append("Partner: ").append(details.partnerBirthday);
+            }
+            tvBirthdaysSummary.setText(bdaySb.length() > 0 ? "Birthdays: " + bdaySb.toString() : "Birthdays: Not set");
+        });
 
         setupDashboardClicks();
         setupNavigation();

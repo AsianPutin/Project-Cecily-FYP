@@ -203,6 +203,14 @@
             android:layout_marginTop="20dp"
             android:text="Change Profile Info" />
 
+        <Button
+            android:id="@+id/btnRelationshipDetails"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Relationship Details &amp; Milestones" />
+
         <!-- Unpair Partner Button (Half-width, red, visible only when paired) -->
         <Button
             android:id="@+id/btnUnpairPartner"
