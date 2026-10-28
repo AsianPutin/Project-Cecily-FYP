@@ -65,7 +65,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flight);
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
+        userId = UserManager.getUserId(this);
         activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flights");
         historyRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
 

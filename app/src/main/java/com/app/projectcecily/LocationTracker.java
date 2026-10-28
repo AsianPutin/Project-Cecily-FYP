@@ -34,11 +34,6 @@ public class LocationTracker {
 
     @SuppressLint("MissingPermission")
     public void startTracking() {
-        if (userId.equals("user_2")) {
-            updateLocationInFirebase(1.544465, 110.382765);
-            return;
-        }
-
         Location last = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if (last != null && Math.abs(last.getLatitude()) > 0.1) {
             updateLocationInFirebase(last.getLatitude(), last.getLongitude());

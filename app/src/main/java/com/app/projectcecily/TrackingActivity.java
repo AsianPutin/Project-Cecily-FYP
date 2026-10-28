@@ -45,8 +45,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         // Force the layout to sit above the navigation bar tray
         UIUtils.applyBottomMargin(findViewById(R.id.infoCard));
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
-        partnerId = userId.equals("user_1") ? "user_2" : "user_1";
+        userId = UserManager.getUserId(this);
+        partnerId = UserManager.getPartnerId(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);

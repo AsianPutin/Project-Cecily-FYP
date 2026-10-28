@@ -59,7 +59,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wishlist);
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
+        userId = UserManager.getUserId(this);
         dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("wishlist");
 
         if (getSupportActionBar() != null) {

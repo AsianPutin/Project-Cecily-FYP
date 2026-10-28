@@ -49,8 +49,8 @@ public class SwipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_swipe);
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
-        partnerId = userId.equals("user_1") ? "user_2" : "user_1";
+        userId = UserManager.getUserId(this);
+        partnerId = UserManager.getPartnerId(this);
         swipeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("swipes");
 
         // Clear previous session swipes to prevent Ghost Matches for demo

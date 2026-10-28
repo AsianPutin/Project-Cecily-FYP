@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
-    id("com.google.firebase.appdistribution")
 }
 
 android {
@@ -25,12 +24,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-        debug {
-            firebaseAppDistribution {
-                appId = "1:546478685263:android:da9b9ae8fa1d16f2277e3a"
-                artifactType = "APK"
-            }
         }
     }
     compileOptions {

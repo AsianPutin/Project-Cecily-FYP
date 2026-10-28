@@ -1,4 +1,4 @@
-name: Android Build & Distribute
+name: Android Build
 
 on:
   push:
@@ -24,15 +24,7 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Upload to Firebase App Distribution
-        # Note: This will fail until FIREBASE_APP_DISTRIBUTION_CREDENTIALS or GITHUB_TOKEN with appropriate setup is added
-        # For now, we'll keep the build artifact as a fallback
-        run: ./gradlew appDistributionUploadDebug
-        continue-on-error: true
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.CREDENTIAL_FILE }}
-
-      - name: Upload APK Artifact (Fallback)
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: project-cecily-debug-apk

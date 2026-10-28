@@ -33,7 +33,7 @@ public class BackgroundService extends Service {
         startForeground(101, notification);
         
         startTime = System.currentTimeMillis();
-        String userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
+        String userId = UserManager.getUserId(this);
         listenForPokes(userId);
         listenForFlights();
 

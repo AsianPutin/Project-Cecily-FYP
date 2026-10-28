@@ -1,14 +1,14 @@
 package com.app.projectcecily;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -22,7 +22,8 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AccountActivity extends AppCompatActivity {
 
-    private TextView tvUserName, tvSyncedPartner;
+    private TextView tvUserName, tvSyncedPartner, tvPairingStatus;
+    private Button btnPairPartner, btnUnpairPartner;
     private String userId, partnerId;
     private DatabaseReference dbRef;
 
@@ -31,8 +32,8 @@ public class AccountActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
-        partnerId = userId.equals("user_1") ? "user_2" : "user_1";
+        userId = UserManager.getUserId(this);
+        partnerId = UserManager.getPartnerId(this);
         dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
         if (getSupportActionBar() != null) {
@@ -42,24 +43,39 @@ public class AccountActivity extends AppCompatActivity {
 
         tvUserName = findViewById(R.id.tvUserName);
         tvSyncedPartner = findViewById(R.id.tvSyncedPartner);
-        
+        tvPairingStatus = findViewById(R.id.tvPairingStatus);
+        btnPairPartner = findViewById(R.id.btnPairPartner);
+        btnUnpairPartner = findViewById(R.id.btnUnpairPartner);
+
         UIUtils.applyBottomPadding(findViewById(R.id.account_scroll));
-        
-        setupIdentityToggle();
+
         setupThemeToggle();
         listenForProfileUpdates();
+        updatePairingUI();
 
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
-        
-        findViewById(R.id.btnPartnerSettings).setOnClickListener(v -> 
-            Toast.makeText(this, "Partner Settings Coming Soon", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.btnPartnerSettings).setOnClickListener(v -> showPairingDialog());
+        btnPairPartner.setOnClickListener(v -> showPairingDialog());
+        btnUnpairPartner.setOnClickListener(v -> unpairPartner());
+    }
+
+    private void updatePairingUI() {
+        partnerId = UserManager.getPartnerId(this);
+        if (!partnerId.isEmpty()) {
+            btnUnpairPartner.setVisibility(View.VISIBLE);
+            btnPairPartner.setText("Manage Pairing");
+        } else {
+            btnUnpairPartner.setVisibility(View.GONE);
+            btnPairPartner.setText("Pair with 6-Digit Code");
+            tvPairingStatus.setText("Not paired with anyone");
+            tvSyncedPartner.setText("Not Synced");
+        }
     }
 
     private void listenForProfileUpdates() {
-        // Push initial names to cloud if they don't exist yet
         dbRef.child("profiles").child(userId).child("name").get().addOnSuccessListener(snapshot -> {
             if (!snapshot.exists()) {
-                String localName = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_name", "Dingus");
+                String localName = UserManager.getUserName(this);
                 dbRef.child("profiles").child(userId).child("name").setValue(localName);
             }
         });
@@ -69,18 +85,37 @@ public class AccountActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String name = snapshot.child("name").getValue(String.class);
-                if (name != null) tvUserName.setText(name);
+                if (name != null) {
+                    tvUserName.setText(name);
+                    UserManager.setUserName(AccountActivity.this, name);
+                }
+
+                String currentPartner = snapshot.child("partnerId").getValue(String.class);
+                if (currentPartner != null && !currentPartner.isEmpty()) {
+                    UserManager.setPartnerId(AccountActivity.this, currentPartner);
+                    partnerId = currentPartner;
+                    updatePairingUI();
+                    listenForPartnerName();
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
         });
 
-        // Listen for PARTNER's name
+        if (!partnerId.isEmpty()) {
+            listenForPartnerName();
+        }
+    }
+
+    private void listenForPartnerName() {
+        if (partnerId.isEmpty()) return;
         dbRef.child("profiles").child(partnerId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String name = snapshot.child("name").getValue(String.class);
-                if (name != null) tvSyncedPartner.setText("Synced with " + name + " ❤️");
+                String nameStr = (name != null) ? name : "Partner";
+                tvSyncedPartner.setText("Synced with " + nameStr + " ❤️");
+                tvPairingStatus.setText("Paired with " + nameStr);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
@@ -96,28 +131,91 @@ public class AccountActivity extends AppCompatActivity {
                 .setView(view)
                 .setTitle("Update Your Display Name")
                 .setPositiveButton("Save", (dialog, which) -> {
-                    String newName = etYourName.getText().toString();
-                    dbRef.child("profiles").child(userId).child("name").setValue(newName);
-                    Toast.makeText(this, "Name updated in cloud!", Toast.LENGTH_SHORT).show();
+                    String newName = etYourName.getText() != null ? etYourName.getText().toString().trim() : "";
+                    if (!newName.isEmpty()) {
+                        UserManager.setUserName(this, newName);
+                        dbRef.child("profiles").child(userId).child("name").setValue(newName);
+                        Toast.makeText(this, "Name updated!", Toast.LENGTH_SHORT).show();
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void setupIdentityToggle() {
-        MaterialButtonToggleGroup toggleGroup = findViewById(R.id.toggleGroup);
-        if (userId.equals("user_1")) toggleGroup.check(R.id.btnUserA);
-        else toggleGroup.check(R.id.btnUserB);
+    private void showPairingDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_partner_pairing, null);
+        TextView tvGeneratedCode = view.findViewById(R.id.tvGeneratedCode);
+        Button btnGenerate = view.findViewById(R.id.btnGenerateCode);
+        TextInputEditText etInputCode = view.findViewById(R.id.etInputCode);
+        Button btnConnect = view.findViewById(R.id.btnConnectCode);
 
-        toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                String newId = (checkedId == R.id.btnUserA) ? "user_1" : "user_2";
-                if (!newId.equals(userId)) {
-                    getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("user_id", newId).commit();
-                    restartApp();
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setTitle("Pairing Settings 🤝")
+                .setNegativeButton("Close", null)
+                .create();
+
+        btnGenerate.setOnClickListener(v -> {
+            btnGenerate.setEnabled(false);
+            tvGeneratedCode.setText("Generating...");
+            UserManager.generatePairingCode(this, new UserManager.PairingCallback() {
+                @Override
+                public void onSuccess(String codeOrResult) {
+                    if (codeOrResult.startsWith("PAIRED:")) {
+                        String partnerName = codeOrResult.replace("PAIRED:", "");
+                        Toast.makeText(AccountActivity.this, "Paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
+                        if (dialog.isShowing()) dialog.dismiss();
+                        updatePairingUI();
+                    } else {
+                        tvGeneratedCode.setText(codeOrResult);
+                        btnGenerate.setEnabled(true);
+                        Toast.makeText(AccountActivity.this, "Share code " + codeOrResult + " with your partner!", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
+
+                @Override
+                public void onError(String message) {
+                    tvGeneratedCode.setText("------");
+                    btnGenerate.setEnabled(true);
+                    Toast.makeText(AccountActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         });
+
+        btnConnect.setOnClickListener(v -> {
+            String code = etInputCode.getText() != null ? etInputCode.getText().toString() : "";
+            btnConnect.setEnabled(false);
+            UserManager.connectWithCode(this, code, new UserManager.PairingCallback() {
+                @Override
+                public void onSuccess(String partnerName) {
+                    Toast.makeText(AccountActivity.this, "Successfully paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
+                    if (dialog.isShowing()) dialog.dismiss();
+                    updatePairingUI();
+                }
+
+                @Override
+                public void onError(String message) {
+                    btnConnect.setEnabled(true);
+                    Toast.makeText(AccountActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void unpairPartner() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Unpair Partner?")
+                .setMessage("Are you sure you want to unpair? You can pair again later using a new code.")
+                .setPositiveButton("Unpair", (dialog, which) -> {
+                    UserManager.unpairPartner(this, () -> {
+                        updatePairingUI();
+                        Toast.makeText(this, "Unpaired", Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void setupThemeToggle() {
@@ -136,13 +234,6 @@ public class AccountActivity extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(mode);
             }
         });
-    }
-
-    private void restartApp() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        Runtime.getRuntime().exit(0);
     }
 
     @Override

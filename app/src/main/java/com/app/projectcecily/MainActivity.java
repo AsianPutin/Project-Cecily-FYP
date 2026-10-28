@@ -43,8 +43,24 @@ public class MainActivity extends AppCompatActivity {
         createNotificationChannel();
         requestNotificationPermission();
 
-        userId = getSharedPreferences("prefs", MODE_PRIVATE).getString("user_id", "user_1");
-        partnerId = userId.equals("user_1") ? "user_2" : "user_1";
+        userId = UserManager.getUserId(this);
+        partnerId = UserManager.getPartnerId(this);
+
+        // Keep partnerId synced in real time
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(userId).child("partnerId")
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String pId = snapshot.getValue(String.class);
+                if (pId != null && !pId.isEmpty()) {
+                    partnerId = pId;
+                    UserManager.setPartnerId(MainActivity.this, pId);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
         
         startTime = System.currentTimeMillis();
 
