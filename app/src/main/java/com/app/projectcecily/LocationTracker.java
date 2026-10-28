@@ -21,8 +21,29 @@ public class LocationTracker {
     private String userId;
     private String partnerId;
     
+    public interface SelfLocationListener {
+        void onSelfLocationUpdate(double lat, double lon);
+    }
+
     public interface PartnerLocationListener {
         void onPartnerLocationUpdate(double lat, double lon, float distance);
+    }
+
+    public void listenToSelf(SelfLocationListener listener) {
+        databaseReference.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Double lat = snapshot.child("latitude").getValue(Double.class);
+                    Double lon = snapshot.child("longitude").getValue(Double.class);
+                    if (lat != null && lon != null && Math.abs(lat) > 0.1) {
+                        listener.onSelfLocationUpdate(lat, lon);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     public LocationTracker(Context context, String userId, String partnerId) {

@@ -1,32 +1,27 @@
 package com.app.projectcecily;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.FirebaseDatabase;
+import java.util.Locale;
 
-public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TrackingActivity extends AppCompatActivity {
 
-    private GoogleMap mMap;
     private LocationTracker tracker;
-    private TextView tvStatus, tvTime;
-    private Button btnPoke;
+    private TextView tvLiveDistanceText, tvPartnerStatus, tvTimeAtLocation;
+    private TextView tvMyLat, tvMyLon, tvMyLastUpdated;
+    private TextView tvPartnerLat, tvPartnerLon;
+    private Button btnPoke, btnOpenExternalMap;
     private String userId, partnerId;
+
+    private double lastPartnerLat = 0;
+    private double lastPartnerLon = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,71 +33,94 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             getSupportActionBar().setTitle("LDR Tracker 📍");
         }
 
-        tvStatus = findViewById(R.id.tvPartnerStatus);
-        tvTime = findViewById(R.id.tvTimeAtLocation);
-        btnPoke = findViewById(R.id.btnPoke);
+        tvLiveDistanceText = findViewById(R.id.tvLiveDistanceText);
+        tvPartnerStatus = findViewById(R.id.tvPartnerStatus);
+        tvTimeAtLocation = findViewById(R.id.tvTimeAtLocation);
 
-        // Force the layout to sit above the navigation bar tray
-        UIUtils.applyBottomMargin(findViewById(R.id.infoCard));
+        tvMyLat = findViewById(R.id.tvMyLat);
+        tvMyLon = findViewById(R.id.tvMyLon);
+        tvMyLastUpdated = findViewById(R.id.tvMyLastUpdated);
+
+        tvPartnerLat = findViewById(R.id.tvPartnerLat);
+        tvPartnerLon = findViewById(R.id.tvPartnerLon);
+
+        btnPoke = findViewById(R.id.btnPoke);
+        btnOpenExternalMap = findViewById(R.id.btnOpenExternalMap);
+
+        UIUtils.applyBottomPadding(findViewById(R.id.tracking_scroll));
 
         userId = UserManager.getUserId(this);
         partnerId = UserManager.getPartnerId(this);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-
         btnPoke.setOnClickListener(v -> sendPokeToFirebase());
+        btnOpenExternalMap.setOnClickListener(v -> openPartnerInNativeMap());
 
         tracker = new LocationTracker(this, userId, partnerId);
         tracker.startTracking();
+
+        tracker.listenToSelf((lat, lon) -> {
+            tvMyLat.setText(String.format(Locale.ENGLISH, "%.6f", lat));
+            tvMyLon.setText(String.format(Locale.ENGLISH, "%.6f", lon));
+            tvMyLastUpdated.setText("Updated: Just now");
+        });
+
+        tracker.listenToPartner((lat, lon, distance) -> {
+            if (lat == 0 && lon == 0) return;
+
+            lastPartnerLat = lat;
+            lastPartnerLon = lon;
+
+            tvPartnerLat.setText(String.format(Locale.ENGLISH, "%.6f", lat));
+            tvPartnerLon.setText(String.format(Locale.ENGLISH, "%.6f", lon));
+            tvTimeAtLocation.setText("Updated: Just now");
+
+            if (distance >= 0) {
+                String formattedDistance = UnitUtils.formatDistance(this, distance);
+                tvLiveDistanceText.setText(formattedDistance);
+                tvPartnerStatus.setText("Partner is " + formattedDistance + " away");
+            } else {
+                tvLiveDistanceText.setText("Calculating...");
+                tvPartnerStatus.setText("Partner location received");
+            }
+        });
+    }
+
+    private void openPartnerInNativeMap() {
+        if (lastPartnerLat == 0 && lastPartnerLon == 0) {
+            Toast.makeText(this, "Partner coordinates not received yet!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Uri gmmIntentUri = Uri.parse("geo:" + lastPartnerLat + "," + lastPartnerLon + "?q=" + lastPartnerLat + "," + lastPartnerLon + "(Partner)");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            // Fallback to web browser OpenStreetMap
+            String webUrl = "https://www.openstreetmap.org/?mlat=" + lastPartnerLat + "&mlon=" + lastPartnerLon + "#map=15/" + lastPartnerLat + "/" + lastPartnerLon;
+            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webUrl));
+            startActivity(webIntent);
+        }
     }
 
     private void sendPokeToFirebase() {
-        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("pokes")
-                .child(partnerId).setValue(System.currentTimeMillis());
-        Toast.makeText(this, "Poke sent!", Toast.LENGTH_SHORT).show();
-    }
-
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-        
-        // Push Map UI buttons down from the top bar and up from the bottom card
-        // (left, top, right, bottom)
-        mMap.setPadding(0, 150, 0, 450);
-
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-        // Zoom to default city center initially so it's not a beige blank screen
-        LatLng kuching = new LatLng(1.5533, 110.3592);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(kuching, 12));
-
-        tracker.listenToPartner((lat, lon, distance) -> {
-            if (lat == 0 && lon == 0) return; // Ignore invalid data
-
-            LatLng partnerPos = new LatLng(lat, lon);
-            mMap.clear(); 
-            mMap.addMarker(new MarkerOptions().position(partnerPos).title("Partner"));
-            
-            // Only zoom to partner if distance is realistic (within Malaysia area roughly)
-            if (lat > 0.1 && lon > 100) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(partnerPos, 15));
-                tvStatus.setText(String.format(java.util.Locale.ENGLISH, "Partner is %.2f km away", distance));
-            } else {
-                tvStatus.setText("Partner location pending...");
-            }
-            tvTime.setText("Updated just now");
-        });
+        if (partnerId.isEmpty()) {
+            Toast.makeText(this, "Please pair with a partner in Account Settings first!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("pokes")
+                .child(partnerId)
+                .setValue(System.currentTimeMillis());
+        Toast.makeText(this, "Poke sent! 👉", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) { finish(); return true; }
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 }

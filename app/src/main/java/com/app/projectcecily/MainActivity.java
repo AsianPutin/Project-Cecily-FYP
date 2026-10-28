@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
         tracker.startTracking();
         tracker.listenToPartner((lat, lon, distance) -> {
             if (distance > 0) {
-                tvDistance.setText(String.format(java.util.Locale.ENGLISH, "%.2f km", distance));
+                tvDistance.setText(UnitUtils.formatDistance(this, distance));
             }
         });
     }

@@ -107,6 +107,44 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Unit System Selection Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Distance Units:"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- Unit Toggle Group -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/unitToggleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/btnUnitMetric"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Metric (km / m)"
+                android:textColor="@color/text_primary" />
+
+            <Button
+                android:id="@+id/btnUnitImperial"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Imperial (mi / ft)"
+                android:textColor="@color/text_primary" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <!-- Theme Selection Label -->
         <TextView
             android:layout_width="wrap_content"
