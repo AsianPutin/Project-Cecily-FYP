@@ -1,5 +1,6 @@
 package com.app.projectcecily;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,16 +8,21 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.FirebaseDatabase;
-import java.util.Locale;
 
-public class TrackingActivity extends AppCompatActivity {
+public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private GoogleMap mMap;
     private LocationTracker tracker;
     private TextView tvLiveDistanceText, tvPartnerStatus, tvTimeAtLocation;
-    private TextView tvMyLat, tvMyLon, tvMyLastUpdated;
-    private TextView tvPartnerLat, tvPartnerLon;
     private Button btnPoke, btnOpenExternalMap;
     private String userId, partnerId;
 
@@ -37,17 +43,10 @@ public class TrackingActivity extends AppCompatActivity {
         tvPartnerStatus = findViewById(R.id.tvPartnerStatus);
         tvTimeAtLocation = findViewById(R.id.tvTimeAtLocation);
 
-        tvMyLat = findViewById(R.id.tvMyLat);
-        tvMyLon = findViewById(R.id.tvMyLon);
-        tvMyLastUpdated = findViewById(R.id.tvMyLastUpdated);
-
-        tvPartnerLat = findViewById(R.id.tvPartnerLat);
-        tvPartnerLon = findViewById(R.id.tvPartnerLon);
-
         btnPoke = findViewById(R.id.btnPoke);
         btnOpenExternalMap = findViewById(R.id.btnOpenExternalMap);
 
-        UIUtils.applyBottomPadding(findViewById(R.id.tracking_scroll));
+        UIUtils.applyBottomMargin(findViewById(R.id.infoCard));
 
         userId = UserManager.getUserId(this);
         partnerId = UserManager.getPartnerId(this);
@@ -55,14 +54,32 @@ public class TrackingActivity extends AppCompatActivity {
         btnPoke.setOnClickListener(v -> sendPokeToFirebase());
         btnOpenExternalMap.setOnClickListener(v -> openPartnerInNativeMap());
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+
         tracker = new LocationTracker(this, userId, partnerId);
         tracker.startTracking();
+    }
 
-        tracker.listenToSelf((lat, lon) -> {
-            tvMyLat.setText(String.format(Locale.ENGLISH, "%.6f", lat));
-            tvMyLon.setText(String.format(Locale.ENGLISH, "%.6f", lon));
-            tvMyLastUpdated.setText("Updated: Just now");
-        });
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Push map controls clear of top and bottom floating cards
+        mMap.setPadding(0, 300, 0, 350);
+
+        try {
+            mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        } catch (Exception ignored) {}
+
+        // Default camera position
+        LatLng defaultPos = new LatLng(1.5533, 110.3592);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPos, 12));
 
         tracker.listenToPartner((lat, lon, distance) -> {
             if (lat == 0 && lon == 0) return;
@@ -70,8 +87,14 @@ public class TrackingActivity extends AppCompatActivity {
             lastPartnerLat = lat;
             lastPartnerLon = lon;
 
-            tvPartnerLat.setText(String.format(Locale.ENGLISH, "%.6f", lat));
-            tvPartnerLon.setText(String.format(Locale.ENGLISH, "%.6f", lon));
+            LatLng partnerPos = new LatLng(lat, lon);
+            mMap.clear();
+            mMap.addMarker(new MarkerOptions().position(partnerPos).title("Partner 💖"));
+
+            if (lat > 0.1) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(partnerPos, 14));
+            }
+
             tvTimeAtLocation.setText("Updated: Just now");
 
             if (distance >= 0) {
@@ -96,7 +119,6 @@ public class TrackingActivity extends AppCompatActivity {
         if (mapIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(mapIntent);
         } else {
-            // Fallback to web browser OpenStreetMap
             String webUrl = "https://www.openstreetmap.org/?mlat=" + lastPartnerLat + "&mlon=" + lastPartnerLon + "#map=15/" + lastPartnerLat + "/" + lastPartnerLon;
             Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webUrl));
             startActivity(webIntent);

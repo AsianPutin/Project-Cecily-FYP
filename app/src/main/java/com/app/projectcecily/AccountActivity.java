@@ -1,31 +1,79 @@
 package com.app.projectcecily;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 public class AccountActivity extends AppCompatActivity {
 
     private TextView tvUserName, tvSyncedPartner, tvPairingStatus;
+    private ShapeableImageView ivProfilePic;
     private Button btnPairPartner, btnUnpairPartner;
     private String userId, partnerId;
     private DatabaseReference dbRef;
+    private Bitmap currentProfileBitmap;
+
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        try {
+                            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                            if (bitmap != null) {
+                                processAndSaveProfileImage(bitmap);
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Failed to load image from gallery", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Bundle extras = result.getData().getExtras();
+                    if (extras != null && extras.get("data") instanceof Bitmap) {
+                        Bitmap bitmap = (Bitmap) extras.get("data");
+                        processAndSaveProfileImage(bitmap);
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +89,7 @@ public class AccountActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Account Settings 👤");
         }
 
+        ivProfilePic = findViewById(R.id.ivProfilePic);
         tvUserName = findViewById(R.id.tvUserName);
         tvSyncedPartner = findViewById(R.id.tvSyncedPartner);
         tvPairingStatus = findViewById(R.id.tvPairingStatus);
@@ -51,13 +100,100 @@ public class AccountActivity extends AppCompatActivity {
 
         setupThemeToggle();
         setupUnitToggle();
+        loadSavedProfilePicture();
         listenForProfileUpdates();
         updatePairingUI();
+
+        View.OnClickListener profilePicClickListener = v -> showProfilePictureOptionsSheet();
+        ivProfilePic.setOnClickListener(profilePicClickListener);
+        findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
         findViewById(R.id.btnPartnerSettings).setOnClickListener(v -> showPairingDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
+    }
+
+    private void showProfilePictureOptionsSheet() {
+        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_profile_picture_options, null);
+        sheet.setContentView(view);
+
+        view.findViewById(R.id.optionViewPicture).setOnClickListener(v -> {
+            sheet.dismiss();
+            showFullProfilePictureDialog();
+        });
+
+        view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
+            sheet.dismiss();
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            cameraLauncher.launch(intent);
+        });
+
+        view.findViewById(R.id.optionGallery).setOnClickListener(v -> {
+            sheet.dismiss();
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            galleryLauncher.launch(intent);
+        });
+
+        sheet.show();
+    }
+
+    private void showFullProfilePictureDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_view_full_image, null);
+        ImageView ivFull = view.findViewById(R.id.ivFullImage);
+        
+        if (currentProfileBitmap != null) {
+            ivFull.setImageBitmap(currentProfileBitmap);
+        } else {
+            ivFull.setImageResource(R.mipmap.ic_launcher_round);
+        }
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .create();
+
+        view.findViewById(R.id.btnCloseFullImage).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void processAndSaveProfileImage(Bitmap originalBitmap) {
+        Bitmap scaled = Bitmap.createScaledBitmap(originalBitmap, 300, 300, true);
+        currentProfileBitmap = scaled;
+        ivProfilePic.setImageBitmap(scaled);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+        byte[] bytes = baos.toByteArray();
+        String base64Image = "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.DEFAULT);
+
+        // Save locally
+        getSharedPreferences("prefs", MODE_PRIVATE).edit().putString("profile_pic_base64", base64Image).apply();
+
+        // Sync to cloud
+        dbRef.child("profiles").child(userId).child("photoBase64").setValue(base64Image);
+        Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void loadSavedProfilePicture() {
+        String base64Str = getSharedPreferences("prefs", MODE_PRIVATE).getString("profile_pic_base64", null);
+        if (base64Str != null) {
+            displayBase64Image(base64Str);
+        }
+    }
+
+    private void displayBase64Image(String base64Str) {
+        try {
+            String clean = base64Str.contains(",") ? base64Str.split(",")[1] : base64Str;
+            byte[] decodedBytes = Base64.decode(clean, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+            if (bitmap != null) {
+                currentProfileBitmap = bitmap;
+                ivProfilePic.setImageBitmap(bitmap);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void updatePairingUI() {
@@ -81,7 +217,7 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
 
-        // Listen for YOUR name
+        // Listen for YOUR profile updates (Name & Photo)
         dbRef.child("profiles").child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -89,6 +225,11 @@ public class AccountActivity extends AppCompatActivity {
                 if (name != null) {
                     tvUserName.setText(name);
                     UserManager.setUserName(AccountActivity.this, name);
+                }
+
+                String photoBase64 = snapshot.child("photoBase64").getValue(String.class);
+                if (photoBase64 != null && currentProfileBitmap == null) {
+                    displayBase64Image(photoBase64);
                 }
 
                 String currentPartner = snapshot.child("partnerId").getValue(String.class);

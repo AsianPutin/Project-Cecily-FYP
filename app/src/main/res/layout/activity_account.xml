@@ -12,21 +12,40 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Profile Picture Container to prevent cutoff -->
+        <!-- Profile Picture Container -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="20dp"
             android:paddingBottom="10dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivProfilePic"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
-                android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher_round"
-                app:shapeAppearanceOverlay="@style/CircleImage" />
+            <RelativeLayout
+                android:layout_width="135dp"
+                android:layout_height="135dp"
+                android:layout_gravity="center">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivProfilePic"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_centerInParent="true"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/ic_launcher_round"
+                    app:shapeAppearanceOverlay="@style/CircleImage" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnChangeProfilePic"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignBottom="@id/ivProfilePic"
+                    android:layout_alignEnd="@id/ivProfilePic"
+                    android:contentDescription="Change Profile Picture"
+                    app:backgroundTint="#25D366"
+                    app:fabCustomSize="40dp"
+                    app:maxImageSize="22dp"
+                    app:srcCompat="@android:drawable/ic_menu_camera"
+                    app:tint="#FFFFFF" />
+            </RelativeLayout>
         </FrameLayout>
 
         <TextView
