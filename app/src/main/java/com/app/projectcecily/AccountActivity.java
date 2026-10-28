@@ -109,7 +109,6 @@ public class AccountActivity extends AppCompatActivity {
         findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
-        findViewById(R.id.btnPartnerSettings).setOnClickListener(v -> showPairingDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
     }
@@ -199,11 +198,12 @@ public class AccountActivity extends AppCompatActivity {
     private void updatePairingUI() {
         partnerId = UserManager.getPartnerId(this);
         if (!partnerId.isEmpty()) {
+            btnPairPartner.setVisibility(View.GONE);
             btnUnpairPartner.setVisibility(View.VISIBLE);
-            btnPairPartner.setText("Manage Pairing");
         } else {
-            btnUnpairPartner.setVisibility(View.GONE);
+            btnPairPartner.setVisibility(View.VISIBLE);
             btnPairPartner.setText("Pair with 6-Digit Code");
+            btnUnpairPartner.setVisibility(View.GONE);
             tvPairingStatus.setText("Not paired with anyone");
             tvSyncedPartner.setText("Not Synced");
         }
