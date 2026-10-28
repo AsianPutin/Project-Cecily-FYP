@@ -109,8 +109,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_flight) {
                 startActivity(new Intent(this, FlightTrackerActivity.class));
                 return true;
-            } else if (id == R.id.nav_health) {
-                openPlaceholder("Health Tracker");
+            } else if (id == R.id.nav_wishlist) {
+                startActivity(new Intent(this, WishlistActivity.class));
                 return true;
             } else if (id == R.id.nav_account) {
                 startActivity(new Intent(this, AccountActivity.class));
@@ -124,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.cardProximity).setOnClickListener(v -> startActivity(new Intent(this, TrackingActivity.class)));
         findViewById(R.id.cardWishlist).setOnClickListener(v -> startActivity(new Intent(this, WishlistActivity.class)));
         findViewById(R.id.cardFlight).setOnClickListener(v -> startActivity(new Intent(this, FlightTrackerActivity.class)));
-        findViewById(R.id.cardHealth).setOnClickListener(v -> openPlaceholder("Health Tracker"));
     }
 
     private void listenForFlights() {

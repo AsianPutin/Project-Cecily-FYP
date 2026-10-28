@@ -13,9 +13,9 @@
         android:icon="@android:drawable/ic_menu_send"
         android:title="Flight" />
     <item
-        android:id="@+id/nav_health"
-        android:icon="@android:drawable/ic_menu_view"
-        android:title="Health" />
+        android:id="@+id/nav_wishlist"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Wishlist" />
     <item
         android:id="@+id/nav_account"
         android:icon="@android:drawable/ic_menu_myplaces"
