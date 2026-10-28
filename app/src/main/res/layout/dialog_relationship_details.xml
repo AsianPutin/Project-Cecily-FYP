@@ -207,15 +207,33 @@
                 android:minLines="2" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnSaveRelationship"
-            style="@style/Widget.Material3.Button.TonalButton"
+        <!-- Horizontal Action Buttons Row -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:backgroundTint="#25D366"
-            android:text="Save Details"
-            android:textColor="#FFFFFF" />
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancelRelationship"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Cancel"
+                android:textColor="@color/text_secondary" />
+
+            <Button
+                android:id="@+id/btnSaveRelationship"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#25D366"
+                android:paddingHorizontal="24dp"
+                android:text="Save Details"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

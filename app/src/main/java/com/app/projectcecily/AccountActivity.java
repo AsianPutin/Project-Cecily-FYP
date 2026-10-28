@@ -388,7 +388,18 @@ public class AccountActivity extends AppCompatActivity {
         MaterialButtonToggleGroup toggleYourGender = view.findViewById(R.id.toggleYourGender);
         MaterialButtonToggleGroup togglePartnerGender = view.findViewById(R.id.togglePartnerGender);
 
+        Button btnCancel = view.findViewById(R.id.btnCancelRelationship);
+        Button btnSave = view.findViewById(R.id.btnSaveRelationship);
+
         RelationshipManager.Details currentDetails = RelationshipManager.getLocalDetails(this);
+
+        // Store initial snapshot for unsaved changes comparison
+        String initialYourBday = currentDetails.yourBirthday;
+        String initialPartnerBday = currentDetails.partnerBirthday;
+        String initialAnniversary = currentDetails.anniversaryDate;
+        String initialMilestones = currentDetails.milestones;
+        String initialYourGender = currentDetails.yourGender;
+        String initialPartnerGender = currentDetails.partnerGender;
 
         etYourBirthday.setText(currentDetails.yourBirthday);
         etPartnerBirthday.setText(currentDetails.partnerBirthday);
@@ -414,10 +425,50 @@ public class AccountActivity extends AppCompatActivity {
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
-                .setNegativeButton("Cancel", null)
                 .create();
 
-        view.findViewById(R.id.btnSaveRelationship).setOnClickListener(v -> {
+        java.util.function.Supplier<Boolean> hasUnsavedChanges = () -> {
+            String curYourBday = etYourBirthday.getText() != null ? etYourBirthday.getText().toString().trim() : "";
+            String curPartnerBday = etPartnerBirthday.getText() != null ? etPartnerBirthday.getText().toString().trim() : "";
+            String curAnniversary = etAnniversaryDate.getText() != null ? etAnniversaryDate.getText().toString().trim() : "";
+            String curMilestones = etMilestones.getText() != null ? etMilestones.getText().toString().trim() : "";
+
+            String curYourGender;
+            int yourCheck = toggleYourGender.getCheckedButtonId();
+            if (yourCheck == R.id.btnYourFemale) curYourGender = "Female (She/Her)";
+            else if (yourCheck == R.id.btnYourThey) curYourGender = "Prefer not to say (They/Them)";
+            else curYourGender = "Male (He/Him)";
+
+            String curPartnerGender;
+            int partnerCheck = togglePartnerGender.getCheckedButtonId();
+            if (partnerCheck == R.id.btnPartnerFemale) curPartnerGender = "Female (She/Her)";
+            else if (partnerCheck == R.id.btnPartnerThey) curPartnerGender = "Prefer not to say (They/Them)";
+            else curPartnerGender = "Male (He/Him)";
+
+            return !curYourBday.equals(initialYourBday) ||
+                   !curPartnerBday.equals(initialPartnerBday) ||
+                   !curAnniversary.equals(initialAnniversary) ||
+                   !curMilestones.equals(initialMilestones) ||
+                   !curYourGender.equals(initialYourGender) ||
+                   !curPartnerGender.equals(initialPartnerGender);
+        };
+
+        Runnable handleCancelAction = () -> {
+            if (hasUnsavedChanges.get()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Discard Changes?")
+                        .setMessage("You have unsaved relationship changes. Are you sure you want to discard them?")
+                        .setPositiveButton("Discard", (d, which) -> dialog.dismiss())
+                        .setNegativeButton("Keep Editing", null)
+                        .show();
+            } else {
+                dialog.dismiss();
+            }
+        };
+
+        btnCancel.setOnClickListener(v -> handleCancelAction.run());
+
+        btnSave.setOnClickListener(v -> {
             RelationshipManager.Details newDetails = new RelationshipManager.Details();
             newDetails.yourBirthday = etYourBirthday.getText() != null ? etYourBirthday.getText().toString().trim() : "";
             newDetails.partnerBirthday = etPartnerBirthday.getText() != null ? etPartnerBirthday.getText().toString().trim() : "";
