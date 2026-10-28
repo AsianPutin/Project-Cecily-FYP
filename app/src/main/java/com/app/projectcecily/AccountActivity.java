@@ -52,7 +52,7 @@ public class AccountActivity extends AppCompatActivity {
                             InputStream inputStream = getContentResolver().openInputStream(imageUri);
                             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                             if (bitmap != null) {
-                                processAndSaveProfileImage(bitmap);
+                                showCropEditorDialog(bitmap);
                             }
                         } catch (Exception e) {
                             Toast.makeText(this, "Failed to load image from gallery", Toast.LENGTH_SHORT).show();
@@ -69,7 +69,7 @@ public class AccountActivity extends AppCompatActivity {
                     Bundle extras = result.getData().getExtras();
                     if (extras != null && extras.get("data") instanceof Bitmap) {
                         Bitmap bitmap = (Bitmap) extras.get("data");
-                        processAndSaveProfileImage(bitmap);
+                        showCropEditorDialog(bitmap);
                     }
                 }
             }
@@ -153,6 +153,35 @@ public class AccountActivity extends AppCompatActivity {
                 .create();
 
         view.findViewById(R.id.btnCloseFullImage).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showCropEditorDialog(Bitmap rawBitmap) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_crop_profile_pic, null);
+        CropImageView ivCropTarget = view.findViewById(R.id.ivCropTarget);
+        CircularOverlayView overlayView = view.findViewById(R.id.circularOverlayView);
+        Button btnRotate = view.findViewById(R.id.btnRotateCrop);
+        Button btnSave = view.findViewById(R.id.btnSaveCroppedPic);
+
+        ivCropTarget.setImageAndReset(rawBitmap);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        btnRotate.setOnClickListener(v -> ivCropTarget.rotate90());
+
+        btnSave.setOnClickListener(v -> {
+            Bitmap croppedCircleBitmap = ivCropTarget.getCroppedCircleBitmap(overlayView.getCircleRect());
+            if (croppedCircleBitmap != null) {
+                processAndSaveProfileImage(croppedCircleBitmap);
+            } else {
+                processAndSaveProfileImage(rawBitmap);
+            }
+            dialog.dismiss();
+        });
+
         dialog.show();
     }
 
