@@ -1,6 +1,5 @@
 package com.app.projectcecily;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,19 +7,17 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.FirebaseDatabase;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
-public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TrackingActivity extends AppCompatActivity {
 
-    private GoogleMap mMap;
+    private MapView mapView;
     private LocationTracker tracker;
     private TextView tvLiveDistanceText, tvPartnerStatus, tvTimeAtLocation;
     private Button btnPoke, btnOpenExternalMap;
@@ -28,16 +25,29 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
     private double lastPartnerLat = 0;
     private double lastPartnerLon = 0;
+    private Marker partnerMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Important: Load OSMDroid configuration before layout inflation
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE));
+
         setContentView(R.layout.activity_tracking);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("LDR Tracker 📍");
         }
+
+        mapView = findViewById(R.id.mapView);
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setMultiTouchControls(true);
+
+        GeoPoint defaultPos = new GeoPoint(1.5533, 110.3592);
+        mapView.getController().setZoom(14.0);
+        mapView.getController().setCenter(defaultPos);
 
         tvLiveDistanceText = findViewById(R.id.tvLiveDistanceText);
         tvPartnerStatus = findViewById(R.id.tvPartnerStatus);
@@ -54,32 +64,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         btnPoke.setOnClickListener(v -> sendPokeToFirebase());
         btnOpenExternalMap.setOnClickListener(v -> openPartnerInNativeMap());
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-
         tracker = new LocationTracker(this, userId, partnerId);
         tracker.startTracking();
-    }
-
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Push map controls clear of top and bottom floating cards
-        mMap.setPadding(0, 300, 0, 350);
-
-        try {
-            mMap.setMyLocationEnabled(true);
-            mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        } catch (Exception ignored) {}
-
-        // Default camera position
-        LatLng defaultPos = new LatLng(1.5533, 110.3592);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPos, 12));
 
         tracker.listenToPartner((lat, lon, distance) -> {
             if (lat == 0 && lon == 0) return;
@@ -87,13 +73,16 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             lastPartnerLat = lat;
             lastPartnerLon = lon;
 
-            LatLng partnerPos = new LatLng(lat, lon);
-            mMap.clear();
-            mMap.addMarker(new MarkerOptions().position(partnerPos).title("Partner 💖"));
+            GeoPoint partnerPos = new GeoPoint(lat, lon);
 
-            if (lat > 0.1) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(partnerPos, 14));
+            if (partnerMarker == null) {
+                partnerMarker = new Marker(mapView);
+                partnerMarker.setTitle("Partner 💖");
+                mapView.getOverlays().add(partnerMarker);
             }
+            partnerMarker.setPosition(partnerPos);
+            mapView.getController().animateTo(partnerPos);
+            mapView.invalidate();
 
             tvTimeAtLocation.setText("Updated: Just now");
 
@@ -106,6 +95,18 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                 tvPartnerStatus.setText("Partner location received");
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapView != null) mapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mapView != null) mapView.onPause();
     }
 
     private void openPartnerInNativeMap() {

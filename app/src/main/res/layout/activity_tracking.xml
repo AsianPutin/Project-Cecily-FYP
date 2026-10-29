@@ -6,10 +6,9 @@
     android:layout_height="match_parent"
     android:background="@color/app_background">
 
-    <!-- Embedded Map View -->
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <!-- Embedded OSMDroid Map View -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
