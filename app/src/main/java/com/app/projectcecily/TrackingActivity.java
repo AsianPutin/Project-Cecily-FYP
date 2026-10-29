@@ -143,8 +143,14 @@ public class TrackingActivity extends AppCompatActivity {
 
     private void setupGenderColors() {
         myColor = ThemeUtils.getAccentColor(this);
-        cardMyEdgeWidget.setCardBackgroundColor(myColor);
-        cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+        if (cardMyEdgeWidget != null) {
+            cardMyEdgeWidget.setCardBackgroundColor(myColor);
+            cardMyEdgeWidget.setStrokeColor(myColor);
+        }
+        if (cardPartnerEdgeWidget != null) {
+            cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+            cardPartnerEdgeWidget.setStrokeColor(partnerColor);
+        }
     }
 
 
@@ -185,7 +191,10 @@ public class TrackingActivity extends AppCompatActivity {
                     if (hex != null && !hex.isEmpty()) {
                         try {
                             partnerColor = Color.parseColor(hex);
-                            if (cardPartnerEdgeWidget != null) cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+                            if (cardPartnerEdgeWidget != null) {
+                                cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+                                cardPartnerEdgeWidget.setStrokeColor(partnerColor);
+                            }
                             updatePartnerMarkerOnMap();
                         } catch (Exception ignored) {}
                     }

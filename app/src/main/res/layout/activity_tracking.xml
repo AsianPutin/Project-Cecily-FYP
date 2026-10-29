@@ -81,23 +81,23 @@
     <!-- Out of Bounds Partner Snap Side Widget -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardPartnerEdgeWidget"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
         app:cardBackgroundColor="#FF4081"
-        app:cardCornerRadius="26dp"
+        app:cardCornerRadius="27dp"
         app:cardElevation="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="#FFFFFF"
-        app:strokeWidth="2dp">
+        app:strokeWidth="3dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivPartnerEdgeAvatar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="3dp"
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher_round"
             app:shapeAppearanceOverlay="@style/CircleImage" />
@@ -106,23 +106,23 @@
     <!-- Out of Bounds My Location Snap Side Widget -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardMyEdgeWidget"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
         app:cardBackgroundColor="#007AFF"
-        app:cardCornerRadius="26dp"
+        app:cardCornerRadius="27dp"
         app:cardElevation="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="#FFFFFF"
-        app:strokeWidth="2dp">
+        app:strokeWidth="3dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivMyEdgeAvatar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="3dp"
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher_round"
             app:shapeAppearanceOverlay="@style/CircleImage" />
