@@ -235,8 +235,10 @@ public class TrackingActivity extends AppCompatActivity {
         if (myMarker == null) {
             myMarker = new Marker(mapView);
             myMarker.setTitle("You 📍");
+            myMarker.setInfoWindow(null);
             mapView.getOverlays().add(myMarker);
         }
+        myMarker.setInfoWindow(null);
         myMarker.setPosition(selfPos);
         myMarker.setIcon(createAvatarMarkerDrawable(this, myAvatarBitmap, "Y", myColor));
         mapView.invalidate();
@@ -249,8 +251,10 @@ public class TrackingActivity extends AppCompatActivity {
         if (partnerMarker == null) {
             partnerMarker = new Marker(mapView);
             partnerMarker.setTitle("Partner 💖");
+            partnerMarker.setInfoWindow(null);
             mapView.getOverlays().add(partnerMarker);
         }
+        partnerMarker.setInfoWindow(null);
         partnerMarker.setPosition(partnerPos);
         partnerMarker.setIcon(createAvatarMarkerDrawable(this, partnerAvatarBitmap, "P", partnerColor));
         mapView.invalidate();
@@ -328,21 +332,21 @@ public class TrackingActivity extends AppCompatActivity {
     }
 
     private Drawable createAvatarMarkerDrawable(Context context, Bitmap avatarBitmap, String defaultLetter, int borderColor) {
-        int size = 110;
-        Bitmap markerBitmap = Bitmap.createBitmap(size, size + 20, Bitmap.Config.ARGB_8888);
+        int size = 160;
+        Bitmap markerBitmap = Bitmap.createBitmap(size, size + 28, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(markerBitmap);
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         float cx = size / 2f;
         float cy = size / 2f;
-        float radius = size / 2f - 6f;
+        float radius = size / 2f - 8f;
 
         // Draw pin pointer triangle at bottom
         Path pointerPath = new Path();
-        pointerPath.moveTo(cx - 15f, cy + radius - 5f);
-        pointerPath.lineTo(cx + 15f, cy + radius - 5f);
-        pointerPath.lineTo(cx, size + 16f);
+        pointerPath.moveTo(cx - 20f, cy + radius - 5f);
+        pointerPath.lineTo(cx + 20f, cy + radius - 5f);
+        pointerPath.lineTo(cx, size + 24f);
         pointerPath.close();
 
         paint.setColor(borderColor);
@@ -353,7 +357,7 @@ public class TrackingActivity extends AppCompatActivity {
         canvas.drawCircle(cx, cy, radius, paint);
 
         if (avatarBitmap != null) {
-            Bitmap scaledAvatar = Bitmap.createScaledBitmap(avatarBitmap, (int) (radius * 2 - 8f), (int) (radius * 2 - 8f), true);
+            Bitmap scaledAvatar = Bitmap.createScaledBitmap(avatarBitmap, (int) (radius * 2 - 12f), (int) (radius * 2 - 12f), true);
             Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             circlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
 
@@ -368,13 +372,13 @@ public class TrackingActivity extends AppCompatActivity {
         } else {
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
-            canvas.drawCircle(cx, cy, radius - 4f, paint);
+            canvas.drawCircle(cx, cy, radius - 6f, paint);
 
             paint.setColor(borderColor);
-            paint.setTextSize(36f);
+            paint.setTextSize(52f);
             paint.setFakeBoldText(true);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(defaultLetter, cx, cy + 12f, paint);
+            canvas.drawText(defaultLetter, cx, cy + 18f, paint);
         }
 
         return new BitmapDrawable(context.getResources(), markerBitmap);
