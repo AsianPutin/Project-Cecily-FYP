@@ -4,13 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class ThemeUtils {
 
@@ -59,6 +65,18 @@ public class ThemeUtils {
                 .edit()
                 .putString(KEY_ACCENT_COLOR, hexColor)
                 .apply();
+
+        // Sync to Firebase for real-time partner map highlights
+        String userId = UserManager.getUserId(context);
+        if (userId != null && !userId.isEmpty()) {
+            try {
+                FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                        .getReference("profiles")
+                        .child(userId)
+                        .child("accentColor")
+                        .setValue(hexColor);
+            } catch (Exception ignored) {}
+        }
     }
 
     public static int getContrastingTextColor(int color) {
@@ -66,10 +84,42 @@ public class ThemeUtils {
         return luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 
+    public static int getActionBarColor(int accentColor, boolean isNightMode) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(accentColor, hsv);
+        if (isNightMode) {
+            // Dark Mode: Dark container shade
+            hsv[1] = Math.min(hsv[1], 0.35f);
+            hsv[2] = 0.18f;
+        } else {
+            // Light Mode: Soft pastel shade
+            hsv[1] = Math.min(hsv[1], 0.18f);
+            hsv[2] = 0.96f;
+        }
+        return Color.HSVToColor(hsv);
+    }
+
     public static void applyAccentToActivity(Activity activity) {
         if (activity == null) return;
         int accentColor = getAccentColor(activity);
         int textColorOnAccent = getContrastingTextColor(accentColor);
+
+        boolean isNightMode = (activity.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        int actionBarBgColor = getActionBarColor(accentColor, isNightMode);
+        int actionBarTextColor = getContrastingTextColor(actionBarBgColor);
+
+        if (activity instanceof AppCompatActivity) {
+            AppCompatActivity appCompatActivity = (AppCompatActivity) activity;
+            if (appCompatActivity.getSupportActionBar() != null) {
+                appCompatActivity.getSupportActionBar().setBackgroundDrawable(new ColorDrawable(actionBarBgColor));
+                CharSequence title = appCompatActivity.getSupportActionBar().getTitle();
+                if (title != null && title.length() > 0) {
+                    SpannableString s = new SpannableString(title);
+                    s.setSpan(new ForegroundColorSpan(actionBarTextColor), 0, s.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    appCompatActivity.getSupportActionBar().setTitle(s);
+                }
+            }
+        }
 
         View rootView = activity.findViewById(android.R.id.content);
         if (rootView instanceof ViewGroup) {
@@ -87,7 +137,6 @@ public class ThemeUtils {
                 fab.setImageTintList(ColorStateList.valueOf(textColorOnAccent));
             } else if (v instanceof MaterialButton) {
                 MaterialButton mb = (MaterialButton) v;
-                // Exclude toggle group child buttons from full background override
                 if (mb.getParent() instanceof com.google.android.material.button.MaterialButtonToggleGroup) {
                     continue;
                 }

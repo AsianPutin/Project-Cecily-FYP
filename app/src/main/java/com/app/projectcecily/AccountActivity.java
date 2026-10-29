@@ -97,6 +97,7 @@ public class AccountActivity extends AppCompatActivity {
         btnUnpairPartner = findViewById(R.id.btnUnpairPartner);
 
         UIUtils.applyBottomPadding(findViewById(R.id.account_scroll));
+        UIUtils.applyTopInsetPadding(findViewById(R.id.account_scroll));
 
         setupUnitToggle();
         loadSavedProfilePicture();

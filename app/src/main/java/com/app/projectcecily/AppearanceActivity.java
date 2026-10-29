@@ -26,6 +26,7 @@ public class AppearanceActivity extends AppCompatActivity {
         }
 
         UIUtils.applyBottomPadding(findViewById(R.id.appearance_scroll));
+        UIUtils.applyTopInsetPadding(findViewById(R.id.appearance_scroll));
 
         themeToggleGroup = findViewById(R.id.themeToggleGroup);
 

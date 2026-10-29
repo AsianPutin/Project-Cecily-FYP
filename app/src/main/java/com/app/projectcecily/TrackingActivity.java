@@ -84,14 +84,7 @@ public class TrackingActivity extends AppCompatActivity {
         }
 
         View cardDistanceHeader = findViewById(R.id.cardDistanceHeader);
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(cardDistanceHeader, (v, insets) -> {
-            int topInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
-            android.view.ViewGroup.MarginLayoutParams params = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
-            int marginPx = (int) (16 * getResources().getDisplayMetrics().density);
-            params.topMargin = topInset + marginPx;
-            v.setLayoutParams(params);
-            return insets;
-        });
+        UIUtils.applyTopInsetMargin(cardDistanceHeader);
 
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
@@ -145,24 +138,11 @@ public class TrackingActivity extends AppCompatActivity {
     }
 
     private void setupGenderColors() {
-        RelationshipManager.Details relDetails = RelationshipManager.getLocalDetails(this);
-        myColor = getGenderColor(relDetails.yourGender);
-        partnerColor = getGenderColor(relDetails.partnerGender);
-
+        myColor = ThemeUtils.getAccentColor(this);
         cardMyEdgeWidget.setCardBackgroundColor(myColor);
         cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
     }
 
-    private int getGenderColor(String gender) {
-        if (gender == null) return Color.parseColor("#25D366");
-        if (gender.contains("Male") || gender.contains("He/Him")) {
-            return Color.parseColor("#007AFF"); // Blue
-        } else if (gender.contains("Female") || gender.contains("She/Her")) {
-            return Color.parseColor("#FF4081"); // Pink
-        } else {
-            return Color.parseColor("#25D366"); // Green for prefer not to say / they/them / none
-        }
-    }
 
     private void loadAvatarsAndStartTracking() {
         // Load self avatar
@@ -174,7 +154,7 @@ public class TrackingActivity extends AppCompatActivity {
             }
         }
 
-        // Listen for partner avatar
+        // Listen for partner avatar & accent color
         if (!partnerId.isEmpty()) {
             DatabaseReference db = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
             db.child("profiles").child(partnerId).child("photoBase64").addValueEventListener(new ValueEventListener() {
@@ -187,6 +167,23 @@ public class TrackingActivity extends AppCompatActivity {
                             ivPartnerEdgeAvatar.setImageBitmap(partnerAvatarBitmap);
                             updatePartnerMarkerOnMap();
                         }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {}
+            });
+
+            db.child("profiles").child(partnerId).child("accentColor").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String hex = snapshot.getValue(String.class);
+                    if (hex != null && !hex.isEmpty()) {
+                        try {
+                            partnerColor = Color.parseColor(hex);
+                            if (cardPartnerEdgeWidget != null) cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+                            updatePartnerMarkerOnMap();
+                        } catch (Exception ignored) {}
                     }
                 }
 

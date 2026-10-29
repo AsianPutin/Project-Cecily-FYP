@@ -86,6 +86,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
+        UIUtils.applyTopInsetPadding(rv);
 
         listenForFlights();
     }

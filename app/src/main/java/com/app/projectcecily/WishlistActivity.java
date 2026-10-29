@@ -77,6 +77,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
+        UIUtils.applyTopInsetPadding(rv);
 
         listenForWishlist();
     }
