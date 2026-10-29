@@ -20,9 +20,13 @@ public class AppearanceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appearance);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Appearance & Theme");
+        View toolbarView = findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("Appearance & Theme");
+            }
         }
 
         UIUtils.applyBottomPadding(findViewById(R.id.appearance_scroll));

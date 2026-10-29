@@ -62,9 +62,13 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         userId = UserManager.getUserId(this);
         dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("wishlist");
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Shared Wishlist");
+        View toolbarView = findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("Shared Wishlist");
+            }
         }
 
         RecyclerView         rv = findViewById(R.id.rvWishlist);

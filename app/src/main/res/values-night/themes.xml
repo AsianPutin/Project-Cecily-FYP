@@ -1,10 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.ProjectCecily" parent="Theme.Material3.DayNight">
+    <style name="Base.Theme.ProjectCecily" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <item name="colorPrimary">@color/nav_selected</item>
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
 
         <!-- Ensure readable text on Material 3 Tonal Buttons in Dark Mode -->
         <item name="colorOnSecondaryContainer">@color/white</item>

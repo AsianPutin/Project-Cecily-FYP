@@ -71,9 +71,13 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
         checkExactAlarmPermission();
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Flight Tracker");
+        View toolbarView = findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("Flight Tracker");
+            }
         }
 
         RecyclerView rv = findViewById(R.id.rvFlights);

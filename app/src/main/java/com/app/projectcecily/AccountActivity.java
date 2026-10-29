@@ -84,9 +84,13 @@ public class AccountActivity extends AppCompatActivity {
         partnerId = UserManager.getPartnerId(this);
         dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Account Settings");
+        View toolbarView = findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("Account Settings");
+            }
         }
 
         ivProfilePic = findViewById(R.id.ivProfilePic);

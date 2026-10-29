@@ -78,9 +78,13 @@ public class TrackingActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_tracking);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("LDR Tracker");
+        View toolbarView = findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("LDR Tracker");
+            }
         }
 
         View cardDistanceHeader = findViewById(R.id.cardDistanceHeader);

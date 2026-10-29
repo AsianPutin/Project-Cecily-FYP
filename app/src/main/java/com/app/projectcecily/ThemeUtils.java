@@ -108,6 +108,16 @@ public class ThemeUtils {
         int actionBarBgColor = getActionBarColor(accentColor, isNightMode);
         int actionBarTextColor = getContrastingTextColor(actionBarBgColor);
 
+        View toolbarView = activity.findViewById(R.id.toolbar);
+        if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            com.google.android.material.appbar.MaterialToolbar toolbar = (com.google.android.material.appbar.MaterialToolbar) toolbarView;
+            toolbar.setBackgroundColor(actionBarBgColor);
+            toolbar.setTitleTextColor(actionBarTextColor);
+            if (toolbar.getNavigationIcon() != null) {
+                toolbar.getNavigationIcon().setTint(actionBarTextColor);
+            }
+        }
+
         if (activity instanceof AppCompatActivity) {
             AppCompatActivity appCompatActivity = (AppCompatActivity) activity;
             if (appCompatActivity.getSupportActionBar() != null) {
@@ -143,6 +153,9 @@ public class ThemeUtils {
                 mb.setBackgroundTintList(ColorStateList.valueOf(accentColor));
                 mb.setTextColor(textColorOnAccent);
             } else if (v instanceof MaterialCardView) {
+                if (v.getId() == R.id.cardPartnerEdgeWidget) {
+                    continue; // Exclude partner's edge widget from local theme overrides!
+                }
                 MaterialCardView card = (MaterialCardView) v;
                 if (card.getStrokeWidth() > 0) {
                     card.setStrokeColor(accentColor);
