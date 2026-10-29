@@ -16,16 +16,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Top Floating Distance Card - Margin added so top action bar doesn't overlap/block it -->
+    <!-- Top Compact Floating Distance Card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardDistanceHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="36dp"
         app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -37,35 +37,63 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Distance Apart"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvLiveDistanceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="2dp"
                 android:text="Calculating..."
                 android:textColor="@color/nav_selected"
-                android:textSize="28sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvPartnerStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="1dp"
                 android:text="Waiting for partner location..."
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Out of Bounds Partner Snap Side Widget -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardPartnerEdgeWidget"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="125dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:cardBackgroundColor="#FF4081"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="#FFFFFF"
+        app:strokeWidth="2dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivPartnerEdgeAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher_round"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Bottom Actions Card -->
@@ -92,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="10dp"
                 android:text="Updated: Just now"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
@@ -108,7 +136,7 @@
                 android:id="@+id/btnPoke"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:backgroundTint="#007AFF"
                 android:text="Poke Partner 👉"
                 android:textColor="#FFFFFF" />
