@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private String userId;
     private String partnerId;
     private long startTime;
+    private long backPressedTime = 0;
 
     private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary;
 
@@ -87,6 +88,19 @@ public class MainActivity extends AppCompatActivity {
 
         setupDashboardClicks();
         setupNavigation();
+
+        // Double-tap back press to exit
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                    finish();
+                } else {
+                    Toast.makeText(MainActivity.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                    backPressedTime = System.currentTimeMillis();
+                }
+            }
+        });
         
         UIUtils.applyBottomPadding(findViewById(R.id.bottom_navigation));
         UIUtils.applyBottomPadding(findViewById(R.id.dashboard_scroll));

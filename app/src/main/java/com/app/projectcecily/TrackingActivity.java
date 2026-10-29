@@ -8,9 +8,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -45,8 +45,12 @@ public class TrackingActivity extends AppCompatActivity {
     private LocationTracker tracker;
     private TextView tvLiveDistanceText, tvPartnerStatus, tvTimeAtLocation;
     private Button btnPoke, btnOpenExternalMap;
+
     private MaterialCardView cardPartnerEdgeWidget;
     private ImageView ivPartnerEdgeAvatar;
+
+    private MaterialCardView cardMyEdgeWidget;
+    private ImageView ivMyEdgeAvatar;
 
     private String userId, partnerId;
 
@@ -60,6 +64,11 @@ public class TrackingActivity extends AppCompatActivity {
 
     private Bitmap myAvatarBitmap;
     private Bitmap partnerAvatarBitmap;
+
+    private boolean hasCenteredOnPartner = false;
+
+    private int myColor = Color.parseColor("#007AFF");
+    private int partnerColor = Color.parseColor("#FF4081");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +87,6 @@ public class TrackingActivity extends AppCompatActivity {
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
 
-        // Zoom level 17.5 so local street names and neighborhood roads are clearly visible
         GeoPoint defaultPos = new GeoPoint(1.5533, 110.3592);
         mapView.getController().setZoom(17.5);
         mapView.getController().setCenter(defaultPos);
@@ -93,6 +101,9 @@ public class TrackingActivity extends AppCompatActivity {
         cardPartnerEdgeWidget = findViewById(R.id.cardPartnerEdgeWidget);
         ivPartnerEdgeAvatar = findViewById(R.id.ivPartnerEdgeAvatar);
 
+        cardMyEdgeWidget = findViewById(R.id.cardMyEdgeWidget);
+        ivMyEdgeAvatar = findViewById(R.id.ivMyEdgeAvatar);
+
         UIUtils.applyBottomMargin(findViewById(R.id.infoCard));
 
         userId = UserManager.getUserId(this);
@@ -101,25 +112,46 @@ public class TrackingActivity extends AppCompatActivity {
         btnPoke.setOnClickListener(v -> sendPokeToFirebase());
         btnOpenExternalMap.setOnClickListener(v -> openPartnerInNativeMap());
 
-        // Edge widget click -> snap directly to partner location!
+        // Snap actions (Silent - no toasts)
         cardPartnerEdgeWidget.setOnClickListener(v -> snapMapToPartner());
+        cardMyEdgeWidget.setOnClickListener(v -> snapMapToSelf());
 
+        setupGenderColors();
         loadAvatarsAndStartTracking();
 
-        // Listen for map scroll/zoom to update out-of-bounds side widget
         mapView.addMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                checkPartnerOutOfBounds();
+                updateDualEdgeWidgets();
                 return false;
             }
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                checkPartnerOutOfBounds();
+                updateDualEdgeWidgets();
                 return false;
             }
         });
+    }
+
+    private void setupGenderColors() {
+        RelationshipManager.Details relDetails = RelationshipManager.getLocalDetails(this);
+        myColor = getGenderColor(relDetails.yourGender);
+        partnerColor = getGenderColor(relDetails.partnerGender);
+
+        cardMyEdgeWidget.setCardBackgroundColor(myColor);
+        cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+    }
+
+    private int getGenderColor(String gender) {
+        if (gender == null) return Color.parseColor("#25D366");
+        if (gender.contains("Male") || gender.contains("He/Him")) {
+            return Color.parseColor("#007AFF"); // Blue
+        } else if (gender.contains("Female") || gender.contains("She/Her")) {
+            return Color.parseColor("#FF4081"); // Pink
+        } else {
+            return Color.parseColor("#25D366"); // Green for prefer not to say / they/them / none
+        }
     }
 
     private void loadAvatarsAndStartTracking() {
@@ -127,6 +159,9 @@ public class TrackingActivity extends AppCompatActivity {
         String selfBase64 = getSharedPreferences("prefs", MODE_PRIVATE).getString("profile_pic_base64", null);
         if (selfBase64 != null) {
             myAvatarBitmap = decodeBase64Bitmap(selfBase64);
+            if (myAvatarBitmap != null) {
+                ivMyEdgeAvatar.setImageBitmap(myAvatarBitmap);
+            }
         }
 
         // Listen for partner avatar
@@ -158,6 +193,7 @@ public class TrackingActivity extends AppCompatActivity {
             lastSelfLat = lat;
             lastSelfLon = lon;
             updateSelfMarkerOnMap();
+            updateDualEdgeWidgets();
         });
 
         // 2. Listen to Partner Location
@@ -166,6 +202,14 @@ public class TrackingActivity extends AppCompatActivity {
 
             lastPartnerLat = lat;
             lastPartnerLon = lon;
+
+            // Center on Partner FIRST on initial load
+            if (!hasCenteredOnPartner && mapView != null) {
+                GeoPoint partnerPos = new GeoPoint(lat, lon);
+                mapView.getController().setZoom(17.5);
+                mapView.getController().setCenter(partnerPos);
+                hasCenteredOnPartner = true;
+            }
 
             updatePartnerMarkerOnMap();
 
@@ -180,7 +224,7 @@ public class TrackingActivity extends AppCompatActivity {
                 tvPartnerStatus.setText("Partner location received");
             }
 
-            checkPartnerOutOfBounds();
+            updateDualEdgeWidgets();
         });
     }
 
@@ -194,7 +238,7 @@ public class TrackingActivity extends AppCompatActivity {
             mapView.getOverlays().add(myMarker);
         }
         myMarker.setPosition(selfPos);
-        myMarker.setIcon(createAvatarMarkerDrawable(this, myAvatarBitmap, "Y", Color.parseColor("#007AFF")));
+        myMarker.setIcon(createAvatarMarkerDrawable(this, myAvatarBitmap, "Y", myColor));
         mapView.invalidate();
     }
 
@@ -208,40 +252,79 @@ public class TrackingActivity extends AppCompatActivity {
             mapView.getOverlays().add(partnerMarker);
         }
         partnerMarker.setPosition(partnerPos);
-        partnerMarker.setIcon(createAvatarMarkerDrawable(this, partnerAvatarBitmap, "P", Color.parseColor("#FF4081")));
+        partnerMarker.setIcon(createAvatarMarkerDrawable(this, partnerAvatarBitmap, "P", partnerColor));
         mapView.invalidate();
     }
 
-    private void checkPartnerOutOfBounds() {
-        if (lastPartnerLat == 0 && lastPartnerLon == 0 || mapView == null) {
-            cardPartnerEdgeWidget.setVisibility(View.GONE);
+    private void updateDualEdgeWidgets() {
+        updateEdgeWidgetForPoint(lastPartnerLat, lastPartnerLon, cardPartnerEdgeWidget);
+        updateEdgeWidgetForPoint(lastSelfLat, lastSelfLon, cardMyEdgeWidget);
+    }
+
+    private void updateEdgeWidgetForPoint(double lat, double lon, MaterialCardView widget) {
+        if (lat == 0 && lon == 0 || mapView == null || widget == null) {
+            if (widget != null) widget.setVisibility(View.GONE);
             return;
         }
 
-        GeoPoint partnerPos = new GeoPoint(lastPartnerLat, lastPartnerLon);
+        GeoPoint targetPos = new GeoPoint(lat, lon);
 
         try {
-            boolean isPartnerVisible = mapView.getBoundingBox().contains(partnerPos);
-            if (isPartnerVisible) {
-                cardPartnerEdgeWidget.setVisibility(View.GONE);
-            } else {
-                cardPartnerEdgeWidget.setVisibility(View.VISIBLE);
+            boolean isVisibleOnScreen = mapView.getBoundingBox().contains(targetPos);
+            if (isVisibleOnScreen) {
+                widget.setVisibility(View.GONE);
+                return;
             }
+
+            widget.setVisibility(View.VISIBLE);
+
+            Point targetPixel = new Point();
+            mapView.getProjection().toPixels(targetPos, targetPixel);
+
+            int viewWidth = mapView.getWidth();
+            int viewHeight = mapView.getHeight();
+
+            if (viewWidth <= 0 || viewHeight <= 0) return;
+
+            View cardDistanceHeader = findViewById(R.id.cardDistanceHeader);
+            View infoCard = findViewById(R.id.infoCard);
+
+            float widgetW = widget.getWidth() > 0 ? widget.getWidth() : 140f;
+            float widgetH = widget.getHeight() > 0 ? widget.getHeight() : 140f;
+
+            float topLimit = cardDistanceHeader != null ? cardDistanceHeader.getBottom() + 16f : 150f;
+            float bottomLimit = infoCard != null ? infoCard.getTop() - widgetH - 16f : viewHeight - widgetH - 150f;
+            if (bottomLimit <= topLimit) bottomLimit = topLimit + 100f;
+
+            float leftLimit = 24f;
+            float rightLimit = viewWidth - widgetW - 24f;
+            if (rightLimit <= leftLimit) rightLimit = leftLimit + 100f;
+
+            float targetY = Math.max(topLimit, Math.min((float) targetPixel.y - widgetH / 2f, bottomLimit));
+            float targetX = Math.max(leftLimit, Math.min((float) targetPixel.x - widgetW / 2f, rightLimit));
+
+            widget.setTranslationX(targetX);
+            widget.setTranslationY(targetY);
+
         } catch (Exception e) {
-            cardPartnerEdgeWidget.setVisibility(View.GONE);
+            widget.setVisibility(View.GONE);
         }
     }
 
     private void snapMapToPartner() {
-        if (lastPartnerLat == 0 && lastPartnerLon == 0) {
-            Toast.makeText(this, "Partner coordinates not received yet!", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (lastPartnerLat == 0 && lastPartnerLon == 0) return;
         GeoPoint partnerPos = new GeoPoint(lastPartnerLat, lastPartnerLon);
         mapView.getController().animateTo(partnerPos);
         mapView.getController().setZoom(17.5);
         cardPartnerEdgeWidget.setVisibility(View.GONE);
-        Toast.makeText(this, "Snapped to Partner 💖", Toast.LENGTH_SHORT).show();
+    }
+
+    private void snapMapToSelf() {
+        if (lastSelfLat == 0 && lastSelfLon == 0) return;
+        GeoPoint selfPos = new GeoPoint(lastSelfLat, lastSelfLon);
+        mapView.getController().animateTo(selfPos);
+        mapView.getController().setZoom(17.5);
+        cardMyEdgeWidget.setVisibility(View.GONE);
     }
 
     private Drawable createAvatarMarkerDrawable(Context context, Bitmap avatarBitmap, String defaultLetter, int borderColor) {
@@ -270,7 +353,6 @@ public class TrackingActivity extends AppCompatActivity {
         canvas.drawCircle(cx, cy, radius, paint);
 
         if (avatarBitmap != null) {
-            // Draw cropped avatar inside circle
             Bitmap scaledAvatar = Bitmap.createScaledBitmap(avatarBitmap, (int) (radius * 2 - 8f), (int) (radius * 2 - 8f), true);
             Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             circlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
@@ -284,7 +366,6 @@ public class TrackingActivity extends AppCompatActivity {
 
             canvas.drawBitmap(circleBitmap, cx - circleBitmap.getWidth() / 2f, cy - circleBitmap.getHeight() / 2f, null);
         } else {
-            // Draw default letter initial
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(cx, cy, radius - 4f, paint);
