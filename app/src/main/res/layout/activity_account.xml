@@ -196,7 +196,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:backgroundTint="#FF3B30"
+                android:backgroundTint="#B71C1C"
                 android:paddingHorizontal="32dp"
                 android:text="Unpair Partner"
                 android:textColor="#FFFFFF"

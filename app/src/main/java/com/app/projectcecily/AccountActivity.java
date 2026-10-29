@@ -236,6 +236,8 @@ public class AccountActivity extends AppCompatActivity {
         if (!partnerId.isEmpty()) {
             btnPairPartner.setVisibility(View.GONE);
             btnUnpairPartner.setVisibility(View.VISIBLE);
+            btnUnpairPartner.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#B71C1C")));
+            btnUnpairPartner.setTextColor(android.graphics.Color.WHITE);
         } else {
             btnPairPartner.setVisibility(View.VISIBLE);
             btnPairPartner.setText("Pair with 6-Digit Code");
