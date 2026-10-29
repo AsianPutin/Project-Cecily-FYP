@@ -64,6 +64,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
         View toolbarView = findViewById(R.id.toolbar);
         if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
+            UIUtils.handleToolbarInsets(toolbarView);
             setSupportActionBar((com.google.android.material.appbar.MaterialToolbar) toolbarView);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);

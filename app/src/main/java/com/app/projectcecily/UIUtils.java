@@ -39,6 +39,18 @@ public class UIUtils {
     }
 
     /**
+     * Adds top status bar inset padding to MaterialToolbar so clock/battery status icons never overlap the title text.
+     */
+    public static void handleToolbarInsets(View toolbar) {
+        if (toolbar == null) return;
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars());
+            v.setPadding(v.getPaddingLeft(), insets.top, v.getPaddingRight(), v.getPaddingBottom());
+            return windowInsets;
+        });
+    }
+
+    /**
      * Adds top margin to a view to keep it comfortably below the status/action bar.
      */
     public static void applyTopInsetMargin(View view) {
