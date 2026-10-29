@@ -29,8 +29,8 @@ public class SwipeActivity extends AppCompatActivity {
 
     private final String[] establishments = {"Chong Choon Cafe", "Lau Ya Keng Food Court", "Top Spot Food Court", "Sharing Downtown"};
     private final String[] categories = {"Coffee Shop", "Heritage Food Court", "Seafood Center", "Western Fusion"};
-    private final String[] addressList = {"📍 Abell Road, Kuching", "📍 Carpenter Street, Kuching", "📍 Off Jalan Bukit Mata, Kuching", "📍 Jalan Padungan, Kuching"};
-    private final String[] priceList = {"💰 $", "💰 $", "💰 $$$", "💰 $$"};
+    private final String[] addressList = {"Abell Road, Kuching", "Carpenter Street, Kuching", "Off Jalan Bukit Mata, Kuching", "Jalan Padungan, Kuching"};
+    private final String[] priceList = {"$", "$", "$$$", "$$"};
     private final String[] dishLists = {
         "• Sarawak Laksa\n• Teh C Peng Special\n• Kolo Mee",
         "• Pork Satay\n• Fish Ball Soup\n• Kueh Chap",
@@ -58,7 +58,7 @@ public class SwipeActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Swipe Food 🍔");
+            getSupportActionBar().setTitle("Swipe Food");
         }
 
         swipeCard = findViewById(R.id.swipeCard);

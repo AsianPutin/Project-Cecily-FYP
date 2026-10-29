@@ -121,6 +121,59 @@ public class RelationshipManager {
         long diffMs = System.currentTimeMillis() - anniversaryTimestamp;
         if (diffMs < 0) return "Anniversary coming up!";
         long days = diffMs / (1000L * 60 * 60 * 24);
-        return "Together for " + days + " days ❤️";
+        return "Together for " + days + " days";
+    }
+
+    public static String formatPartnerBirthdayCountdown(String partnerBirthdayStr) {
+        if (partnerBirthdayStr == null || partnerBirthdayStr.trim().isEmpty()) {
+            return "Partner's Birthday: Not set";
+        }
+
+        try {
+            String[] parts = partnerBirthdayStr.trim().split("-");
+            int month;
+            int day;
+            if (parts.length >= 3) {
+                month = Integer.parseInt(parts[1]);
+                day = Integer.parseInt(parts[2]);
+            } else if (parts.length == 2) {
+                month = Integer.parseInt(parts[0]);
+                day = Integer.parseInt(parts[1]);
+            } else {
+                return "Partner's Birthday: Not set";
+            }
+
+            java.util.Calendar today = java.util.Calendar.getInstance();
+            today.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            today.set(java.util.Calendar.MINUTE, 0);
+            today.set(java.util.Calendar.SECOND, 0);
+            today.set(java.util.Calendar.MILLISECOND, 0);
+
+            java.util.Calendar nextBday = java.util.Calendar.getInstance();
+            nextBday.set(java.util.Calendar.YEAR, today.get(java.util.Calendar.YEAR));
+            nextBday.set(java.util.Calendar.MONTH, month - 1);
+            nextBday.set(java.util.Calendar.DAY_OF_MONTH, day);
+            nextBday.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            nextBday.set(java.util.Calendar.MINUTE, 0);
+            nextBday.set(java.util.Calendar.SECOND, 0);
+            nextBday.set(java.util.Calendar.MILLISECOND, 0);
+
+            if (nextBday.before(today)) {
+                nextBday.add(java.util.Calendar.YEAR, 1);
+            }
+
+            long diffMillis = nextBday.getTimeInMillis() - today.getTimeInMillis();
+            long daysLeft = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diffMillis);
+
+            if (daysLeft == 0) {
+                return "Partner's Birthday: Today!";
+            } else if (daysLeft == 1) {
+                return "Partner's Birthday: 1 day left";
+            } else {
+                return "Partner's Birthday: " + daysLeft + " days left";
+            }
+        } catch (Exception e) {
+            return "Partner's Birthday: Not set";
+        }
     }
 }

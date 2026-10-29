@@ -77,13 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         RelationshipManager.listenFromFirebase(this, details -> {
             tvTogetherDays.setText(RelationshipManager.formatDaysTogether(details.anniversaryTimestamp));
-            StringBuilder bdaySb = new StringBuilder();
-            if (!details.yourBirthday.isEmpty()) bdaySb.append("You: ").append(details.yourBirthday);
-            if (!details.partnerBirthday.isEmpty()) {
-                if (bdaySb.length() > 0) bdaySb.append(" | ");
-                bdaySb.append("Partner: ").append(details.partnerBirthday);
-            }
-            tvBirthdaysSummary.setText(bdaySb.length() > 0 ? "Birthdays: " + bdaySb.toString() : "Birthdays: Not set");
+            tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(details.partnerBirthday));
         });
 
         setupDashboardClicks();
@@ -259,14 +253,14 @@ public class MainActivity extends AppCompatActivity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("Project Notification")
-                .setContentText("👉 Your partner just poked you!")
+                .setContentText("Your partner poked you!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             NotificationManagerCompat.from(this).notify((int)System.currentTimeMillis(), builder.build());
         }
-        Toast.makeText(this, "👉 Your partner poked you!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Your partner poked you!", Toast.LENGTH_SHORT).show();
     }
 
     private void checkLocationPermissions() {

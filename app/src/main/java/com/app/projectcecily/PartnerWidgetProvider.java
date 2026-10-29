@@ -59,7 +59,7 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
         if (ACTION_POKE.equals(intent.getAction())) {
-            Toast.makeText(context, "👉 You poked your Partner!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "You poked your Partner!", Toast.LENGTH_SHORT).show();
             
             // Trigger a widget refresh on poke
             AppWidgetManager mgr = AppWidgetManager.getInstance(context);

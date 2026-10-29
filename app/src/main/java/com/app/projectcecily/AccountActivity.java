@@ -86,7 +86,7 @@ public class AccountActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Account Settings 👤");
+            getSupportActionBar().setTitle("Account Settings");
         }
 
         ivProfilePic = findViewById(R.id.ivProfilePic);
@@ -286,7 +286,7 @@ public class AccountActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String name = snapshot.child("name").getValue(String.class);
                 String nameStr = (name != null) ? name : "Partner";
-                tvSyncedPartner.setText("Synced with " + nameStr + " ❤️");
+                tvSyncedPartner.setText("Synced with " + nameStr);
                 tvPairingStatus.setText("Paired with " + nameStr);
             }
             @Override
@@ -323,7 +323,7 @@ public class AccountActivity extends AppCompatActivity {
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
-                .setTitle("Pairing Settings 🤝")
+                .setTitle("Pairing Settings")
                 .setNegativeButton("Close", null)
                 .create();
 
@@ -335,7 +335,7 @@ public class AccountActivity extends AppCompatActivity {
                 public void onSuccess(String codeOrResult) {
                     if (codeOrResult.startsWith("PAIRED:")) {
                         String partnerName = codeOrResult.replace("PAIRED:", "");
-                        Toast.makeText(AccountActivity.this, "Paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AccountActivity.this, "Paired with " + partnerName + "!", Toast.LENGTH_LONG).show();
                         if (dialog.isShowing()) dialog.dismiss();
                         updatePairingUI();
                         showRelationshipDetailsDialog();
@@ -361,7 +361,7 @@ public class AccountActivity extends AppCompatActivity {
             UserManager.connectWithCode(this, code, new UserManager.PairingCallback() {
                 @Override
                 public void onSuccess(String partnerName) {
-                    Toast.makeText(AccountActivity.this, "Successfully paired with " + partnerName + "! ❤️", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AccountActivity.this, "Successfully paired with " + partnerName + "!", Toast.LENGTH_LONG).show();
                     if (dialog.isShowing()) dialog.dismiss();
                     updatePairingUI();
                     showRelationshipDetailsDialog();
@@ -487,7 +487,7 @@ public class AccountActivity extends AppCompatActivity {
             else newDetails.partnerGender = "Male (He/Him)";
 
             RelationshipManager.syncWithFirebase(this, newDetails);
-            Toast.makeText(this, "Relationship details saved! ❤️", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Relationship details saved!", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
 

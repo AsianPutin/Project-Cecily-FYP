@@ -108,7 +108,7 @@ public class BackgroundService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "poke_channel")
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("Project Notification")
-                .setContentText("👉 Your partner just poked you!")
+                .setContentText("Your partner poked you!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 

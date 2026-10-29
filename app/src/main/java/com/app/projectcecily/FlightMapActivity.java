@@ -56,7 +56,7 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Live Flight Tracking ✈️");
+            getSupportActionBar().setTitle("Live Flight Tracking");
         }
 
         tvFlightNum = findViewById(R.id.tvMapFlightNum);

@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Synced with Partner ❤️"
+            android:text="Synced with Partner"
             android:textColor="#FF4081"
             android:textSize="14sp" />
 
@@ -85,7 +85,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Partner Pairing 🤝"
+                    android:text="Partner Pairing"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />

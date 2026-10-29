@@ -73,7 +73,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Flight Tracker ✈️");
+            getSupportActionBar().setTitle("Flight Tracker");
         }
 
         RecyclerView rv = findViewById(R.id.rvFlights);

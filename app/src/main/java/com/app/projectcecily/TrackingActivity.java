@@ -80,8 +80,18 @@ public class TrackingActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("LDR Tracker 📍");
+            getSupportActionBar().setTitle("LDR Tracker");
         }
+
+        View cardDistanceHeader = findViewById(R.id.cardDistanceHeader);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(cardDistanceHeader, (v, insets) -> {
+            int topInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+            android.view.ViewGroup.MarginLayoutParams params = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            int marginPx = (int) (16 * getResources().getDisplayMetrics().density);
+            params.topMargin = topInset + marginPx;
+            v.setLayoutParams(params);
+            return insets;
+        });
 
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
@@ -234,7 +244,7 @@ public class TrackingActivity extends AppCompatActivity {
 
         if (myMarker == null) {
             myMarker = new Marker(mapView);
-            myMarker.setTitle("You 📍");
+            myMarker.setTitle("You");
             myMarker.setInfoWindow(null);
             mapView.getOverlays().add(myMarker);
         }
@@ -250,7 +260,7 @@ public class TrackingActivity extends AppCompatActivity {
 
         if (partnerMarker == null) {
             partnerMarker = new Marker(mapView);
-            partnerMarker.setTitle("Partner 💖");
+            partnerMarker.setTitle("Partner");
             partnerMarker.setInfoWindow(null);
             mapView.getOverlays().add(partnerMarker);
         }
@@ -420,7 +430,7 @@ public class TrackingActivity extends AppCompatActivity {
                 .getReference("pokes")
                 .child(partnerId)
                 .setValue(System.currentTimeMillis());
-        Toast.makeText(this, "Poke sent! 👉", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Poke sent!", Toast.LENGTH_SHORT).show();
     }
 
     @Override

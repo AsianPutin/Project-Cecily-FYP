@@ -64,7 +64,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Shared Wishlist 🎁");
+            getSupportActionBar().setTitle("Shared Wishlist");
         }
 
         RecyclerView         rv = findViewById(R.id.rvWishlist);
@@ -218,7 +218,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
     @Override
     public void onReceived(WishlistItem item) {
         dbRef.child(item.id).child("isReceived").setValue(true);
-        Toast.makeText(this, "Gift received! ❤️", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Gift received!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
