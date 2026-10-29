@@ -98,7 +98,6 @@ public class AccountActivity extends AppCompatActivity {
 
         UIUtils.applyBottomPadding(findViewById(R.id.account_scroll));
 
-        setupThemeToggle();
         setupUnitToggle();
         loadSavedProfilePicture();
         listenForProfileUpdates();
@@ -108,6 +107,7 @@ public class AccountActivity extends AppCompatActivity {
         ivProfilePic.setOnClickListener(profilePicClickListener);
         findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
+        findViewById(R.id.btnAppearance).setOnClickListener(v -> startActivity(new Intent(this, AppearanceActivity.class)));
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
         findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
@@ -547,23 +547,6 @@ public class AccountActivity extends AppCompatActivity {
         });
     }
 
-    private void setupThemeToggle() {
-        MaterialButtonToggleGroup themeGroup = findViewById(R.id.themeToggleGroup);
-        int currentMode = getSharedPreferences("prefs", MODE_PRIVATE).getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        if (currentMode == AppCompatDelegate.MODE_NIGHT_NO) themeGroup.check(R.id.btnThemeLight);
-        else if (currentMode == AppCompatDelegate.MODE_NIGHT_YES) themeGroup.check(R.id.btnThemeDark);
-        else themeGroup.check(R.id.btnThemeAuto);
-
-        themeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                int mode = (checkedId == R.id.btnThemeLight) ? AppCompatDelegate.MODE_NIGHT_NO : 
-                          (checkedId == R.id.btnThemeDark) ? AppCompatDelegate.MODE_NIGHT_YES : 
-                          AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-                getSharedPreferences("prefs", MODE_PRIVATE).edit().putInt("theme_mode", mode).apply();
-                AppCompatDelegate.setDefaultNightMode(mode);
-            }
-        });
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

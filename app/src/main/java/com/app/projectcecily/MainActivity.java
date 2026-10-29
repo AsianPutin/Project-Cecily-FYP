@@ -117,6 +117,34 @@ public class MainActivity extends AppCompatActivity {
         androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork("flight_sync", androidx.work.ExistingPeriodicWorkPolicy.KEEP, request);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateDynamicAccent();
+    }
+
+    private void updateDynamicAccent() {
+        BottomNavigationView navView = findViewById(R.id.bottom_navigation);
+        if (navView != null) {
+            int accentColor = ThemeUtils.getAccentColor(this);
+            int unselectedColor = android.graphics.Color.parseColor("#888888");
+
+            int[][] states = new int[][]{
+                new int[]{android.R.attr.state_checked},
+                new int[]{-android.R.attr.state_checked}
+            };
+
+            int[] colors = new int[]{
+                accentColor,
+                unselectedColor
+            };
+
+            android.content.res.ColorStateList colorList = new android.content.res.ColorStateList(states, colors);
+            navView.setItemIconTintList(colorList);
+            navView.setItemTextColor(colorList);
+        }
+    }
+
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.bottom_navigation);
         navView.setOnItemSelectedListener(item -> {

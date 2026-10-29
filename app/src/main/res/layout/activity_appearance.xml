@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background">
+
+    <ScrollView
+        android:id="@+id/appearance_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Theme Mode Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Theme Mode"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Choose how the app looks on your device"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/themeToggleGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        app:singleSelection="true">
+
+                        <Button
+                            android:id="@+id/btnThemeAuto"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="System" />
+
+                        <Button
+                            android:id="@+id/btnThemeLight"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Light" />
+
+                        <Button
+                            android:id="@+id/btnThemeDark"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Dark" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Accent Color Palette Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Accent Color"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Select an accent color scheme for buttons and highlights"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <GridLayout
+                        android:id="@+id/colorGrid"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:columnCount="4"
+                        android:useDefaultMargins="true">
+
+                        <!-- Blue -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorBlue"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#007AFF"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkBlue"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Pink -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorPink"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#FF4081"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkPink"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Green -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorGreen"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#25D366"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkGreen"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Orange -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorOrange"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#FF9500"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkOrange"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Purple -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorPurple"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#9C27B0"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkPurple"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Red -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorRed"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#E91E63"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkRed"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Teal -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorTeal"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#009688"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkTeal"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Amber Gold -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/colorGold"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="#FFC107"
+                            app:cardCornerRadius="30dp"
+                            app:strokeColor="#FFFFFF"
+                            app:strokeWidth="2dp">
+                            <ImageView
+                                android:id="@+id/checkGold"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/checkbox_on_background"
+                                android:visibility="gone"
+                                app:tint="#FFFFFF" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </GridLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

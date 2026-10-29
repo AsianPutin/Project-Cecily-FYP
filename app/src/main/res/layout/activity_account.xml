@@ -147,60 +147,21 @@
                 android:textColor="@color/text_primary" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <!-- Theme Selection Label -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="App Theme:"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <!-- Theme Toggle Group -->
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/themeToggleGroup"
+        <!-- Settings Options -->
+        <Button
+            android:id="@+id/btnAppearance"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:singleSelection="true"
-            app:selectionRequired="true">
+            android:layout_marginTop="20dp"
+            android:text="Appearance &amp; Theme" />
 
-            <Button
-                android:id="@+id/btnThemeLight"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Light"
-                android:textColor="@color/text_primary" />
-
-            <Button
-                android:id="@+id/btnThemeDark"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Dark"
-                android:textColor="@color/text_primary" />
-
-            <Button
-                android:id="@+id/btnThemeAuto"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Auto"
-                android:textColor="@color/text_primary" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
-
-        <!-- Settings Options -->
         <Button
             android:id="@+id/btnEditProfile"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="Change Profile Info" />
 
         <Button

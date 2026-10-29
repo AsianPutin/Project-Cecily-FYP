@@ -59,6 +59,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".AppearanceActivity"
+            android:exported="false"
+            android:parentActivityName=".AccountActivity" />
+
+        <activity
             android:name=".WishlistActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
