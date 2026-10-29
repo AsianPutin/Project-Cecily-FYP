@@ -104,7 +104,6 @@ public class AccountActivity extends AppCompatActivity {
         UIUtils.applyBottomPadding(findViewById(R.id.account_scroll));
         UIUtils.applyTopInsetPadding(findViewById(R.id.account_scroll));
 
-        setupUnitToggle();
         loadSavedProfilePicture();
         listenForProfileUpdates();
         updatePairingUI();
@@ -537,23 +536,6 @@ public class AccountActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void setupUnitToggle() {
-        MaterialButtonToggleGroup unitGroup = findViewById(R.id.unitToggleGroup);
-        String currentUnit = UnitUtils.getUnitSystem(this);
-        if (UnitUtils.UNIT_IMPERIAL.equals(currentUnit)) {
-            unitGroup.check(R.id.btnUnitImperial);
-        } else {
-            unitGroup.check(R.id.btnUnitMetric);
-        }
-
-        unitGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                String unit = (checkedId == R.id.btnUnitImperial) ? UnitUtils.UNIT_IMPERIAL : UnitUtils.UNIT_METRIC;
-                UnitUtils.setUnitSystem(this, unit);
-                Toast.makeText(this, "Units changed to " + (unit.equals(UnitUtils.UNIT_IMPERIAL) ? "Imperial (mi/ft)" : "Metric (km/m)"), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
 
     @Override
