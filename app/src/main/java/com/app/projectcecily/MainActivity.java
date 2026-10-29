@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateDynamicAccent();
+        ThemeUtils.applyAccentToActivity(this);
     }
 
     private void updateDynamicAccent() {

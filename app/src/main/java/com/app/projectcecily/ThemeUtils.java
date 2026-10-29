@@ -1,8 +1,16 @@
 package com.app.projectcecily;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatDelegate;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ThemeUtils {
 
@@ -51,5 +59,57 @@ public class ThemeUtils {
                 .edit()
                 .putString(KEY_ACCENT_COLOR, hexColor)
                 .apply();
+    }
+
+    public static int getContrastingTextColor(int color) {
+        double luminance = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255.0;
+        return luminance > 0.5 ? Color.BLACK : Color.WHITE;
+    }
+
+    public static void applyAccentToActivity(Activity activity) {
+        if (activity == null) return;
+        int accentColor = getAccentColor(activity);
+        int textColorOnAccent = getContrastingTextColor(accentColor);
+
+        View rootView = activity.findViewById(android.R.id.content);
+        if (rootView instanceof ViewGroup) {
+            applyAccentToViewGroup((ViewGroup) rootView, accentColor, textColorOnAccent);
+        }
+    }
+
+    private static void applyAccentToViewGroup(ViewGroup group, int accentColor, int textColorOnAccent) {
+        if (group == null) return;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View v = group.getChildAt(i);
+            if (v instanceof FloatingActionButton) {
+                FloatingActionButton fab = (FloatingActionButton) v;
+                fab.setBackgroundTintList(ColorStateList.valueOf(accentColor));
+                fab.setImageTintList(ColorStateList.valueOf(textColorOnAccent));
+            } else if (v instanceof MaterialButton) {
+                MaterialButton mb = (MaterialButton) v;
+                // Exclude toggle group child buttons from full background override
+                if (mb.getParent() instanceof com.google.android.material.button.MaterialButtonToggleGroup) {
+                    continue;
+                }
+                mb.setBackgroundTintList(ColorStateList.valueOf(accentColor));
+                mb.setTextColor(textColorOnAccent);
+            } else if (v instanceof MaterialCardView) {
+                MaterialCardView card = (MaterialCardView) v;
+                if (card.getStrokeWidth() > 0) {
+                    card.setStrokeColor(accentColor);
+                }
+                applyAccentToViewGroup(card, accentColor, textColorOnAccent);
+            } else if (v instanceof TextView) {
+                TextView tv = (TextView) v;
+                int id = tv.getId();
+                if (id == R.id.tvTogetherDays || 
+                    id == R.id.tvLiveDistance || 
+                    id == R.id.tvLiveDistanceText) {
+                    tv.setTextColor(accentColor);
+                }
+            } else if (v instanceof ViewGroup) {
+                applyAccentToViewGroup((ViewGroup) v, accentColor, textColorOnAccent);
+            }
+        }
     }
 }

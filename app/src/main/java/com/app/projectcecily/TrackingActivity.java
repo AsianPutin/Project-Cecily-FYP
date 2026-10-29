@@ -437,6 +437,7 @@ public class TrackingActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (mapView != null) mapView.onResume();
+        ThemeUtils.applyAccentToActivity(this);
     }
 
     @Override

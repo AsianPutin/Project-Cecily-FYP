@@ -233,6 +233,12 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeUtils.applyAccentToActivity(this);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) { finish(); return true; }
         return super.onOptionsItemSelected(item);

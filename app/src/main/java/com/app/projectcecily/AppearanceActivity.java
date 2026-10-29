@@ -76,9 +76,16 @@ public class AppearanceActivity extends AppCompatActivity {
         findViewById(R.id.colorGold).setOnClickListener(v -> selectAccent("#FFC107"));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeUtils.applyAccentToActivity(this);
+    }
+
     private void selectAccent(String hexColor) {
         ThemeUtils.saveAccentColor(this, hexColor);
         updateSelectedAccentUI(hexColor);
+        ThemeUtils.applyAccentToActivity(this);
         Toast.makeText(this, "Accent color updated!", Toast.LENGTH_SHORT).show();
     }
 
