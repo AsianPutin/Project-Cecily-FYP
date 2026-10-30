@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date &amp; Outing Preferences"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Select topics you and your partner love to personalize swipe cards."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <!-- Games Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Co-Op &amp; Online Games"
+            android:textColor="@color/nav_selected"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkCoOpGames"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Co-Op Adventures (It Takes Two, Overcooked)" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkCasualGames"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Casual &amp; Sandbox (Stardew Valley, Minecraft, Roblox)" />
+
+        <!-- Movies Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Movie &amp; Show Watch Parties"
+            android:textColor="@color/nav_selected"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkAnimeMovies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Anime &amp; Ghibli Movies" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkHorrorMovies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Spooky Horror Movies" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkRomanceMovies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Romance &amp; K-Dramas" />
+
+        <!-- Food Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Same-City Food &amp; Outings"
+            android:textColor="@color/nav_selected"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkCafes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Cozy Cafes &amp; Desserts" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkDining"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Dining &amp; Night Markets" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkOutdoorParks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Scenic Parks &amp; Outdoor Walks" />
+
+    </LinearLayout>
+</ScrollView>
