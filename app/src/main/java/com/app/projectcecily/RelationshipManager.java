@@ -128,7 +128,7 @@ public class RelationshipManager {
         String hex = (partnerHexColor != null && !partnerHexColor.trim().isEmpty()) ? partnerHexColor.trim() : "#FF4081";
 
         if (partnerBirthdayStr == null || partnerBirthdayStr.trim().isEmpty()) {
-            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+            String html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: Not set";
             return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         }
 
@@ -143,7 +143,7 @@ public class RelationshipManager {
                 month = Integer.parseInt(parts[0]);
                 day = Integer.parseInt(parts[1]);
             } else {
-                String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+                String html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: Not set";
                 return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
             }
 
@@ -169,15 +169,17 @@ public class RelationshipManager {
             long diffMillis = nextBday.getTimeInMillis() - today.getTimeInMillis();
             long daysLeft = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diffMillis);
 
-            String daysText;
-            if (daysLeft == 0) daysText = "Today!";
-            else if (daysLeft == 1) daysText = "1 day left";
-            else daysText = daysLeft + " days left";
-
-            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: <font color='" + hex + "'><b>" + daysText + "</b></font>";
+            String html;
+            if (daysLeft == 0) {
+                html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: <font color='" + hex + "'><b>Today!</b></font>";
+            } else if (daysLeft == 1) {
+                html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: <font color='" + hex + "'><b>1 day</b></font> left";
+            } else {
+                html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: <font color='" + hex + "'><b>" + daysLeft + " days</b></font> left";
+            }
             return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         } catch (Exception e) {
-            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+            String html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Birthday: Not set";
             return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         }
     }
@@ -204,7 +206,7 @@ public class RelationshipManager {
             codeSdf.setTimeZone(tz);
             String codeStr = codeSdf.format(new java.util.Date());
 
-            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Time: <font color='" + hex + "'><b>" + timeStr + "</b></font> (" + codeStr + ")";
+            String html = "<font color='" + hex + "'><b>" + name + "'s</b></font> Time: <font color='" + hex + "'><b>" + timeStr + " (" + codeStr + ")</b></font>";
             return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         } catch (Exception e) {
             return "";
