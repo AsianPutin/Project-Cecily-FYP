@@ -60,7 +60,9 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         setContentView(R.layout.activity_wishlist);
 
         userId = UserManager.getUserId(this);
-        dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("wishlist");
+        String partnerId = UserManager.getPartnerId(this);
+        String pairKey = partnerId.isEmpty() ? userId : (userId.compareTo(partnerId) < 0 ? userId + "_" + partnerId : partnerId + "_" + userId);
+        dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("wishlists").child(pairKey);
 
         View appBarView = findViewById(R.id.appBarLayout);
         UIUtils.applyTopInsetToAppBar(appBarView);

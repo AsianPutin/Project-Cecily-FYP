@@ -137,6 +137,9 @@ public class SignUpActivity extends AppCompatActivity {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_profile_picture_options, null);
         sheet.setContentView(view);
 
+        View optionViewPic = view.findViewById(R.id.optionViewPicture);
+        if (optionViewPic != null) optionViewPic.setVisibility(View.GONE);
+
         view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
             sheet.dismiss();
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

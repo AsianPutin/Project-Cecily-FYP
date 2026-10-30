@@ -146,8 +146,9 @@ public class ThemeUtils {
                 fab.setBackgroundTintList(ColorStateList.valueOf(accentColor));
                 fab.setImageTintList(ColorStateList.valueOf(textColorOnAccent));
             } else if (v instanceof MaterialButton) {
-                if (v.getId() == R.id.btnUnpairPartner) {
-                    continue; // Keep Unpair Partner as permanent dark red!
+                int id = v.getId();
+                if (id == R.id.btnUnpairPartner || id == R.id.btnLogout) {
+                    continue; // Keep Unpair Partner and Log Out as permanent bright red (#FF3B30)!
                 }
                 MaterialButton mb = (MaterialButton) v;
                 if (mb.getParent() instanceof com.google.android.material.button.MaterialButtonToggleGroup) {

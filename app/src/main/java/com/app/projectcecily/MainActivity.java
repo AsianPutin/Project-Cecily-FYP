@@ -83,8 +83,14 @@ public class MainActivity extends AppCompatActivity {
         tvBirthdaysSummary = findViewById(R.id.tvBirthdaysSummary);
 
         RelationshipManager.listenFromFirebase(this, details -> {
-            tvTogetherDays.setText(RelationshipManager.formatDaysTogether(details.anniversaryTimestamp));
-            tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(details.partnerBirthday));
+            String pId = UserManager.getPartnerId(this);
+            if (pId == null || pId.isEmpty()) {
+                tvTogetherDays.setText("Not paired yet");
+                tvBirthdaysSummary.setText("Pair in Account Settings");
+            } else {
+                tvTogetherDays.setText(RelationshipManager.formatDaysTogether(details.anniversaryTimestamp));
+                tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(details.partnerBirthday));
+            }
         });
 
         setupDashboardClicks();
@@ -185,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void listenForFlights() {
         FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("flights").orderByChild("depTimeMillis").limitToFirst(1)
+                .getReference("flight_history").child(userId).orderByChild("depTimeMillis").limitToFirst(1)
                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -197,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else {
-                    tvFlightSummary.setText("No flights added");
+                    tvFlightSummary.setText("No upcoming flights");
                 }
             }
             @Override
@@ -205,15 +211,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void openPlaceholder(String title) {
-        Intent intent = new Intent(this, PlaceholderActivity.class);
-        intent.putExtra("title", title);
-        startActivity(intent);
-    }
-
     private void listenForWishlistCount() {
+        String pId = UserManager.getPartnerId(this);
+        String pairKey = (pId == null || pId.isEmpty()) ? userId : (userId.compareTo(pId) < 0 ? userId + "_" + pId : pId + "_" + userId);
         FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("wishlist").addValueEventListener(new ValueEventListener() {
+                .getReference("wishlists").child(pairKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 long count = snapshot.getChildrenCount();

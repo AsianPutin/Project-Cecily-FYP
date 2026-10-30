@@ -56,7 +56,7 @@
                         android:layout_height="110dp"
                         android:layout_centerInParent="true"
                         android:scaleType="centerCrop"
-                        android:src="@mipmap/ic_launcher_round"
+                        android:src="@drawable/ic_blank_user"
                         app:shapeAppearanceOverlay="@style/CircleImage" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton

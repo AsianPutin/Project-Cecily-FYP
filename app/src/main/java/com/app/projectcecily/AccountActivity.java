@@ -252,7 +252,7 @@ public class AccountActivity extends AppCompatActivity {
         if (!partnerId.isEmpty()) {
             btnPairPartner.setVisibility(View.GONE);
             btnUnpairPartner.setVisibility(View.VISIBLE);
-            btnUnpairPartner.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#B71C1C")));
+            btnUnpairPartner.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF3B30")));
             btnUnpairPartner.setTextColor(android.graphics.Color.WHITE);
         } else {
             btnPairPartner.setVisibility(View.VISIBLE);
@@ -260,6 +260,12 @@ public class AccountActivity extends AppCompatActivity {
             btnUnpairPartner.setVisibility(View.GONE);
             tvPairingStatus.setText("Not paired with anyone");
             tvSyncedPartner.setText("Not Synced");
+        }
+
+        View btnLogout = findViewById(R.id.btnLogout);
+        if (btnLogout instanceof Button) {
+            ((Button) btnLogout).setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF3B30")));
+            ((Button) btnLogout).setTextColor(android.graphics.Color.WHITE);
         }
     }
 
