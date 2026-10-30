@@ -1,9 +1,11 @@
 package com.app.projectcecily;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -47,6 +49,9 @@ public class SwipeActivity extends AppCompatActivity {
     private String myCityStr = "Unknown City";
     private String partnerCityStr = "Unknown City";
 
+    private float initialX, initialY;
+    private static final float SWIPE_THRESHOLD = 220f;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,20 +91,83 @@ public class SwipeActivity extends AppCompatActivity {
         btnEditDatePreferences = findViewById(R.id.btnEditDatePreferences);
         btnResetDeck = findViewById(R.id.btnResetDeck);
 
-        btnPass.setOnClickListener(v -> handleSwipe(false));
-        btnLike.setOnClickListener(v -> handleSwipe(true));
+        btnPass.setOnClickListener(v -> animateCardAndSwipe(false));
+        btnLike.setOnClickListener(v -> animateCardAndSwipe(true));
         btnResetDeck.setOnClickListener(v -> resetDeck());
         btnViewMatches.setOnClickListener(v -> showMatchesDialog());
         btnEditDatePreferences.setOnClickListener(v -> showPreferencesDialog());
 
+        setupSwipeTouchListener();
         resolveCityAndStart();
         listenForRealTimeMatches();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupSwipeTouchListener() {
+        if (cardSwipeContainer == null) return;
+
+        cardSwipeContainer.setOnTouchListener((v, event) -> {
+            if (currentCardIndex >= currentDeck.size()) return false;
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    initialX = event.getRawX();
+                    initialY = event.getRawY();
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    float deltaX = event.getRawX() - initialX;
+                    float deltaY = event.getRawY() - initialY;
+                    cardSwipeContainer.setTranslationX(deltaX);
+                    cardSwipeContainer.setTranslationY(deltaY * 0.3f);
+                    cardSwipeContainer.setRotation(deltaX / 25f);
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                    float totalDeltaX = event.getRawX() - initialX;
+                    if (totalDeltaX > SWIPE_THRESHOLD) {
+                        animateCardAndSwipe(true);
+                    } else if (totalDeltaX < -SWIPE_THRESHOLD) {
+                        animateCardAndSwipe(false);
+                    } else {
+                        cardSwipeContainer.animate()
+                                .translationX(0f)
+                                .translationY(0f)
+                                .rotation(0f)
+                                .setDuration(200)
+                                .start();
+                    }
+                    return true;
+            }
+            return false;
+        });
+    }
+
+    private void animateCardAndSwipe(boolean isLike) {
+        if (cardSwipeContainer == null) {
+            handleSwipe(isLike);
+            return;
+        }
+
+        float targetX = isLike ? 1200f : -1200f;
+        float targetRotation = isLike ? 30f : -30f;
+
+        cardSwipeContainer.animate()
+                .translationX(targetX)
+                .rotation(targetRotation)
+                .setDuration(220)
+                .withEndAction(() -> {
+                    cardSwipeContainer.setTranslationX(0f);
+                    cardSwipeContainer.setTranslationY(0f);
+                    cardSwipeContainer.setRotation(0f);
+                    handleSwipe(isLike);
+                })
+                .start();
     }
 
     private void resolveCityAndStart() {
         tvSwipeModeHeader.setText("Detecting partner proximity...");
 
-        // Fetch location of self and partner to resolve city
         dbRef.child("locations").child(userId).get().addOnSuccessListener(selfSnap -> {
             Double selfLat = selfSnap.child("latitude").getValue(Double.class);
             Double selfLon = selfSnap.child("longitude").getValue(Double.class);
@@ -191,7 +259,6 @@ public class SwipeActivity extends AppCompatActivity {
         DateCard card = currentDeck.get(currentCardIndex);
 
         if (isLike) {
-            // Save like to Firebase
             dbRef.child("swipes").child(pairKey).child(card.id).child(userId).setValue(true);
             checkIfMutualMatch(card);
         }
@@ -206,7 +273,6 @@ public class SwipeActivity extends AppCompatActivity {
         dbRef.child("swipes").child(pairKey).child(card.id).child(partnerId).get().addOnSuccessListener(snapshot -> {
             Boolean partnerLiked = snapshot.getValue(Boolean.class);
             if (Boolean.TRUE.equals(partnerLiked)) {
-                // Save match to mutual matches node
                 dbRef.child("matches").child(pairKey).child(card.id).setValue(card);
                 showMatchCelebrationDialog(card);
             }
@@ -219,7 +285,6 @@ public class SwipeActivity extends AppCompatActivity {
         dbRef.child("matches").child(pairKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Keep matches updated in background
             }
 
             @Override
@@ -236,8 +301,6 @@ public class SwipeActivity extends AppCompatActivity {
     }
 
     private void showMatchesDialog() {
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_view_full_image, null);
-        // Clean dialog view for matches list
         ListView lvMatches = new ListView(this);
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
