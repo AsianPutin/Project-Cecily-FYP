@@ -62,8 +62,14 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String pId = snapshot.getValue(String.class);
                 if (pId != null && !pId.isEmpty()) {
+                    boolean wasEmpty = partnerId == null || partnerId.isEmpty();
                     partnerId = pId;
                     UserManager.setPartnerId(MainActivity.this, pId);
+                    if (wasEmpty) {
+                        startTracking();
+                        listenForWishlistCount();
+                        listenForFlights();
+                    }
                 }
             }
             @Override

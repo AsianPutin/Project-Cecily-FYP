@@ -104,6 +104,19 @@ public class ThemeUtils {
         int accentColor = getAccentColor(activity);
         int textColorOnAccent = getContrastingTextColor(accentColor);
 
+        // Ensure user's accent color is synced to Firebase for partner's map view
+        String userId = UserManager.getUserId(activity);
+        String accentHex = getAccentColorHex(activity);
+        if (userId != null && !userId.isEmpty()) {
+            try {
+                FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                        .getReference("profiles")
+                        .child(userId)
+                        .child("accentColor")
+                        .setValue(accentHex);
+            } catch (Exception ignored) {}
+        }
+
         boolean isNightMode = (activity.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
         int actionBarBgColor = getActionBarColor(accentColor, isNightMode);
         int actionBarTextColor = getContrastingTextColor(actionBarBgColor);

@@ -157,6 +157,47 @@ public class TrackingActivity extends AppCompatActivity {
     }
 
 
+    private void listenForPartnerDetails(DatabaseReference db, String currentPartnerId) {
+        if (currentPartnerId == null || currentPartnerId.isEmpty()) return;
+
+        db.child("profiles").child(currentPartnerId).child("photoBase64").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String base64 = snapshot.getValue(String.class);
+                if (base64 != null) {
+                    partnerAvatarBitmap = decodeBase64Bitmap(base64);
+                    if (partnerAvatarBitmap != null) {
+                        ivPartnerEdgeAvatar.setImageBitmap(partnerAvatarBitmap);
+                        updatePartnerMarkerOnMap();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+
+        db.child("profiles").child(currentPartnerId).child("accentColor").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String hex = snapshot.getValue(String.class);
+                if (hex != null && !hex.isEmpty()) {
+                    try {
+                        partnerColor = Color.parseColor(hex);
+                        if (cardPartnerEdgeWidget != null) {
+                            cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
+                            cardPartnerEdgeWidget.setStrokeColor(partnerColor);
+                        }
+                        updatePartnerMarkerOnMap();
+                    } catch (Exception ignored) {}
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
     private void loadAvatarsAndStartTracking() {
         // Load self avatar
         String selfBase64 = getSharedPreferences("prefs", MODE_PRIVATE).getString("profile_pic_base64", null);
@@ -167,45 +208,24 @@ public class TrackingActivity extends AppCompatActivity {
             }
         }
 
-        // Listen for partner avatar & accent color
+        DatabaseReference db = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
+
+        db.child("profiles").child(userId).child("partnerId").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String pId = snapshot.getValue(String.class);
+                if (pId != null && !pId.isEmpty()) {
+                    partnerId = pId;
+                    listenForPartnerDetails(db, partnerId);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+
         if (!partnerId.isEmpty()) {
-            DatabaseReference db = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
-            db.child("profiles").child(partnerId).child("photoBase64").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    String base64 = snapshot.getValue(String.class);
-                    if (base64 != null) {
-                        partnerAvatarBitmap = decodeBase64Bitmap(base64);
-                        if (partnerAvatarBitmap != null) {
-                            ivPartnerEdgeAvatar.setImageBitmap(partnerAvatarBitmap);
-                            updatePartnerMarkerOnMap();
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {}
-            });
-
-            db.child("profiles").child(partnerId).child("accentColor").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    String hex = snapshot.getValue(String.class);
-                    if (hex != null && !hex.isEmpty()) {
-                        try {
-                            partnerColor = Color.parseColor(hex);
-                            if (cardPartnerEdgeWidget != null) {
-                                cardPartnerEdgeWidget.setCardBackgroundColor(partnerColor);
-                                cardPartnerEdgeWidget.setStrokeColor(partnerColor);
-                            }
-                            updatePartnerMarkerOnMap();
-                        } catch (Exception ignored) {}
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {}
-            });
+            listenForPartnerDetails(db, partnerId);
         }
 
         tracker = new LocationTracker(this, userId, partnerId);
