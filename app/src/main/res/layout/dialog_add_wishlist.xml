@@ -11,119 +11,170 @@
         android:padding="24dp">
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Item Name">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etItemName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords" />
+                android:inputType="textCapWords"
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="Item Link (Optional)">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etItemLink"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textUri" />
+                android:inputType="textUri"
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Dedicated Hero Image Box -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Media Source"
+            android:text="★ Hero Image (Primary Showcase)"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/toggleMediaSource"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHeroBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="140dp"
             android:layout_marginTop="8dp"
-            app:checkedButton="@id/btnSourceUrl"
-            app:singleSelection="true">
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="#FFC107"
+            app:strokeWidth="2dp">
 
-            <Button
-                android:id="@+id/btnSourceUrl"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Web URL" />
-
-            <Button
-                android:id="@+id/btnSourceGallery"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Gallery" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
-
-        <!-- URL Input Section -->
-        <LinearLayout
-            android:id="@+id/layoutUrlInputs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="visible">
-
-            <com.google.android.material.textfield.TextInputLayout
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:hint="Image URL 1">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etImg1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-            <!-- (Omitting others for brevity in dialog, usually 1 is enough for quick URL, but user asked for 3) -->
-        </LinearLayout>
+                android:layout_height="match_parent">
 
-        <!-- Gallery Section -->
+                <ImageView
+                    android:id="@+id/ivHeroBoxPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_blank_user" />
+
+                <TextView
+                    android:id="@+id/tvHeroBoxLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="10dp"
+                    android:background="#99000000"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="Hero Image"
+                    android:textColor="#FFC107"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Gallery Slots Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Select Photos (Up to 3 from Gallery)"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Tap a slot to pick image. Tap any photo to set as Hero Image."
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
+
         <LinearLayout
-            android:id="@+id/layoutGalleryInputs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/ivSelect1"
+            <!-- Slot 1 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSlot1"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:background="#DDDDDD"
-                android:scaleType="centerInside"
-                android:src="@android:drawable/ic_menu_camera" />
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="#555555"
+                app:strokeWidth="1dp">
 
-            <ImageView
-                android:id="@+id/ivSelect2"
+                <ImageView
+                    android:id="@+id/ivSlot1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_camera" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Slot 2 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSlot2"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
+                android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="2dp"
-                android:background="#DDDDDD"
-                android:scaleType="centerInside"
-                android:src="@android:drawable/ic_menu_camera" />
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="#555555"
+                app:strokeWidth="1dp">
 
-            <ImageView
-                android:id="@+id/ivSelect3"
+                <ImageView
+                    android:id="@+id/ivSlot2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_camera" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Slot 3 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSlot3"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="#DDDDDD"
-                android:scaleType="centerInside"
-                android:src="@android:drawable/ic_menu_camera" />
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="#555555"
+                app:strokeWidth="1dp">
+
+                <ImageView
+                    android:id="@+id/ivSlot3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_camera" />
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
     </LinearLayout>

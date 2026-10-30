@@ -7,19 +7,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
@@ -39,17 +41,25 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
     private List<WishlistItem> itemList = new ArrayList<>();
     private DatabaseReference dbRef;
     private String userId;
-    
+
     private String[] selectedBase64Images = {"", "", ""};
-    private ImageView[] dialogImageViews = new ImageView[3];
-    private int currentImageIndex = 0;
+    private ImageView[] slotImageViews = new ImageView[3];
+    private ImageView ivHeroBoxPreview;
+    private int currentSlotIndex = 0;
+    private int activeHeroIndex = 0;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
-                    processImage(imageUri);
+                    if (currentSlotIndex == 0) {
+                        // Slot 1 uses Built-in Crop Editor for square solo image
+                        processUriWithCrop(imageUri);
+                    } else {
+                        // Slots 2 and 3 autocrop
+                        processImageAuto(imageUri, currentSlotIndex);
+                    }
                 }
             }
     );
@@ -76,17 +86,16 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
             }
         }
 
-        RecyclerView         rv = findViewById(R.id.rvWishlist);
+        RecyclerView rv = findViewById(R.id.rvWishlist);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new WishlistAdapter(itemList, userId, this);
         rv.setAdapter(adapter);
 
         View fab = findViewById(R.id.fabAddWishlist);
         fab.setOnClickListener(v -> showItemDialog(null));
-        
+
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
-        UIUtils.applyTopInsetPadding(rv);
 
         listenForWishlist();
     }
@@ -112,117 +121,241 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_wishlist, null);
         TextInputEditText etName = view.findViewById(R.id.etItemName);
         TextInputEditText etLink = view.findViewById(R.id.etItemLink);
-        TextInputEditText etImg1 = view.findViewById(R.id.etImg1);
-        
-        MaterialButtonToggleGroup toggle = view.findViewById(R.id.toggleMediaSource);
-        LinearLayout layoutUrl = view.findViewById(R.id.layoutUrlInputs);
-        LinearLayout layoutGallery = view.findViewById(R.id.layoutGalleryInputs);
 
-        dialogImageViews[0] = view.findViewById(R.id.ivSelect1);
-        dialogImageViews[1] = view.findViewById(R.id.ivSelect2);
-        dialogImageViews[2] = view.findViewById(R.id.ivSelect3);
+        ivHeroBoxPreview = view.findViewById(R.id.ivHeroBoxPreview);
+        slotImageViews[0] = view.findViewById(R.id.ivSlot1);
+        slotImageViews[1] = view.findViewById(R.id.ivSlot2);
+        slotImageViews[2] = view.findViewById(R.id.ivSlot3);
 
-        // Reset selected images
         selectedBase64Images = new String[]{"", "", ""};
+        activeHeroIndex = 0;
 
+        // Pre-fill if editing
         if (existingItem != null) {
-            etName.setText(existingItem.name);
-            etLink.setText(existingItem.link);
-            
-            // Handle existing images
-            if (existingItem.img1 != null && existingItem.img1.startsWith("data:")) {
-                selectedBase64Images[0] = existingItem.img1;
-                toggle.check(R.id.btnSourceGallery);
-                layoutGallery.setVisibility(View.VISIBLE);
-                layoutUrl.setVisibility(View.GONE);
-                // Preview logic would go here, but for now we'll just keep the base64
-            } else if (existingItem.img1 != null && !existingItem.img1.isEmpty()) {
-                etImg1.setText(existingItem.img1);
-                toggle.check(R.id.btnSourceUrl);
-            }
-            
+            etName.setText(existingItem.name != null ? existingItem.name : "");
+            etLink.setText(existingItem.link != null ? existingItem.link : "");
+
+            selectedBase64Images[0] = existingItem.img1 != null ? existingItem.img1 : "";
             selectedBase64Images[1] = existingItem.img2 != null ? existingItem.img2 : "";
             selectedBase64Images[2] = existingItem.img3 != null ? existingItem.img3 : "";
+
+            activeHeroIndex = existingItem.heroIndex;
         }
 
+        updateDialogSlotPreviews();
+
+        // Track initial state for unsaved changes detection
+        String initialTitle = etName.getText() != null ? etName.getText().toString().trim() : "";
+        String initialLink = etLink.getText() != null ? etLink.getText().toString().trim() : "";
+        String initialImg1 = selectedBase64Images[0];
+        String initialImg2 = selectedBase64Images[1];
+        String initialImg3 = selectedBase64Images[2];
+        int initialHero = activeHeroIndex;
+
+        // Slot click listeners
         for (int i = 0; i < 3; i++) {
-            final int index = i;
-            dialogImageViews[i].setOnClickListener(v -> {
-                currentImageIndex = index;
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                galleryLauncher.launch(intent);
+            final int slotIdx = i;
+            View cardSlot = view.findViewById(slotIdx == 0 ? R.id.cardSlot1 : (slotIdx == 1 ? R.id.cardSlot2 : R.id.cardSlot3));
+            cardSlot.setOnClickListener(v -> {
+                if (selectedBase64Images[slotIdx].isEmpty()) {
+                    // Empty slot: Open gallery photo picker
+                    currentSlotIndex = slotIdx;
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    galleryLauncher.launch(intent);
+                } else {
+                    // Filled slot: Set as Hero Image
+                    activeHeroIndex = slotIdx;
+                    updateDialogSlotPreviews();
+                    Toast.makeText(WishlistActivity.this, "Set photo as Hero Image!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            cardSlot.setOnLongClickListener(v -> {
+                if (!selectedBase64Images[slotIdx].isEmpty()) {
+                    // Long press to remove photo
+                    selectedBase64Images[slotIdx] = "";
+                    if (activeHeroIndex == slotIdx) activeHeroIndex = 0;
+                    updateDialogSlotPreviews();
+                    Toast.makeText(WishlistActivity.this, "Photo removed", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
             });
         }
 
-        toggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                if (checkedId == R.id.btnSourceUrl) {
-                    layoutUrl.setVisibility(View.VISIBLE);
-                    layoutGallery.setVisibility(View.GONE);
-                } else {
-                    layoutUrl.setVisibility(View.GONE);
-                    layoutGallery.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        new MaterialAlertDialogBuilder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(existingItem == null ? "Add to Wishlist" : "Edit Item")
                 .setView(view)
-                .setPositiveButton(existingItem == null ? "Add" : "Save", (dialog, which) -> {
-                    String name = etName.getText().toString();
-                    String link = etLink.getText().toString();
-                    
-                    String id = (existingItem != null) ? existingItem.id : dbRef.push().getKey();
-                    String img1, img2, img3;
-
-                    if (toggle.getCheckedButtonId() == R.id.btnSourceUrl) {
-                        img1 = etImg1.getText().toString();
-                        img2 = ""; img3 = "";
-                    } else {
-                        img1 = selectedBase64Images[0];
-                        img2 = selectedBase64Images[1];
-                        img3 = selectedBase64Images[2];
-                    }
-
-                    if (!name.isEmpty()) {
-                        WishlistItem item = new WishlistItem(id, name, link, userId, img1, img2, img3);
-                        // Preserve bought/received status if editing
-                        if (existingItem != null) {
-                            item.isBought = existingItem.isBought;
-                            item.isReceived = existingItem.isReceived;
-                        }
-                        dbRef.child(id).setValue(item);
-                    }
-                })
+                .setPositiveButton(existingItem == null ? "Add" : "Save", null)
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        java.util.function.Supplier<Boolean> hasUnsavedChanges = () -> {
+            String curTitle = etName.getText() != null ? etName.getText().toString().trim() : "";
+            String curLink = etLink.getText() != null ? etLink.getText().toString().trim() : "";
+            return !curTitle.equals(initialTitle) ||
+                   !curLink.equals(initialLink) ||
+                   !selectedBase64Images[0].equals(initialImg1) ||
+                   !selectedBase64Images[1].equals(initialImg2) ||
+                   !selectedBase64Images[2].equals(initialImg3) ||
+                   activeHeroIndex != initialHero;
+        };
+
+        Runnable promptDiscardChanges = () -> {
+            if (hasUnsavedChanges.get()) {
+                new MaterialAlertDialogBuilder(WishlistActivity.this)
+                        .setTitle("Discard Unsaved Changes?")
+                        .setMessage("You have unsaved changes. Are you sure you want to discard them?")
+                        .setPositiveButton("Discard", (d, which) -> dialog.dismiss())
+                        .setNegativeButton("Keep Editing", null)
+                        .show();
+            } else {
+                dialog.dismiss();
+            }
+        };
+
+        dialog.show();
+
+        // Custom positive button listener to handle validation
+        Button btnSave = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        btnSave.setOnClickListener(v -> {
+            String name = etName.getText() != null ? etName.getText().toString().trim() : "";
+            String link = etLink.getText() != null ? etLink.getText().toString().trim() : "";
+
+            if (name.isEmpty()) {
+                Toast.makeText(WishlistActivity.this, "Please enter an item name.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String id = (existingItem != null) ? existingItem.id : dbRef.push().getKey();
+            WishlistItem item = new WishlistItem(id, name, link, userId,
+                    selectedBase64Images[0], selectedBase64Images[1], selectedBase64Images[2], activeHeroIndex);
+
+            if (existingItem != null) {
+                item.isBought = existingItem.isBought;
+                item.isReceived = existingItem.isReceived;
+            }
+
+            if (id != null) {
+                dbRef.child(id).setValue(item);
+                Toast.makeText(WishlistActivity.this, existingItem == null ? "Item added!" : "Item saved!", Toast.LENGTH_SHORT).show();
+            }
+            dialog.dismiss();
+        });
+
+        // Custom negative button listener for unsaved changes
+        Button btnCancel = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        btnCancel.setOnClickListener(v -> promptDiscardChanges.run());
+
+        // Back button interception on dialog
+        dialog.setOnKeyListener((d, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+                promptDiscardChanges.run();
+                return true;
+            }
+            return false;
+        });
     }
 
-    private void processImage(Uri uri) {
+    private void updateDialogSlotPreviews() {
+        List<Integer> filledIndices = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            if (!selectedBase64Images[i].isEmpty()) {
+                filledIndices.add(i);
+                displayBase64InImageView(slotImageViews[i], selectedBase64Images[i]);
+            } else {
+                slotImageViews[i].setImageResource(android.R.drawable.ic_menu_camera);
+            }
+        }
+
+        // Auto Hero selection
+        if (filledIndices.isEmpty()) {
+            activeHeroIndex = 0;
+            ivHeroBoxPreview.setImageResource(R.drawable.ic_blank_user);
+        } else {
+            if (!filledIndices.contains(activeHeroIndex)) {
+                activeHeroIndex = filledIndices.get(0);
+            }
+            displayBase64InImageView(ivHeroBoxPreview, selectedBase64Images[activeHeroIndex]);
+        }
+    }
+
+    private void processUriWithCrop(Uri uri) {
         try {
             InputStream is = getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(is);
-            
-            // Resize for prototype (stay under 100kb for RTDB safety)
-            Bitmap scaled = Bitmap.createScaledBitmap(bitmap, 300, 300, true);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            scaled.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-            byte[] bytes = baos.toByteArray();
-            
-            selectedBase64Images[currentImageIndex] = "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.DEFAULT);
-            dialogImageViews[currentImageIndex].setImageBitmap(scaled);
-            dialogImageViews[currentImageIndex].setScaleType(ImageView.ScaleType.CENTER_CROP);
-            
+            Bitmap rawBitmap = BitmapFactory.decodeStream(is);
+            if (rawBitmap != null) {
+                showSquareCropDialog(rawBitmap);
+            }
         } catch (Exception e) {
             Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void showSquareCropDialog(Bitmap rawBitmap) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_crop_profile_pic, null);
+        CropImageView ivCropTarget = view.findViewById(R.id.ivCropTarget);
+        CircularOverlayView overlayView = view.findViewById(R.id.circularOverlayView);
+        Button btnRotate = view.findViewById(R.id.btnRotateCrop);
+        Button btnSave = view.findViewById(R.id.btnSaveCroppedPic);
+
+        ivCropTarget.setImageAndReset(rawBitmap);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Crop Square Image")
+                .setView(view)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        btnRotate.setOnClickListener(v -> ivCropTarget.rotate90());
+
+        btnSave.setOnClickListener(v -> {
+            Bitmap cropped = ivCropTarget.getCroppedCircleBitmap(overlayView.getCircleRect());
+            if (cropped == null) cropped = rawBitmap;
+            saveProcessedBitmapToSlot(cropped, currentSlotIndex);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void processImageAuto(Uri uri, int slotIndex) {
+        try {
+            InputStream is = getContentResolver().openInputStream(uri);
+            Bitmap rawBitmap = BitmapFactory.decodeStream(is);
+            if (rawBitmap != null) {
+                saveProcessedBitmapToSlot(rawBitmap, slotIndex);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveProcessedBitmapToSlot(Bitmap bitmap, int slotIndex) {
+        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, 400, 400, true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+        byte[] bytes = baos.toByteArray();
+
+        selectedBase64Images[slotIndex] = "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.DEFAULT);
+        updateDialogSlotPreviews();
+    }
+
+    private void displayBase64InImageView(ImageView iv, String base64Str) {
+        try {
+            String clean = base64Str.contains(",") ? base64Str.split(",")[1] : base64Str;
+            byte[] bytes = Base64.decode(clean, Base64.DEFAULT);
+            Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            if (bm != null) {
+                iv.setImageBitmap(bm);
+            }
+        } catch (Exception ignored) {}
+    }
+
     @Override
     public void onBought(WishlistItem item) {
-        dbRef.child(item.id).child("isBought").setValue(true);
-        Toast.makeText(this, "Marked as bought!", Toast.LENGTH_SHORT).show();
+        dbRef.child(item.id).child("isBought").setValue(!item.isBought);
+        Toast.makeText(this, item.isBought ? "Marked as available" : "Marked as bought!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -238,8 +371,15 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
     @Override
     public void onDelete(WishlistItem item) {
-        dbRef.child(item.id).removeValue();
-        Toast.makeText(this, "Item removed", Toast.LENGTH_SHORT).show();
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Wishlist Item?")
+                .setMessage("Are you sure you want to delete '" + item.name + "'?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbRef.child(item.id).removeValue();
+                    Toast.makeText(WishlistActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override

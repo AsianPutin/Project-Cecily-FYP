@@ -152,16 +152,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#007AFF"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkBlue"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Blue"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Pink -->
@@ -174,16 +173,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#FF4081"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkPink"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Pink"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Green -->
@@ -196,16 +194,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#25D366"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkGreen"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Green"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Orange -->
@@ -218,16 +215,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#FF9500"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkOrange"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Orange"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Purple -->
@@ -240,16 +236,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#9C27B0"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkPurple"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Purple"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Red -->
@@ -262,16 +257,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#E91E63"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkRed"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Red"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Teal -->
@@ -284,16 +278,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#009688"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkTeal"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Teal"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <!-- Amber Gold -->
@@ -306,16 +299,15 @@
                             android:focusable="true"
                             app:cardBackgroundColor="#FFC107"
                             app:cardCornerRadius="30dp"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp">
+                            app:strokeWidth="0dp">
                             <ImageView
                                 android:id="@+id/checkGold"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:src="@android:drawable/checkbox_on_background"
-                                android:visibility="gone"
-                                app:tint="#FFFFFF" />
+                                android:contentDescription="Select Gold"
+                                android:src="@drawable/ic_check"
+                                android:visibility="gone" />
                         </com.google.android.material.card.MaterialCardView>
 
                     </GridLayout>

@@ -170,8 +170,11 @@ public class ThemeUtils {
                 mb.setBackgroundTintList(ColorStateList.valueOf(accentColor));
                 mb.setTextColor(textColorOnAccent);
             } else if (v instanceof MaterialCardView) {
-                if (v.getId() == R.id.cardPartnerEdgeWidget) {
-                    continue; // Exclude partner's edge widget from local theme overrides!
+                int id = v.getId();
+                if (id == R.id.colorBlue || id == R.id.colorPink || id == R.id.colorGreen ||
+                    id == R.id.colorOrange || id == R.id.colorPurple || id == R.id.colorRed ||
+                    id == R.id.colorTeal || id == R.id.colorGold || id == R.id.cardPartnerEdgeWidget) {
+                    continue; // Exclude color swatches and partner's edge widget from stroke overrides!
                 }
                 MaterialCardView card = (MaterialCardView) v;
                 if (card.getStrokeWidth() > 0) {

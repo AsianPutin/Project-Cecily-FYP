@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHolder> {
@@ -42,52 +43,80 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         WishlistItem item = items.get(position);
         holder.tvName.setText(item.name);
-        holder.tvLink.setText(item.link);
+        holder.tvLink.setText(item.link != null && !item.link.trim().isEmpty() ? item.link : "");
+        holder.tvLink.setVisibility(item.link != null && !item.link.trim().isEmpty() ? View.VISIBLE : View.GONE);
 
-        boolean isOwner = item.ownerId.equals(currentUserId);
-        
-        // Image loading logic
-        loadImage(holder.iv1, item.img1);
-        loadImage(holder.iv2, item.img2);
-        loadImage(holder.iv3, item.img3);
+        boolean isOwner = item.ownerId != null && item.ownerId.equals(currentUserId);
 
-        // Visibility Logic
-        // Buy button is for both if not bought
-        holder.btnBought.setVisibility(!item.isBought ? View.VISIBLE : View.GONE);
-        
-        // Received is for owner if bought but not received
-        holder.btnReceived.setVisibility(isOwner && item.isBought && !item.isReceived ? View.VISIBLE : View.GONE);
+        bindImages(holder, item);
 
-        // Edit/Delete are ALWAYS for Owner, but never for partner
-        holder.btnEdit.setVisibility(isOwner ? View.VISIBLE : View.GONE);
-        holder.btnDelete.setVisibility(isOwner ? View.VISIBLE : View.GONE);
-
-        // Styling
+        // Buy/Bought status
         if (item.isBought) {
-            holder.card.setAlpha(0.6f);
-            if (!item.name.contains("(Bought!)")) {
-                holder.tvName.setText(item.name + " (Bought!)");
-            }
+            holder.btnBought.setText("Bought!");
+            holder.btnBought.setEnabled(false);
+            holder.card.setAlpha(0.7f);
         } else {
+            holder.btnBought.setText("Mark Bought");
+            holder.btnBought.setEnabled(true);
             holder.card.setAlpha(1.0f);
         }
 
-        if (item.isReceived) {
-            holder.card.setAlpha(0.3f);
-        }
+        // Edit/Delete are for Owner only
+        holder.btnEdit.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+        holder.btnDelete.setVisibility(isOwner ? View.VISIBLE : View.GONE);
 
         holder.btnBought.setOnClickListener(v -> listener.onBought(item));
-        holder.btnReceived.setOnClickListener(v -> listener.onReceived(item));
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(item));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
     }
 
+    private void bindImages(ViewHolder holder, WishlistItem item) {
+        List<String> validImages = new ArrayList<>();
+        if (item.img1 != null && !item.img1.trim().isEmpty()) validImages.add(item.img1);
+        if (item.img2 != null && !item.img2.trim().isEmpty()) validImages.add(item.img2);
+        if (item.img3 != null && !item.img3.trim().isEmpty()) validImages.add(item.img3);
+
+        if (validImages.isEmpty()) {
+            holder.layoutSoloContainer.setVisibility(View.GONE);
+            holder.layoutCollageContainer.setVisibility(View.GONE);
+            return;
+        }
+
+        int hIdx = item.heroIndex;
+        if (hIdx < 0 || hIdx >= validImages.size()) hIdx = 0;
+
+        String heroUrl = validImages.remove(hIdx);
+
+        if (validImages.isEmpty()) {
+            // Solo Image: Centered square in middle of card
+            holder.layoutSoloContainer.setVisibility(View.VISIBLE);
+            holder.layoutCollageContainer.setVisibility(View.GONE);
+            loadImage(holder.ivSoloImage, heroUrl);
+        } else {
+            // Collage Layout (2 or 3 photos)
+            holder.layoutSoloContainer.setVisibility(View.GONE);
+            holder.layoutCollageContainer.setVisibility(View.VISIBLE);
+
+            loadImage(holder.ivHeroImage, heroUrl);
+
+            if (validImages.size() == 1) {
+                // 2 Photos Total: Left Hero (60%), Right 2nd photo (40%)
+                holder.cardSideTop.setVisibility(View.VISIBLE);
+                holder.cardSideBottom.setVisibility(View.GONE);
+                loadImage(holder.ivSideTop, validImages.get(0));
+            } else {
+                // 3 Photos Total: Left Hero (60%), Right 2 photos vertically stacked (40%)
+                holder.cardSideTop.setVisibility(View.VISIBLE);
+                holder.cardSideBottom.setVisibility(View.VISIBLE);
+                loadImage(holder.ivSideTop, validImages.get(0));
+                loadImage(holder.ivSideBottom, validImages.get(1));
+            }
+        }
+    }
+
     private void loadImage(ImageView iv, String url) {
         if (url != null && !url.isEmpty()) {
-            iv.setVisibility(View.VISIBLE);
             Glide.with(iv.getContext()).load(url).placeholder(R.mipmap.ic_launcher).into(iv);
-        } else {
-            iv.setVisibility(View.GONE);
         }
     }
 
@@ -96,21 +125,30 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvLink;
-        Button btnBought, btnReceived, btnEdit, btnDelete;
-        ImageView iv1, iv2, iv3;
-        MaterialCardView card;
+        Button btnBought, btnEdit, btnDelete;
+        View layoutSoloContainer, layoutCollageContainer;
+        ImageView ivSoloImage, ivHeroImage, ivSideTop, ivSideBottom;
+        MaterialCardView card, cardSideTop, cardSideBottom;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvItemName);
             tvLink = itemView.findViewById(R.id.tvItemLink);
             btnBought = itemView.findViewById(R.id.btnMarkBought);
-            btnReceived = itemView.findViewById(R.id.btnMarkReceived);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
-            iv1 = itemView.findViewById(R.id.iv1);
-            iv2 = itemView.findViewById(R.id.iv2);
-            iv3 = itemView.findViewById(R.id.iv3);
+
+            layoutSoloContainer = itemView.findViewById(R.id.layoutSoloContainer);
+            layoutCollageContainer = itemView.findViewById(R.id.layoutCollageContainer);
+
+            ivSoloImage = itemView.findViewById(R.id.ivSoloImage);
+            ivHeroImage = itemView.findViewById(R.id.ivHeroImage);
+            ivSideTop = itemView.findViewById(R.id.ivSideTop);
+            ivSideBottom = itemView.findViewById(R.id.ivSideBottom);
+
+            cardSideTop = itemView.findViewById(R.id.cardSideTop);
+            cardSideBottom = itemView.findViewById(R.id.cardSideBottom);
+
             card = itemView.findViewById(R.id.wishlistCard);
         }
     }

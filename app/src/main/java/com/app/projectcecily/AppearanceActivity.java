@@ -1,5 +1,6 @@
 package com.app.projectcecily;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,11 +9,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.card.MaterialCardView;
 
 public class AppearanceActivity extends AppCompatActivity {
 
     private MaterialButtonToggleGroup themeToggleGroup;
 
+    private MaterialCardView cardBlue, cardPink, cardGreen, cardOrange, cardPurple, cardRed, cardTeal, cardGold;
     private ImageView checkBlue, checkPink, checkGreen, checkOrange, checkPurple, checkRed, checkTeal, checkGold;
 
     @Override
@@ -33,9 +36,17 @@ public class AppearanceActivity extends AppCompatActivity {
         }
 
         UIUtils.applyBottomPadding(findViewById(R.id.appearance_scroll));
-        UIUtils.applyTopInsetPadding(findViewById(R.id.appearance_scroll));
 
         themeToggleGroup = findViewById(R.id.themeToggleGroup);
+
+        cardBlue = findViewById(R.id.colorBlue);
+        cardPink = findViewById(R.id.colorPink);
+        cardGreen = findViewById(R.id.colorGreen);
+        cardOrange = findViewById(R.id.colorOrange);
+        cardPurple = findViewById(R.id.colorPurple);
+        cardRed = findViewById(R.id.colorRed);
+        cardTeal = findViewById(R.id.colorTeal);
+        cardGold = findViewById(R.id.colorGold);
 
         checkBlue = findViewById(R.id.checkBlue);
         checkPink = findViewById(R.id.checkPink);
@@ -74,20 +85,21 @@ public class AppearanceActivity extends AppCompatActivity {
     }
 
     private void setupColorSwatches() {
-        findViewById(R.id.colorBlue).setOnClickListener(v -> selectAccent("#007AFF"));
-        findViewById(R.id.colorPink).setOnClickListener(v -> selectAccent("#FF4081"));
-        findViewById(R.id.colorGreen).setOnClickListener(v -> selectAccent("#25D366"));
-        findViewById(R.id.colorOrange).setOnClickListener(v -> selectAccent("#FF9500"));
-        findViewById(R.id.colorPurple).setOnClickListener(v -> selectAccent("#9C27B0"));
-        findViewById(R.id.colorRed).setOnClickListener(v -> selectAccent("#E91E63"));
-        findViewById(R.id.colorTeal).setOnClickListener(v -> selectAccent("#009688"));
-        findViewById(R.id.colorGold).setOnClickListener(v -> selectAccent("#FFC107"));
+        if (cardBlue != null) cardBlue.setOnClickListener(v -> selectAccent("#007AFF"));
+        if (cardPink != null) cardPink.setOnClickListener(v -> selectAccent("#FF4081"));
+        if (cardGreen != null) cardGreen.setOnClickListener(v -> selectAccent("#25D366"));
+        if (cardOrange != null) cardOrange.setOnClickListener(v -> selectAccent("#FF9500"));
+        if (cardPurple != null) cardPurple.setOnClickListener(v -> selectAccent("#9C27B0"));
+        if (cardRed != null) cardRed.setOnClickListener(v -> selectAccent("#E91E63"));
+        if (cardTeal != null) cardTeal.setOnClickListener(v -> selectAccent("#009688"));
+        if (cardGold != null) cardGold.setOnClickListener(v -> selectAccent("#FFC107"));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
+        updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
     }
 
     private void selectAccent(String hexColor) {
@@ -98,14 +110,29 @@ public class AppearanceActivity extends AppCompatActivity {
     }
 
     private void updateSelectedAccentUI(String currentHex) {
-        checkBlue.setVisibility("#007AFF".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkPink.setVisibility("#FF4081".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkGreen.setVisibility("#25D366".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkOrange.setVisibility("#FF9500".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkPurple.setVisibility("#9C27B0".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkRed.setVisibility("#E91E63".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkTeal.setVisibility("#009688".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
-        checkGold.setVisibility("#FFC107".equalsIgnoreCase(currentHex) ? View.VISIBLE : View.GONE);
+        updateSwatch(cardBlue, checkBlue, "#007AFF".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardPink, checkPink, "#FF4081".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardGreen, checkGreen, "#25D366".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardOrange, checkOrange, "#FF9500".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardPurple, checkPurple, "#9C27B0".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardRed, checkRed, "#E91E63".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardTeal, checkTeal, "#009688".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardGold, checkGold, "#FFC107".equalsIgnoreCase(currentHex), Color.BLACK);
+    }
+
+    private void updateSwatch(MaterialCardView card, ImageView check, boolean isSelected, int checkTint) {
+        if (card != null) {
+            if (isSelected) {
+                card.setStrokeColor(Color.parseColor("#333333"));
+                card.setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
+            } else {
+                card.setStrokeWidth(0);
+            }
+        }
+        if (check != null) {
+            check.setImageTintList(android.content.res.ColorStateList.valueOf(checkTint));
+            check.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
