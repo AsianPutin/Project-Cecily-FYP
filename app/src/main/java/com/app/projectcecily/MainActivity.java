@@ -39,6 +39,13 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(savedMode);
 
         super.onCreate(savedInstanceState);
+
+        if (!UserManager.isLoggedIn(this)) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
         
         createNotificationChannel();

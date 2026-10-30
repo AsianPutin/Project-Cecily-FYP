@@ -119,6 +119,21 @@ public class AccountActivity extends AppCompatActivity {
         findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
+
+        findViewById(R.id.btnLogout).setOnClickListener(v -> {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Log Out?")
+                    .setMessage("Are you sure you want to log out?")
+                    .setPositiveButton("Log Out", (dialog, which) -> {
+                        UserManager.logout(this);
+                        Intent intent = new Intent(this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
     }
 
     private void showProfilePictureOptionsSheet() {
