@@ -139,27 +139,31 @@
 
             <Button
                 android:id="@+id/btnMarkBought"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Mark Bought" />
+                android:backgroundTint="#25D366"
+                android:text="Mark Bought"
+                android:textColor="#FFFFFF" />
 
             <Button
                 android:id="@+id/btnEdit"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:paddingHorizontal="16dp"
                 android:text="Edit" />
 
             <Button
                 android:id="@+id/btnDelete"
-                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#FF3B30"
+                android:paddingHorizontal="16dp"
                 android:text="Delete"
-                android:textColor="#FF3B30" />
+                android:textColor="#FFFFFF" />
         </LinearLayout>
 
     </LinearLayout>

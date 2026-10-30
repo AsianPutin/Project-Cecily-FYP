@@ -50,22 +50,31 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
         bindImages(holder, item);
 
-        // Buy/Bought status
-        if (item.isBought) {
-            holder.btnBought.setText("Bought!");
-            holder.btnBought.setEnabled(false);
-            holder.card.setAlpha(0.7f);
-        } else {
-            holder.btnBought.setText("Mark Bought");
-            holder.btnBought.setEnabled(true);
+        if (isOwner) {
+            // ITEM CREATOR / OWNER:
+            // Secret Gift Rule: NEVER show bought status or dimmed card to the creator (preserve surprise!)
+            holder.btnMarkBought.setVisibility(View.GONE);
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
             holder.card.setAlpha(1.0f);
+        } else {
+            // PARTNER / GIFT BUYER:
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnMarkBought.setVisibility(View.VISIBLE);
+
+            if (item.isBought) {
+                holder.btnMarkBought.setText("Bought! (Undo)");
+                holder.btnMarkBought.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#448AFF")));
+                holder.card.setAlpha(0.6f);
+            } else {
+                holder.btnMarkBought.setText("Mark Bought");
+                holder.btnMarkBought.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25D366")));
+                holder.card.setAlpha(1.0f);
+            }
         }
 
-        // Edit/Delete are for Owner only
-        holder.btnEdit.setVisibility(isOwner ? View.VISIBLE : View.GONE);
-        holder.btnDelete.setVisibility(isOwner ? View.VISIBLE : View.GONE);
-
-        holder.btnBought.setOnClickListener(v -> listener.onBought(item));
+        holder.btnMarkBought.setOnClickListener(v -> listener.onBought(item));
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(item));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
     }
@@ -125,7 +134,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvLink;
-        Button btnBought, btnEdit, btnDelete;
+        Button btnMarkBought, btnEdit, btnDelete;
         View layoutSoloContainer, layoutCollageContainer;
         ImageView ivSoloImage, ivHeroImage, ivSideTop, ivSideBottom;
         MaterialCardView card, cardSideTop, cardSideBottom;
@@ -134,7 +143,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
             super(itemView);
             tvName = itemView.findViewById(R.id.tvItemName);
             tvLink = itemView.findViewById(R.id.tvItemLink);
-            btnBought = itemView.findViewById(R.id.btnMarkBought);
+            btnMarkBought = itemView.findViewById(R.id.btnMarkBought);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
 

@@ -354,8 +354,27 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
     @Override
     public void onBought(WishlistItem item) {
-        dbRef.child(item.id).child("isBought").setValue(!item.isBought);
-        Toast.makeText(this, item.isBought ? "Marked as available" : "Marked as bought!", Toast.LENGTH_SHORT).show();
+        if (item.isBought) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Undo Bought Status?")
+                    .setMessage("Are you sure you want to unmark '" + item.name + "' as bought?")
+                    .setPositiveButton("Yes, Undo", (dialog, which) -> {
+                        dbRef.child(item.id).child("isBought").setValue(false);
+                        Toast.makeText(WishlistActivity.this, "Item unmarked as bought", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Mark as Bought?")
+                    .setMessage("Are you sure you bought '" + item.name + "' for your partner?")
+                    .setPositiveButton("Yes, Mark Bought", (dialog, which) -> {
+                        dbRef.child(item.id).child("isBought").setValue(true);
+                        Toast.makeText(WishlistActivity.this, "Marked as bought!", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        }
     }
 
     @Override

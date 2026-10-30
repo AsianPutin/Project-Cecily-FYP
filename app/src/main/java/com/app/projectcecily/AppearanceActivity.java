@@ -123,7 +123,8 @@ public class AppearanceActivity extends AppCompatActivity {
     private void updateSwatch(MaterialCardView card, ImageView check, boolean isSelected, int checkTint) {
         if (card != null) {
             if (isSelected) {
-                card.setStrokeColor(Color.parseColor("#333333"));
+                boolean isNightMode = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+                card.setStrokeColor(isNightMode ? Color.WHITE : Color.BLACK);
                 card.setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
             } else {
                 card.setStrokeWidth(0);

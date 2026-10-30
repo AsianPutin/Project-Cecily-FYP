@@ -160,8 +160,9 @@ public class ThemeUtils {
                 fab.setImageTintList(ColorStateList.valueOf(textColorOnAccent));
             } else if (v instanceof MaterialButton) {
                 int id = v.getId();
-                if (id == R.id.btnUnpairPartner || id == R.id.btnLogout) {
-                    continue; // Keep Unpair Partner and Log Out as permanent bright red (#FF3B30)!
+                if (id == R.id.btnUnpairPartner || id == R.id.btnLogout ||
+                    id == R.id.btnMarkBought || id == R.id.btnDelete) {
+                    continue; // Exclude Mark Bought and Delete from accent overrides!
                 }
                 MaterialButton mb = (MaterialButton) v;
                 if (mb.getParent() instanceof com.google.android.material.button.MaterialButtonToggleGroup) {
