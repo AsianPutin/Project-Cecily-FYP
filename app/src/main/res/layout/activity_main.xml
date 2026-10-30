@@ -53,19 +53,10 @@
                     android:padding="20dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Couple &amp; Anniversary"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
                         android:id="@+id/tvTogetherDays"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Set anniversary in settings"
+                        android:text="Not paired yet"
                         android:textColor="@color/nav_selected"
                         android:textSize="22sp"
                         android:textStyle="bold" />

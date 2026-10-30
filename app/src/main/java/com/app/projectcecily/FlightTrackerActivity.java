@@ -66,8 +66,8 @@ public class FlightTrackerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_flight);
 
         userId = UserManager.getUserId(this);
-        activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flights");
-        historyRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
+        activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
+        historyRef = activeRef;
 
         checkExactAlarmPermission();
 

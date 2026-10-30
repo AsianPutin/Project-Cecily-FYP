@@ -77,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         tvDistance = findViewById(R.id.tvLiveDistance);
+        if (partnerId == null || partnerId.isEmpty()) {
+            tvDistance.setText("Not paired yet");
+        }
         tvWishlist = findViewById(R.id.tvWishlistSummary);
         tvFlightSummary = findViewById(R.id.tvFlightSummary);
         tvTogetherDays = findViewById(R.id.tvTogetherDays);
@@ -310,6 +313,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTracking() {
+        if (partnerId == null || partnerId.isEmpty()) {
+            tvDistance.setText("Not paired yet");
+            return;
+        }
+        tvDistance.setText("Calculating...");
         tracker = new LocationTracker(this, userId, partnerId);
         tracker.startTracking();
         tracker.listenToPartner((lat, lon, distance) -> {
