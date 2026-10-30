@@ -117,7 +117,6 @@ public class AccountActivity extends AppCompatActivity {
         findViewById(R.id.btnAppearance).setOnClickListener(v -> startActivity(new Intent(this, AppearanceActivity.class)));
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
         findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
-        findViewById(R.id.btnDatePreferences).setOnClickListener(v -> startActivity(new Intent(this, SwipeActivity.class)));
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
 

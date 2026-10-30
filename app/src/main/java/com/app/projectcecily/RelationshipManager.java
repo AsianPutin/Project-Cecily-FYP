@@ -73,7 +73,6 @@ public class RelationshipManager {
 
         db.child("relationships").child(userId).setValue(map);
         if (!partnerId.isEmpty()) {
-            // Write mirrored perspective for partner
             Map<String, Object> partnerMap = new HashMap<>();
             partnerMap.put("yourBirthday", details.partnerBirthday);
             partnerMap.put("partnerBirthday", details.yourBirthday);
@@ -124,9 +123,13 @@ public class RelationshipManager {
         return "Together for " + days + " days";
     }
 
-    public static String formatPartnerBirthdayCountdown(String partnerBirthdayStr) {
+    public static CharSequence formatPartnerBirthdayCountdown(String partnerName, String partnerBirthdayStr, String partnerHexColor) {
+        String name = (partnerName != null && !partnerName.trim().isEmpty()) ? partnerName.trim() : "Partner";
+        String hex = (partnerHexColor != null && !partnerHexColor.trim().isEmpty()) ? partnerHexColor.trim() : "#FF4081";
+
         if (partnerBirthdayStr == null || partnerBirthdayStr.trim().isEmpty()) {
-            return "Partner's Birthday: Not set";
+            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+            return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         }
 
         try {
@@ -140,7 +143,8 @@ public class RelationshipManager {
                 month = Integer.parseInt(parts[0]);
                 day = Integer.parseInt(parts[1]);
             } else {
-                return "Partner's Birthday: Not set";
+                String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+                return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
             }
 
             java.util.Calendar today = java.util.Calendar.getInstance();
@@ -165,15 +169,45 @@ public class RelationshipManager {
             long diffMillis = nextBday.getTimeInMillis() - today.getTimeInMillis();
             long daysLeft = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diffMillis);
 
-            if (daysLeft == 0) {
-                return "Partner's Birthday: Today!";
-            } else if (daysLeft == 1) {
-                return "Partner's Birthday: 1 day left";
-            } else {
-                return "Partner's Birthday: " + daysLeft + " days left";
-            }
+            String daysText;
+            if (daysLeft == 0) daysText = "Today!";
+            else if (daysLeft == 1) daysText = "1 day left";
+            else daysText = daysLeft + " days left";
+
+            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: <font color='" + hex + "'><b>" + daysText + "</b></font>";
+            return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
         } catch (Exception e) {
-            return "Partner's Birthday: Not set";
+            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Birthday: Not set";
+            return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
+        }
+    }
+
+    public static CharSequence formatPartnerCurrentTime(Context context, String partnerName, String partnerTimeZoneId, String partnerHexColor) {
+        String name = (partnerName != null && !partnerName.trim().isEmpty()) ? partnerName.trim() : "Partner";
+        String hex = (partnerHexColor != null && !partnerHexColor.trim().isEmpty()) ? partnerHexColor.trim() : "#FF4081";
+        if (partnerTimeZoneId == null || partnerTimeZoneId.trim().isEmpty()) {
+            partnerTimeZoneId = java.util.TimeZone.getDefault().getID();
+        }
+
+        try {
+            java.util.TimeZone tz = java.util.TimeZone.getTimeZone(partnerTimeZoneId);
+            java.text.SimpleDateFormat timeSdf;
+            if (android.text.format.DateFormat.is24HourFormat(context)) {
+                timeSdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.US);
+            } else {
+                timeSdf = new java.text.SimpleDateFormat("h:mma", java.util.Locale.US);
+            }
+            timeSdf.setTimeZone(tz);
+            String timeStr = timeSdf.format(new java.util.Date()).toLowerCase();
+
+            java.text.SimpleDateFormat codeSdf = new java.text.SimpleDateFormat("z", java.util.Locale.US);
+            codeSdf.setTimeZone(tz);
+            String codeStr = codeSdf.format(new java.util.Date());
+
+            String html = "<font color='" + hex + "'><b>" + name + "</b></font>'s Time: <font color='" + hex + "'><b>" + timeStr + "</b></font> (" + codeStr + ")";
+            return android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY);
+        } catch (Exception e) {
+            return "";
         }
     }
 }

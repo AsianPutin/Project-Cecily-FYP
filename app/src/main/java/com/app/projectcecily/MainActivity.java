@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -31,7 +32,12 @@ public class MainActivity extends AppCompatActivity {
     private long startTime;
     private long backPressedTime = 0;
 
-    private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary;
+    private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary, tvPartnerTimeSummary;
+
+    private String partnerName = "Partner";
+    private String partnerAccentColor = "#FF4081";
+    private String partnerTimeZoneId = "";
+    private RelationshipManager.Details cachedDetails;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         userId = UserManager.getUserId(this);
         partnerId = UserManager.getPartnerId(this);
 
+        syncLocalTimezone();
+
         // Keep partnerId synced in real time
         FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
                 .getReference("profiles").child(userId).child("partnerId")
@@ -65,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean wasEmpty = partnerId == null || partnerId.isEmpty();
                     partnerId = pId;
                     UserManager.setPartnerId(MainActivity.this, pId);
+                    listenForPartnerProfile();
                     if (wasEmpty) {
                         startTracking();
                         listenForWishlistCount();
@@ -90,17 +99,14 @@ public class MainActivity extends AppCompatActivity {
         tvFlightSummary = findViewById(R.id.tvFlightSummary);
         tvTogetherDays = findViewById(R.id.tvTogetherDays);
         tvBirthdaysSummary = findViewById(R.id.tvBirthdaysSummary);
+        tvPartnerTimeSummary = findViewById(R.id.tvPartnerTimeSummary);
 
         RelationshipManager.listenFromFirebase(this, details -> {
-            String pId = UserManager.getPartnerId(this);
-            if (pId == null || pId.isEmpty()) {
-                tvTogetherDays.setText("Not paired yet");
-                tvBirthdaysSummary.setText("Pair in Account Settings");
-            } else {
-                tvTogetherDays.setText(RelationshipManager.formatDaysTogether(details.anniversaryTimestamp));
-                tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(details.partnerBirthday));
-            }
+            cachedDetails = details;
+            updatePartnerSummaryCards();
         });
+
+        listenForPartnerProfile();
 
         setupDashboardClicks();
         setupNavigation();
@@ -128,10 +134,64 @@ public class MainActivity extends AppCompatActivity {
         }
 
         listenForPokes();
-        listenForProfileNames();
         listenForWishlistCount();
         listenForFlights();
         scheduleFlightTracking();
+    }
+
+    private void syncLocalTimezone() {
+        String tzId = java.util.TimeZone.getDefault().getID();
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(userId).child("timeZone").setValue(tzId);
+    }
+
+    private void listenForPartnerProfile() {
+        if (partnerId == null || partnerId.isEmpty()) return;
+
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(partnerId)
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String pName = snapshot.child("name").getValue(String.class);
+                    if (pName != null && !pName.trim().isEmpty()) partnerName = pName.trim();
+
+                    String pColor = snapshot.child("accentColor").getValue(String.class);
+                    if (pColor != null && !pColor.trim().isEmpty()) partnerAccentColor = pColor.trim();
+
+                    String pTz = snapshot.child("timeZone").getValue(String.class);
+                    if (pTz != null && !pTz.trim().isEmpty()) partnerTimeZoneId = pTz.trim();
+
+                    updatePartnerSummaryCards();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void updatePartnerSummaryCards() {
+        if (partnerId == null || partnerId.isEmpty()) {
+            tvTogetherDays.setText("Not paired yet");
+            tvBirthdaysSummary.setText("Pair in Account Settings");
+            tvPartnerTimeSummary.setVisibility(View.GONE);
+            return;
+        }
+
+        if (cachedDetails != null) {
+            tvTogetherDays.setText(RelationshipManager.formatDaysTogether(cachedDetails.anniversaryTimestamp));
+            tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor));
+        }
+
+        CharSequence timeText = RelationshipManager.formatPartnerCurrentTime(this, partnerName, partnerTimeZoneId, partnerAccentColor);
+        if (timeText != null && timeText.length() > 0) {
+            tvPartnerTimeSummary.setText(timeText);
+            tvPartnerTimeSummary.setVisibility(View.VISIBLE);
+        } else {
+            tvPartnerTimeSummary.setVisibility(View.GONE);
+        }
     }
 
     private void scheduleFlightTracking() {
@@ -144,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         updateDynamicAccent();
         ThemeUtils.applyAccentToActivity(this);
+        updatePartnerSummaryCards();
     }
 
     private void updateDynamicAccent() {
@@ -235,15 +296,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startForegroundService() {
-        Intent serviceIntent = new Intent(this, BackgroundService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
-    }
-
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -266,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         Long timestamp = snapshot.getValue(Long.class);
-                        // Trigger only for NEW pokes that happen after the app started
                         if (timestamp != null && timestamp > startTime) {
                             startTime = timestamp; 
                             showPokeNotification();
@@ -275,25 +326,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {}
                 });
-    }
-
-    private void listenForProfileNames() {
-        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("profiles").child(partnerId).child("name")
-                .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String name = snapshot.getValue(String.class);
-                if (name != null) {
-                    // Update partner setting in dashboard if needed
-                    findViewById(R.id.tvDashboardTitle).post(() -> {
-                        // Optional: update health card with partner name
-                    });
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
     }
 
     private void showPokeNotification() {

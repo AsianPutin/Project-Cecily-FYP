@@ -106,6 +106,16 @@
                         android:textColor="@color/nav_selected"
                         android:textSize="28sp"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvPartnerTimeSummary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text=""
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
