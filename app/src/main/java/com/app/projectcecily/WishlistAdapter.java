@@ -52,29 +52,49 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
         if (isOwner) {
             // ITEM CREATOR / OWNER:
-            // Secret Gift Rule: NEVER show bought status or dimmed card to the creator (preserve surprise!)
+            // 1. Secret Gift Rule: NEVER show partner's 'Bought!' status to creator (preserve surprise!)
+            // 2. Creator has 'Received' / 'Received! (Undo)' button.
             holder.btnMarkBought.setVisibility(View.GONE);
+            holder.btnMarkReceived.setVisibility(View.VISIBLE);
             holder.btnEdit.setVisibility(View.VISIBLE);
             holder.btnDelete.setVisibility(View.VISIBLE);
-            holder.card.setAlpha(1.0f);
+
+            if (item.isReceived) {
+                holder.btnMarkReceived.setText("Received! (Undo)");
+                holder.btnMarkReceived.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#448AFF")));
+                holder.card.setAlpha(0.5f); // Greyed out when received
+            } else {
+                holder.btnMarkReceived.setText("Received");
+                holder.btnMarkReceived.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25D366")));
+                holder.card.setAlpha(1.0f); // Normal brightness
+            }
         } else {
             // PARTNER / GIFT BUYER:
+            holder.btnMarkReceived.setVisibility(View.GONE);
             holder.btnEdit.setVisibility(View.GONE);
             holder.btnDelete.setVisibility(View.GONE);
             holder.btnMarkBought.setVisibility(View.VISIBLE);
 
-            if (item.isBought) {
+            if (item.isReceived) {
+                // If creator marked it received: Partner sees "Received by Partner" and dimmed card
+                holder.btnMarkBought.setText("Received by Partner");
+                holder.btnMarkBought.setEnabled(false);
+                holder.card.setAlpha(0.5f);
+            } else if (item.isBought) {
                 holder.btnMarkBought.setText("Bought! (Undo)");
+                holder.btnMarkBought.setEnabled(true);
                 holder.btnMarkBought.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#448AFF")));
-                holder.card.setAlpha(0.6f);
+                holder.card.setAlpha(0.7f);
             } else {
                 holder.btnMarkBought.setText("Mark Bought");
+                holder.btnMarkBought.setEnabled(true);
                 holder.btnMarkBought.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#25D366")));
                 holder.card.setAlpha(1.0f);
             }
         }
 
         holder.btnMarkBought.setOnClickListener(v -> listener.onBought(item));
+        holder.btnMarkReceived.setOnClickListener(v -> listener.onReceived(item));
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(item));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
     }
@@ -134,7 +154,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvLink;
-        Button btnMarkBought, btnEdit, btnDelete;
+        Button btnMarkBought, btnMarkReceived, btnEdit, btnDelete;
         View layoutSoloContainer, layoutCollageContainer;
         ImageView ivSoloImage, ivHeroImage, ivSideTop, ivSideBottom;
         MaterialCardView card, cardSideTop, cardSideBottom;
@@ -144,6 +164,7 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.ViewHo
             tvName = itemView.findViewById(R.id.tvItemName);
             tvLink = itemView.findViewById(R.id.tvItemLink);
             btnMarkBought = itemView.findViewById(R.id.btnMarkBought);
+            btnMarkReceived = itemView.findViewById(R.id.btnMarkReceived);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
 

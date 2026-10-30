@@ -21,7 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
@@ -39,8 +39,10 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
     private WishlistAdapter adapter;
     private List<WishlistItem> itemList = new ArrayList<>();
+    private List<WishlistItem> allRawItems = new ArrayList<>();
     private DatabaseReference dbRef;
     private String userId;
+    private boolean showingMyWishlist = true;
 
     private String[] selectedBase64Images = {"", "", ""};
     private ImageView[] slotImageViews = new ImageView[3];
@@ -54,10 +56,8 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (currentSlotIndex == 0) {
-                        // Slot 1 uses Built-in Crop Editor for square solo image
                         processUriWithCrop(imageUri);
                     } else {
-                        // Slots 2 and 3 autocrop
                         processImageAuto(imageUri, currentSlotIndex);
                     }
                 }
@@ -86,6 +86,16 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
             }
         }
 
+        MaterialButtonToggleGroup tabToggle = findViewById(R.id.wishlistTabToggle);
+        if (tabToggle != null) {
+            tabToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (isChecked) {
+                    showingMyWishlist = (checkedId == R.id.btnMyWishlistTab);
+                    filterAndDisplayItems();
+                }
+            });
+        }
+
         RecyclerView rv = findViewById(R.id.rvWishlist);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new WishlistAdapter(itemList, userId, this);
@@ -104,17 +114,44 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                itemList.clear();
+                allRawItems.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     WishlistItem item = ds.getValue(WishlistItem.class);
-                    if (item != null) itemList.add(item);
+                    if (item != null) allRawItems.add(item);
                 }
-                Collections.sort(itemList, (a, b) -> Boolean.compare(a.isBought, b.isBought));
-                adapter.notifyDataSetChanged();
+                filterAndDisplayItems();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
         });
+
+        String partnerId = UserManager.getPartnerId(this);
+        if (!partnerId.isEmpty()) {
+            FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .getReference("profiles").child(partnerId).child("name").get().addOnSuccessListener(snapshot -> {
+                String pName = snapshot.getValue(String.class);
+                if (pName != null && !pName.isEmpty()) {
+                    Button btnPartnerTab = findViewById(R.id.btnPartnerWishlistTab);
+                    if (btnPartnerTab != null) {
+                        btnPartnerTab.setText(pName + "'s Wishlist");
+                    }
+                }
+            });
+        }
+    }
+
+    private void filterAndDisplayItems() {
+        itemList.clear();
+        for (WishlistItem item : allRawItems) {
+            boolean isOwner = item.ownerId != null && item.ownerId.equals(userId);
+            if (showingMyWishlist) {
+                if (isOwner) itemList.add(item);
+            } else {
+                if (!isOwner) itemList.add(item);
+            }
+        }
+        Collections.sort(itemList, (a, b) -> Boolean.compare(a.isBought || a.isReceived, b.isBought || b.isReceived));
+        adapter.notifyDataSetChanged();
     }
 
     private void showItemDialog(WishlistItem existingItem) {
@@ -130,7 +167,6 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         selectedBase64Images = new String[]{"", "", ""};
         activeHeroIndex = 0;
 
-        // Pre-fill if editing
         if (existingItem != null) {
             etName.setText(existingItem.name != null ? existingItem.name : "");
             etLink.setText(existingItem.link != null ? existingItem.link : "");
@@ -144,7 +180,6 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
         updateDialogSlotPreviews();
 
-        // Track initial state for unsaved changes detection
         String initialTitle = etName.getText() != null ? etName.getText().toString().trim() : "";
         String initialLink = etLink.getText() != null ? etLink.getText().toString().trim() : "";
         String initialImg1 = selectedBase64Images[0];
@@ -152,18 +187,15 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         String initialImg3 = selectedBase64Images[2];
         int initialHero = activeHeroIndex;
 
-        // Slot click listeners
         for (int i = 0; i < 3; i++) {
             final int slotIdx = i;
             View cardSlot = view.findViewById(slotIdx == 0 ? R.id.cardSlot1 : (slotIdx == 1 ? R.id.cardSlot2 : R.id.cardSlot3));
             cardSlot.setOnClickListener(v -> {
                 if (selectedBase64Images[slotIdx].isEmpty()) {
-                    // Empty slot: Open gallery photo picker
                     currentSlotIndex = slotIdx;
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     galleryLauncher.launch(intent);
                 } else {
-                    // Filled slot: Set as Hero Image
                     activeHeroIndex = slotIdx;
                     updateDialogSlotPreviews();
                     Toast.makeText(WishlistActivity.this, "Set photo as Hero Image!", Toast.LENGTH_SHORT).show();
@@ -172,7 +204,6 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
             cardSlot.setOnLongClickListener(v -> {
                 if (!selectedBase64Images[slotIdx].isEmpty()) {
-                    // Long press to remove photo
                     selectedBase64Images[slotIdx] = "";
                     if (activeHeroIndex == slotIdx) activeHeroIndex = 0;
                     updateDialogSlotPreviews();
@@ -216,7 +247,6 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
         dialog.show();
 
-        // Custom positive button listener to handle validation
         Button btnSave = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         btnSave.setOnClickListener(v -> {
             String name = etName.getText() != null ? etName.getText().toString().trim() : "";
@@ -243,11 +273,9 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
             dialog.dismiss();
         });
 
-        // Custom negative button listener for unsaved changes
         Button btnCancel = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         btnCancel.setOnClickListener(v -> promptDiscardChanges.run());
 
-        // Back button interception on dialog
         dialog.setOnKeyListener((d, keyCode, event) -> {
             if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                 promptDiscardChanges.run();
@@ -268,7 +296,6 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
             }
         }
 
-        // Auto Hero selection
         if (filledIndices.isEmpty()) {
             activeHeroIndex = 0;
             ivHeroBoxPreview.setImageResource(R.drawable.ic_blank_user);
@@ -379,8 +406,27 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
     @Override
     public void onReceived(WishlistItem item) {
-        dbRef.child(item.id).child("isReceived").setValue(true);
-        Toast.makeText(this, "Gift received!", Toast.LENGTH_SHORT).show();
+        if (item.isReceived) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Undo Received Status?")
+                    .setMessage("Are you sure you want to unmark '" + item.name + "' as received?")
+                    .setPositiveButton("Yes, Undo", (dialog, which) -> {
+                        dbRef.child(item.id).child("isReceived").setValue(false);
+                        Toast.makeText(WishlistActivity.this, "Item unmarked as received", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Mark as Received?")
+                    .setMessage("Are you sure you received '" + item.name + "'?")
+                    .setPositiveButton("Yes, Mark Received", (dialog, which) -> {
+                        dbRef.child(item.id).child("isReceived").setValue(true);
+                        Toast.makeText(WishlistActivity.this, "Marked as received!", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        }
     }
 
     @Override
