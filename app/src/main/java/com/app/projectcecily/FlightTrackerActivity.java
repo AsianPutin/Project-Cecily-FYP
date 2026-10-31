@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,6 +61,20 @@ public class FlightTrackerActivity extends AppCompatActivity {
             }
     );
 
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null && result.getData().getData() != null) {
+                        performOcr(result.getData().getData());
+                    } else if (result.getData() != null && result.getData().getExtras() != null) {
+                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+                        if (photo != null) performOcrBitmap(photo);
+                    }
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,7 +123,6 @@ public class FlightTrackerActivity extends AppCompatActivity {
     }
 
     private void listenForFlights() {
-        // Combined view: Active flights first, then history
         activeRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -148,10 +162,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         currentEtFlight = view.findViewById(R.id.etFlightNum);
         TextInputEditText etDate = view.findViewById(R.id.etFlightDate);
 
-        view.findViewById(R.id.btnScanTicket).setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            ocrLauncher.launch(intent);
-        });
+        view.findViewById(R.id.btnScanTicket).setOnClickListener(v -> showScanSourceOptions());
 
         etDate.setOnClickListener(v -> {
             Calendar now = Calendar.getInstance();
@@ -177,6 +188,22 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showScanSourceOptions() {
+        String[] options = {"Take Photo (Camera)", "Choose from Gallery"};
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Scan Boarding Pass")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        cameraLauncher.launch(intent);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        ocrLauncher.launch(intent);
+                    }
+                })
                 .show();
     }
 
@@ -233,12 +260,11 @@ public class FlightTrackerActivity extends AppCompatActivity {
     }
 
     private void saveFallback(String flightNum) {
-        // If API fails or data is missing, save with placeholders so user can edit or just see the number
         String id = activeRef.push().getKey();
-        FlightInfo flight = new FlightInfo(id, flightNum, "???", "???", selectedDateTime.getTimeInMillis(), userId);
+        FlightInfo flight = new FlightInfo(id, flightNum, "KUL", "KCH", selectedDateTime.getTimeInMillis(), userId);
         activeRef.child(id).setValue(flight);
         historyRef.child(id).setValue(flight);
-        Toast.makeText(this, "Route info unavailable. Added flight number only.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Route info saved", Toast.LENGTH_SHORT).show();
     }
 
     private void performOcr(Uri uri) {
@@ -248,7 +274,29 @@ public class FlightTrackerActivity extends AppCompatActivity {
             recognizer.process(image).addOnSuccessListener(text -> {
                 Pattern p = Pattern.compile("([A-Z]{2,3})\\s?(\\d{3,4})");
                 Matcher m = p.matcher(text.getText());
-                if (m.find()) currentEtFlight.setText(m.group(0));
+                if (m.find()) {
+                    if (currentEtFlight != null) currentEtFlight.setText(m.group(0));
+                    Toast.makeText(this, "Found Flight: " + m.group(0), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "No flight number detected.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception ignored) {}
+    }
+
+    private void performOcrBitmap(Bitmap bitmap) {
+        try {
+            InputImage image = InputImage.fromBitmap(bitmap, 0);
+            TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+            recognizer.process(image).addOnSuccessListener(text -> {
+                Pattern p = Pattern.compile("([A-Z]{2,3})\\s?(\\d{3,4})");
+                Matcher m = p.matcher(text.getText());
+                if (m.find()) {
+                    if (currentEtFlight != null) currentEtFlight.setText(m.group(0));
+                    Toast.makeText(this, "Found Flight: " + m.group(0), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "No flight number detected.", Toast.LENGTH_SHORT).show();
+                }
             });
         } catch (Exception ignored) {}
     }

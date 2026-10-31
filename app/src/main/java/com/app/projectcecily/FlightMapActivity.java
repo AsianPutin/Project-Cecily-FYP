@@ -219,19 +219,25 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
                 long elapsed = now - info.depTimeMillis;
 
                 double progress = (double) elapsed / totalDuration;
-                if (progress < 0) progress = 0.45; // Default 45% for demo if not in range
+                if (progress < 0) progress = 0.45; // Default 45% for demo/simulation
                 if (progress > 1) progress = 1.0;
 
                 int pct = (int) (progress * 100);
                 pbProgress.setProgress(pct);
                 tvProgress.setText("In Flight - " + pct + "% Completed");
 
-                // Translate track plane icon on top card
-                View trackContainer = findViewById(R.id.trackContainer);
-                if (trackContainer != null && trackContainer.getWidth() > 0) {
-                    float maxX = trackContainer.getWidth() - ivPlaneTrackIcon.getWidth();
-                    ivPlaneTrackIcon.setTranslationX((float) (progress * maxX));
-                }
+                // Position plane track icon in tandem with progress bar
+                final double finalProgress = progress;
+                pbProgress.post(() -> {
+                    int trackWidth = pbProgress.getWidth();
+                    int iconWidth = ivPlaneTrackIcon.getWidth();
+                    if (trackWidth > iconWidth) {
+                        float availableTrack = trackWidth - iconWidth;
+                        float targetX = (float) (finalProgress * availableTrack);
+                        ivPlaneTrackIcon.setTranslationX(targetX);
+                        ivPlaneTrackIcon.setTranslationY(0f);
+                    }
+                });
 
                 double lat = start.latitude + (end.latitude - start.latitude) * progress;
                 double lon = start.longitude + (end.longitude - start.longitude) * progress;
