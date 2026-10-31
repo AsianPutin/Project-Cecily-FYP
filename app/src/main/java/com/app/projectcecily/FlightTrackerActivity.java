@@ -184,25 +184,6 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                     FlightInfo info = ds.getValue(FlightInfo.class);
                     if (info != null) flightList.add(info);
                 }
-                loadHistory();
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
-    }
-
-    private void loadHistory() {
-        historyRef.limitToLast(5).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    FlightInfo info = ds.getValue(FlightInfo.class);
-                    if (info != null) {
-                        boolean exists = false;
-                        for (FlightInfo f : flightList) if (f.id.equals(info.id)) exists = true;
-                        if (!exists) flightList.add(info);
-                    }
-                }
                 sortFlightList();
                 adapter.notifyDataSetChanged();
             }
@@ -210,6 +191,7 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
+
 
     private void sortFlightList() {
         long now = System.currentTimeMillis();

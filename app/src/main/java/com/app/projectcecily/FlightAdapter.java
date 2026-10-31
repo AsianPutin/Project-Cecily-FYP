@@ -95,6 +95,15 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
         holder.tvStatus.setTextColor(textColor);
         holder.card.setAlpha(cardAlpha);
 
+        int accentColor = ThemeUtils.getAccentColor(holder.itemView.getContext());
+        if ("FLYING".equalsIgnoreCase(displayStatus) || "ARRIVING".equalsIgnoreCase(displayStatus)) {
+            holder.card.setStrokeColor(accentColor);
+            int strokePx = (int) (2 * holder.itemView.getContext().getResources().getDisplayMetrics().density);
+            holder.card.setStrokeWidth(strokePx);
+        } else {
+            holder.card.setStrokeWidth(0);
+        }
+
         holder.btnTrack.setVisibility("LANDED".equals(displayStatus) ? View.GONE : View.VISIBLE);
 
         holder.btnTrack.setOnClickListener(v -> {
