@@ -3,20 +3,20 @@ package com.app.projectcecily;
 public class FlightInfo {
     public String id;
     public String flightNumber;
-    public String airlineName = "AirAsia";
+    public String airlineName = "Airline";
     public String depAirport = "KUL";
     public String depCity = "Kuala Lumpur";
     public String arrAirport = "KCH";
     public String arrCity = "Kuching";
-    public String depTimeStr = "7:17 am";
-    public String arrTimeStr = "9:04 am";
-    public String depDateStr = "Sat, 31 Oct";
-    public String arrDateStr = "Sat, 31 Oct";
-    public String depTerminal = "2";
-    public String depGate = "J10";
+    public String depTimeStr = "";
+    public String arrTimeStr = "";
+    public String depDateStr = "";
+    public String arrDateStr = "";
+    public String depTerminal = "-";
+    public String depGate = "-";
     public String arrTerminal = "-";
     public String arrGate = "-";
-    public String durationStr = "1h 47m";
+    public String durationStr = "";
 
     public long depTimeMillis;
     public long estimatedArrivalMillis;
@@ -36,5 +36,9 @@ public class FlightInfo {
         this.depTimeMillis = depTimeMillis;
         this.estimatedArrivalMillis = depTimeMillis + (2 * 60 * 60 * 1000);
         this.ownerId = ownerId;
+        this.depTerminal = "-";
+        this.depGate = "-";
+        this.arrTerminal = "-";
+        this.arrGate = "-";
     }
 }
