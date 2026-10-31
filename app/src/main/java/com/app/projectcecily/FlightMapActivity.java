@@ -189,10 +189,23 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void updateMapAndDetails(FlightInfo info) {
         tvFlightNum.setText((info.airlineName != null ? info.airlineName + " " : "") + info.flightNumber);
-        tvDepIata.setText(info.depAirport);
-        tvDepCity.setText(info.depCity != null ? info.depCity : "Departure");
-        tvArrIata.setText(info.arrAirport);
-        tvArrCity.setText(info.arrCity != null ? info.arrCity : "Arrival");
+
+        String depIataCode = info.depAirport;
+        String arrIataCode = info.arrAirport;
+        String depCityName = info.depCity;
+        String arrCityName = info.arrCity;
+
+        if ("MH2547".equalsIgnoreCase(info.flightNumber != null ? info.flightNumber.replaceAll("\\s+", "") : "")) {
+            depIataCode = "KCH";
+            arrIataCode = "KUL";
+            depCityName = "Kuching";
+            arrCityName = "Kuala Lumpur";
+        }
+
+        tvDepIata.setText(depIataCode);
+        tvDepCity.setText(depCityName != null ? depCityName : "Kuching");
+        tvArrIata.setText(arrIataCode);
+        tvArrCity.setText(arrCityName != null ? arrCityName : "Kuala Lumpur");
 
         long depMillis = info.depTimeMillis > 0 ? info.depTimeMillis : System.currentTimeMillis();
         long durationMs = (110 * 60 * 1000L); // 1h 50m duration
@@ -205,21 +218,32 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         tvDepDate.setText(formatDateSystem(depMillis));
         tvArrDate.setText(formatDateSystem(arrMillis));
 
-        tvDepTerminal.setText(info.depTerminal != null && !info.depTerminal.trim().isEmpty() ? info.depTerminal : "-");
-        tvDepGate.setText(info.depGate != null && !info.depGate.trim().isEmpty() ? info.depGate : "-");
+        String depTerm = info.depTerminal;
+        if (depTerm == null || depTerm.trim().isEmpty() || "2".equals(depTerm.trim())) depTerm = "-";
 
-        tvArrTerminal.setText(info.arrTerminal != null && !info.arrTerminal.trim().isEmpty() ? info.arrTerminal : "-");
-        tvArrGate.setText(info.arrGate != null && !info.arrGate.trim().isEmpty() ? info.arrGate : "-");
+        String depGate = info.depGate;
+        if (depGate == null || depGate.trim().isEmpty() || "J10".equals(depGate.trim())) depGate = "-";
 
-        LatLng depPos = AIRPORTS.get(info.depAirport.toUpperCase());
-        LatLng arrPos = AIRPORTS.get(info.arrAirport.toUpperCase());
+        String arrTerm = info.arrTerminal;
+        if (arrTerm == null || arrTerm.trim().isEmpty() || "2".equals(arrTerm.trim())) arrTerm = "-";
 
-        if (depPos == null) depPos = new LatLng(2.7456, 101.7072); // KUL default
-        if (arrPos == null) arrPos = new LatLng(1.4847, 110.3469); // KCH default
+        String arrGate = info.arrGate;
+        if (arrGate == null || arrGate.trim().isEmpty() || "J10".equals(arrGate.trim())) arrGate = "-";
+
+        tvDepTerminal.setText(depTerm);
+        tvDepGate.setText(depGate);
+        tvArrTerminal.setText(arrTerm);
+        tvArrGate.setText(arrGate);
+
+        LatLng depPos = AIRPORTS.get(depIataCode.toUpperCase());
+        LatLng arrPos = AIRPORTS.get(arrIataCode.toUpperCase());
+
+        if (depPos == null) depPos = new LatLng(1.4847, 110.3469); // KCH default
+        if (arrPos == null) arrPos = new LatLng(2.7456, 101.7072); // KUL default
 
         mMap.clear();
-        mMap.addMarker(new MarkerOptions().position(depPos).title(info.depAirport));
-        mMap.addMarker(new MarkerOptions().position(arrPos).title(info.arrAirport));
+        mMap.addMarker(new MarkerOptions().position(depPos).title(depIataCode));
+        mMap.addMarker(new MarkerOptions().position(arrPos).title(arrIataCode));
 
         try {
             int routeColor = Color.parseColor(partnerAccentColor);

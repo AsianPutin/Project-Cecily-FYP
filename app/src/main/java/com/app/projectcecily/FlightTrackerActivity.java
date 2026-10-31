@@ -560,12 +560,27 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     }
 
     private void fetchAndSaveFlight(String flightNum, long targetTimeMillis) {
-        fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum), "KCH", "KUL", "Kuching", "Kuala Lumpur");
+        String depIata = "KCH";
+        String arrIata = "KUL";
+        String depCity = "Kuching";
+        String arrCity = "Kuala Lumpur";
+        if (flightNum.startsWith("AK") || flightNum.startsWith("D7")) {
+            depIata = "KUL";
+            arrIata = "KCH";
+            depCity = "Kuala Lumpur";
+            arrCity = "Kuching";
+        }
+        fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum), depIata, arrIata, depCity, arrCity);
     }
 
     private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String defaultAirlineName, String depIata, String arrIata, String depCity, String arrCity) {
         final long initialTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         final String knownAirline = (defaultAirlineName != null && !defaultAirlineName.equals("Airline")) ? defaultAirlineName : getAirlineNameFromCode(flightNum);
+
+        final String finalDepIata = (depIata != null && !depIata.trim().isEmpty()) ? depIata : "KCH";
+        final String finalArrIata = (arrIata != null && !arrIata.trim().isEmpty()) ? arrIata : "KUL";
+        final String finalDepCity = (depCity != null && !depCity.trim().isEmpty()) ? depCity : "Kuching";
+        final String finalArrCity = (arrCity != null && !arrCity.trim().isEmpty()) ? arrCity : "Kuala Lumpur";
 
         Toast.makeText(this, "Fetching route details...", Toast.LENGTH_SHORT).show();
 
@@ -582,11 +597,11 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                     JsonObject arrObj = data.has("arrival") && !data.get("arrival").isJsonNull() ? data.getAsJsonObject("arrival") : new JsonObject();
                     JsonObject airlineObj = data.has("airline") && !data.get("airline").isJsonNull() ? data.getAsJsonObject("airline") : new JsonObject();
 
-                    String apiDepIata = depObj.has("iata") && !depObj.get("iata").isJsonNull() ? depObj.get("iata").getAsString() : depIata;
-                    String apiArrIata = arrObj.has("iata") && !arrObj.get("iata").isJsonNull() ? arrObj.get("iata").getAsString() : arrIata;
-
-                    String depAirportName = depObj.has("airport") && !depObj.get("airport").isJsonNull() ? depObj.get("airport").getAsString() : depCity;
-                    String arrAirportName = arrObj.has("airport") && !arrObj.get("airport").isJsonNull() ? arrObj.get("airport").getAsString() : arrCity;
+                    // Lock to extracted PDF ground truth!
+                    String depIataCode = finalDepIata;
+                    String arrIataCode = finalArrIata;
+                    String depAirportName = finalDepCity;
+                    String arrAirportName = finalArrCity;
 
                     String status = data.has("flight_status") && !data.get("flight_status").isJsonNull() ? data.get("flight_status").getAsString().toUpperCase() : "AWAITING";
                     String apiAirline = airlineObj.has("name") && !airlineObj.get("name").isJsonNull() ? airlineObj.get("name").getAsString() : knownAirline;
@@ -603,7 +618,7 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                     }
 
                     String id = activeRef.push().getKey();
-                    FlightInfo flight = new FlightInfo(id, flightNum, apiDepIata, apiArrIata, finalDepTime, userId);
+                    FlightInfo flight = new FlightInfo(id, flightNum, depIataCode, arrIataCode, finalDepTime, userId);
                     flight.airlineName = knownAirline.equals("Airline") ? apiAirline : knownAirline;
                     flight.depCity = depAirportName;
                     flight.arrCity = arrAirportName;
@@ -617,15 +632,15 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                     historyRef.child(id).setValue(flight);
                     scheduleReminders(flight);
 
-                    Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + apiDepIata + " -> " + apiArrIata, Toast.LENGTH_LONG).show();
+                    Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + depIataCode + " -> " + arrIataCode, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    saveFallback(flightNum, initialTime, knownAirline, depIata, arrIata, depCity, arrCity);
+                    saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity);
                 }
             }
 
             @Override
             public void onError(String message) {
-                saveFallback(flightNum, initialTime, knownAirline, depIata, arrIata, depCity, arrCity);
+                saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity);
             }
         });
     }
