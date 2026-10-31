@@ -45,6 +45,16 @@ import java.util.regex.Pattern;
 
 public class FlightTrackerActivity extends AppCompatActivity {
 
+    private static class ParsedFlightData {
+        String flightNumber;
+        long timeMillis;
+
+        ParsedFlightData(String flightNumber, long timeMillis) {
+            this.flightNumber = flightNumber;
+            this.timeMillis = timeMillis;
+        }
+    }
+
     private FlightAdapter adapter;
     private List<FlightInfo> flightList = new ArrayList<>();
     private DatabaseReference activeRef, historyRef;
@@ -196,7 +206,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
                 .setPositiveButton("Auto-Fetch & Add", (dialog, which) -> {
                     String fn = currentEtFlight.getText().toString().toUpperCase().replace(" ", "");
                     if (!fn.isEmpty()) {
-                        fetchAndSaveFlight(fn);
+                        fetchAndSaveFlight(fn, selectedDateTime.getTimeInMillis());
                     }
                 })
                 .setNegativeButton("Cancel", null)
@@ -267,8 +277,12 @@ public class FlightTrackerActivity extends AppCompatActivity {
             if (existing.flightNumber != null) {
                 String cleanExistFn = existing.flightNumber.replaceAll("\\s+", "").toUpperCase();
                 if (cleanExistFn.equals(cleanNewFn)) {
-                    long diff = Math.abs(existing.depTimeMillis - depTimeMillis);
-                    if (diff < 15 * 60 * 1000L) {
+                    if (depTimeMillis > 0 && existing.depTimeMillis > 0) {
+                        long diff = Math.abs(existing.depTimeMillis - depTimeMillis);
+                        if (diff < 24 * 60 * 60 * 1000L) { // Same flight on same day
+                            return true;
+                        }
+                    } else {
                         return true;
                     }
                 }
@@ -277,77 +291,147 @@ public class FlightTrackerActivity extends AppCompatActivity {
         return false;
     }
 
-    private void performOcrMultiFlight(String text) {
-        Pattern p = Pattern.compile("\\b([A-Z0-9]{2,3})\\s?(\\d{3,4})\\b");
-        Matcher m = p.matcher(text);
-        List<String> foundFlightNums = new ArrayList<>();
+    private List<ParsedFlightData> parseFlightEntriesFromPdf(String text) {
+        List<ParsedFlightData> results = new ArrayList<>();
+        if (text == null || text.trim().isEmpty()) return results;
 
-        while (m.find()) {
-            String matchStr = m.group(0);
-            if (matchStr == null) continue;
-            String code = matchStr.replaceAll("\\s+", "").toUpperCase();
-            if (code.startsWith("NO") || code.startsWith("PNR") || code.startsWith("REF") || code.startsWith("ID")) {
-                continue;
-            }
-            if (!foundFlightNums.contains(code)) {
-                foundFlightNums.add(code);
+        Pattern flightPattern = Pattern.compile("\\b([A-Z0-9]{2,3})\\s?(\\d{3,4})\\b");
+        Pattern datePattern = Pattern.compile("(\\d{1,2}:\\d{2})\\s*,?\\s*([A-Za-z]+)\\s+(\\d{1,2})\\s*,?\\s*(\\d{4})");
+
+        String[] lines = text.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            Matcher fm = flightPattern.matcher(line);
+            if (fm.find()) {
+                String matchStr = fm.group(0);
+                if (matchStr == null) continue;
+                String flightNum = matchStr.replaceAll("\\s+", "").toUpperCase();
+                if (flightNum.startsWith("NO") || flightNum.startsWith("PNR") || flightNum.startsWith("REF") || flightNum.startsWith("ID")) {
+                    continue;
+                }
+
+                long extractedMillis = 0;
+                int startLine = Math.max(0, i - 6);
+                int endLine = Math.min(lines.length - 1, i + 6);
+
+                for (int j = startLine; j <= endLine; j++) {
+                    Matcher dm = datePattern.matcher(lines[j]);
+                    if (dm.find()) {
+                        String timePart = dm.group(1);
+                        String monthPart = dm.group(2);
+                        String dayPart = dm.group(3);
+                        String yearPart = dm.group(4);
+
+                        extractedMillis = parseDateAndTimeToMillis(timePart, monthPart, dayPart, yearPart);
+                        if (extractedMillis > 0) break;
+                    }
+                }
+
+                boolean exists = false;
+                for (ParsedFlightData p : results) {
+                    if (p.flightNumber.equals(flightNum)) {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists) {
+                    results.add(new ParsedFlightData(flightNum, extractedMillis));
+                }
             }
         }
+        return results;
+    }
 
-        if (foundFlightNums.isEmpty()) {
+    private long parseDateAndTimeToMillis(String timeStr, String monthStr, String dayStr, String yearStr) {
+        try {
+            String fullStr = monthStr + " " + dayStr + " " + yearStr + " " + timeStr;
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMMM d yyyy HH:mm", java.util.Locale.US);
+            java.util.Date date = sdf.parse(fullStr);
+            if (date != null) return date.getTime();
+        } catch (Exception e1) {
+            try {
+                String fullStr = monthStr + " " + dayStr + " " + yearStr + " " + timeStr;
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM d yyyy HH:mm", java.util.Locale.US);
+                java.util.Date date = sdf.parse(fullStr);
+                if (date != null) return date.getTime();
+            } catch (Exception ignored) {}
+        }
+        return 0;
+    }
+
+    private long parseIsoTimeToMillis(String isoStr) {
+        if (isoStr == null || isoStr.trim().isEmpty()) return 0;
+        try {
+            String cleanIso = isoStr.contains("+") ? isoStr.split("\\+")[0] : isoStr;
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US);
+            java.util.Date date = sdf.parse(cleanIso);
+            if (date != null) return date.getTime();
+        } catch (Exception ignored) {}
+        return 0;
+    }
+
+    private void performOcrMultiFlight(String text) {
+        List<ParsedFlightData> parsedFlights = parseFlightEntriesFromPdf(text);
+
+        if (parsedFlights.isEmpty()) {
             Toast.makeText(this, "No valid flight numbers detected in PDF.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        List<String> newFlightNums = new ArrayList<>();
-        for (String fn : foundFlightNums) {
-            if (isDuplicateFlight(fn, selectedDateTime.getTimeInMillis())) {
-                Toast.makeText(this, "Duplicate flight " + fn + " skipped.", Toast.LENGTH_SHORT).show();
+        List<ParsedFlightData> newFlights = new ArrayList<>();
+        for (ParsedFlightData p : parsedFlights) {
+            if (isDuplicateFlight(p.flightNumber, p.timeMillis)) {
+                Toast.makeText(this, "Duplicate flight " + p.flightNumber + " skipped.", Toast.LENGTH_SHORT).show();
             } else {
-                newFlightNums.add(fn);
+                newFlights.add(p);
             }
         }
 
-        if (newFlightNums.isEmpty()) {
+        if (newFlights.isEmpty()) {
             Toast.makeText(this, "All detected flights are already in your list!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (newFlightNums.size() == 1) {
-            String fn = newFlightNums.get(0);
-            if (currentEtFlight != null) currentEtFlight.setText(fn);
-            fetchAndSaveFlight(fn);
+        if (newFlights.size() == 1) {
+            ParsedFlightData target = newFlights.get(0);
+            if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
+            fetchAndSaveFlight(target.flightNumber, target.timeMillis);
         } else {
-            showMultipleFlightsDetectedDialog(newFlightNums);
+            showMultipleFlightsDetectedDialog(newFlights);
         }
     }
 
-    private void showMultipleFlightsDetectedDialog(List<String> flightNums) {
-        String[] items = new String[flightNums.size() + 1];
-        for (int i = 0; i < flightNums.size(); i++) {
-            items[i] = "Flight " + (i + 1) + ": " + flightNums.get(i);
+    private void showMultipleFlightsDetectedDialog(List<ParsedFlightData> flightsData) {
+        String[] items = new String[flightsData.size() + 1];
+        for (int i = 0; i < flightsData.size(); i++) {
+            ParsedFlightData p = flightsData.get(i);
+            String dateLabel = p.timeMillis > 0 ? android.text.format.DateFormat.format("MMM dd, HH:mm", p.timeMillis).toString() : "Date pending";
+            items[i] = "Flight " + (i + 1) + ": " + p.flightNumber + " (" + dateLabel + ")";
         }
-        items[flightNums.size()] = "★ Add All " + flightNums.size() + " Flights Automatically";
+        items[flightsData.size()] = "★ Add All " + flightsData.size() + " Flights Automatically";
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Multiple Flights Detected in PDF!")
                 .setItems(items, (dialog, which) -> {
-                    if (which == flightNums.size()) {
-                        for (String fn : flightNums) {
-                            fetchAndSaveFlight(fn);
+                    if (which == flightsData.size()) {
+                        for (ParsedFlightData p : flightsData) {
+                            fetchAndSaveFlight(p.flightNumber, p.timeMillis);
                         }
-                        Toast.makeText(this, "Adding all " + flightNums.size() + " flights...", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Adding all " + flightsData.size() + " flights...", Toast.LENGTH_SHORT).show();
                     } else {
-                        String selectedFn = flightNums.get(which);
-                        if (currentEtFlight != null) currentEtFlight.setText(selectedFn);
-                        fetchAndSaveFlight(selectedFn);
+                        ParsedFlightData target = flightsData.get(which);
+                        if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
+                        fetchAndSaveFlight(target.flightNumber, target.timeMillis);
                     }
                 })
                 .show();
     }
 
-    private void fetchAndSaveFlight(String flightNum) {
+    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis) {
+        final long initialTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         Toast.makeText(this, "Fetching route details...", Toast.LENGTH_SHORT).show();
+
         apiHelper.getFlightStatus(flightNum, new AviationStackHelper.FlightCallback() {
             @Override
             public void onSuccess(JsonObject data) {
@@ -370,8 +454,14 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     String arrTerm = arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull() ? arrObj.get("terminal").getAsString() : "-";
                     String arrGate = arrObj.has("gate") && !arrObj.get("gate").isJsonNull() ? arrObj.get("gate").getAsString() : "-";
 
+                    long finalDepTime = initialTime;
+                    if (depObj.has("scheduled") && !depObj.get("scheduled").isJsonNull()) {
+                        long apiSchedTime = parseIsoTimeToMillis(depObj.get("scheduled").getAsString());
+                        if (apiSchedTime > 0) finalDepTime = apiSchedTime;
+                    }
+
                     String id = activeRef.push().getKey();
-                    FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, selectedDateTime.getTimeInMillis(), userId);
+                    FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, finalDepTime, userId);
                     flight.airlineName = airline;
                     flight.depCity = depAirportName;
                     flight.arrCity = arrAirportName;
@@ -387,20 +477,21 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
                     Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + depIata + " -> " + arrIata, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    saveFallback(flightNum);
+                    saveFallback(flightNum, initialTime);
                 }
             }
 
             @Override
             public void onError(String message) {
-                saveFallback(flightNum);
+                saveFallback(flightNum, initialTime);
             }
         });
     }
 
-    private void saveFallback(String flightNum) {
+    private void saveFallback(String flightNum, long targetTimeMillis) {
         String id = activeRef.push().getKey();
-        FlightInfo flight = new FlightInfo(id, flightNum, "KUL", "KCH", selectedDateTime.getTimeInMillis(), userId);
+        long depTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
+        FlightInfo flight = new FlightInfo(id, flightNum, "KUL", "KCH", depTime, userId);
         activeRef.child(id).setValue(flight);
         historyRef.child(id).setValue(flight);
         Toast.makeText(this, "Route info saved", Toast.LENGTH_SHORT).show();
