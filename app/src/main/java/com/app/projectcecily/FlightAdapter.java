@@ -7,24 +7,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.gson.JsonObject;
 import java.util.List;
 
 public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder> {
 
     private final List<FlightInfo> flights;
     private final String currentUserId;
-    private final AviationStackHelper apiHelper = new AviationStackHelper();
+    private OnFlightActionListener listener;
 
-    public FlightAdapter(List<FlightInfo> flights, String currentUserId) {
+    public interface OnFlightActionListener {
+        void onEdit(FlightInfo flight);
+        void onDelete(FlightInfo flight);
+    }
+
+    public FlightAdapter(List<FlightInfo> flights, String currentUserId, OnFlightActionListener listener) {
         this.flights = flights;
         this.currentUserId = currentUserId;
+        this.listener = listener;
     }
 
     @NonNull
@@ -57,7 +59,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             displayStatus = "LANDED";
             bgColor = 0xFFE8F5E9; // Green
             textColor = 0xFF2E7D32;
-            cardAlpha = 0.6f;
+            cardAlpha = 0.5f; // Greyed out for landed flights
         } else if (now > depTime) {
             long timeUntilArrival = arrTime - now;
             if (timeUntilArrival < (45 * 60 * 1000)) {
@@ -101,33 +103,12 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             v.getContext().startActivity(intent);
         });
 
-        holder.btnRefresh.setOnClickListener(v -> {
-            Toast.makeText(v.getContext(), "Refreshing live data...", Toast.LENGTH_SHORT).show();
-            apiHelper.getFlightStatus(flight.flightNumber, new AviationStackHelper.FlightCallback() {
-                @Override
-                public void onSuccess(JsonObject data) {
-                    String apiStatus = data.get("flight_status").getAsString().toUpperCase();
-                    FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                            .getReference("flight_history").child(currentUserId).child(flight.id).child("status").setValue(apiStatus);
-                }
-                @Override
-                public void onError(String message) {
-                    Toast.makeText(v.getContext(), "API: " + message, Toast.LENGTH_SHORT).show();
-                }
-            });
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) listener.onEdit(flight);
         });
 
         holder.btnDelete.setOnClickListener(v -> {
-            new MaterialAlertDialogBuilder(v.getContext())
-                    .setTitle("Delete Flight?")
-                    .setMessage("Are you sure you want to delete flight '" + flight.flightNumber + "'?")
-                    .setPositiveButton("Delete", (dialog, which) -> {
-                        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                                .getReference("flight_history").child(currentUserId).child(flight.id).removeValue();
-                        Toast.makeText(v.getContext(), "Flight deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            if (listener != null) listener.onDelete(flight);
         });
     }
 
@@ -136,7 +117,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvFlightNum, tvStatus, tvDep, tvArr, tvETA;
-        Button btnTrack, btnRefresh, btnDelete;
+        Button btnTrack, btnEdit, btnDelete;
         MaterialCardView card;
 
         public ViewHolder(@NonNull View itemView) {
@@ -147,7 +128,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             tvArr = itemView.findViewById(R.id.tvArrAirport);
             tvETA = itemView.findViewById(R.id.tvFlightETA);
             btnTrack = itemView.findViewById(R.id.btnTrackLive);
-            btnRefresh = itemView.findViewById(R.id.btnRefreshStatus);
+            btnEdit = itemView.findViewById(R.id.btnEditFlight);
             btnDelete = itemView.findViewById(R.id.btnDeleteFlight);
             card = itemView.findViewById(R.id.flightCard);
         }

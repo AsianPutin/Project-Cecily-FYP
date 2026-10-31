@@ -99,7 +99,7 @@
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-        <!-- 50% Track Live | 25% Refresh | 25% Bright Red Delete -->
+        <!-- 50% Track Live | 25% Edit | 25% Bright Red Delete -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,14 +117,14 @@
                 android:text="Track Live" />
 
             <Button
-                android:id="@+id/btnRefreshStatus"
+                android:id="@+id/btnEditFlight"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:paddingHorizontal="4dp"
-                android:text="Refresh" />
+                android:text="Edit" />
 
             <Button
                 android:id="@+id/btnDeleteFlight"

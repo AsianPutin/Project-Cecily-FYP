@@ -14,13 +14,16 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,11 +42,12 @@ import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FlightTrackerActivity extends AppCompatActivity {
+public class FlightTrackerActivity extends AppCompatActivity implements FlightAdapter.OnFlightActionListener {
 
     private static class ParsedFlightData {
         String flightNumber;
@@ -149,11 +153,11 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
         RecyclerView rv = findViewById(R.id.rvFlights);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FlightAdapter(flightList, userId);
+        adapter = new FlightAdapter(flightList, userId, this);
         rv.setAdapter(adapter);
 
         View fab = findViewById(R.id.fabAddFlight);
-        fab.setOnClickListener(v -> showAddFlightDialog());
+        fab.setOnClickListener(v -> showAddOrEditFlightDialog(null));
         
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
@@ -199,6 +203,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
                         if (!exists) flightList.add(info);
                     }
                 }
+                sortFlightList();
                 adapter.notifyDataSetChanged();
             }
             @Override
@@ -206,38 +211,126 @@ public class FlightTrackerActivity extends AppCompatActivity {
         });
     }
 
-    private void showAddFlightDialog() {
+    private void sortFlightList() {
+        long now = System.currentTimeMillis();
+        Collections.sort(flightList, (a, b) -> {
+            boolean aLanded = isLanded(a, now);
+            boolean bLanded = isLanded(b, now);
+
+            if (aLanded != bLanded) {
+                return Boolean.compare(aLanded, bLanded);
+            }
+
+            boolean aFlying = isFlying(a, now);
+            boolean bFlying = isFlying(b, now);
+
+            if (aFlying != bFlying) {
+                return Boolean.compare(!aFlying, !bFlying);
+            }
+
+            return Long.compare(a.depTimeMillis, b.depTimeMillis);
+        });
+    }
+
+    private boolean isLanded(FlightInfo info, long now) {
+        if ("LANDED".equalsIgnoreCase(info.status)) return true;
+        long arrTime = info.depTimeMillis + (110 * 60 * 1000L);
+        return now > arrTime + (30 * 60 * 1000L);
+    }
+
+    private boolean isFlying(FlightInfo info, long now) {
+        if ("FLYING".equalsIgnoreCase(info.status) || "ACTIVE".equalsIgnoreCase(info.status)) return true;
+        long arrTime = info.depTimeMillis + (110 * 60 * 1000L);
+        return now >= info.depTimeMillis && now <= arrTime + (30 * 60 * 1000L);
+    }
+
+    private void showAddOrEditFlightDialog(FlightInfo existingFlight) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_flight, null);
         currentEtFlight = view.findViewById(R.id.etFlightNum);
         TextInputEditText etDate = view.findViewById(R.id.etFlightDate);
+
+        final Calendar editDateTime = Calendar.getInstance();
+
+        if (existingFlight != null) {
+            currentEtFlight.setText(existingFlight.flightNumber);
+            editDateTime.setTimeInMillis(existingFlight.depTimeMillis);
+            etDate.setText(android.text.format.DateFormat.format("MMM dd, HH:mm", editDateTime));
+        }
 
         view.findViewById(R.id.btnScanTicket).setOnClickListener(v -> showScanSourceOptions());
 
         etDate.setOnClickListener(v -> {
             Calendar now = Calendar.getInstance();
             new DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
-                selectedDateTime.set(Calendar.YEAR, year);
-                selectedDateTime.set(Calendar.MONTH, month);
-                selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                editDateTime.set(Calendar.YEAR, year);
+                editDateTime.set(Calendar.MONTH, month);
+                editDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                 new TimePickerDialog(this, (view2, h, m) -> {
-                    selectedDateTime.set(Calendar.HOUR_OF_DAY, h);
-                    selectedDateTime.set(Calendar.MINUTE, m);
-                    etDate.setText(android.text.format.DateFormat.format("MMM dd, HH:mm", selectedDateTime));
+                    editDateTime.set(Calendar.HOUR_OF_DAY, h);
+                    editDateTime.set(Calendar.MINUTE, m);
+                    etDate.setText(android.text.format.DateFormat.format("MMM dd, HH:mm", editDateTime));
                 }, 12, 0, true).show();
             }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show();
         });
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Add Flight")
+        String initialFn = currentEtFlight.getText() != null ? currentEtFlight.getText().toString().trim() : "";
+        long initialTime = existingFlight != null ? existingFlight.depTimeMillis : 0;
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(existingFlight == null ? "Add Flight" : "Edit Flight")
                 .setView(view)
-                .setPositiveButton("Auto-Fetch & Add", (dialog, which) -> {
-                    String fn = currentEtFlight.getText().toString().toUpperCase().replace(" ", "");
-                    if (!fn.isEmpty()) {
-                        fetchAndSaveFlight(fn, selectedDateTime.getTimeInMillis());
-                    }
-                })
+                .setPositiveButton(existingFlight == null ? "Auto-Fetch & Add" : "Save", null)
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        java.util.function.Supplier<Boolean> hasUnsavedChanges = () -> {
+            String curFn = currentEtFlight.getText() != null ? currentEtFlight.getText().toString().trim() : "";
+            long curTime = editDateTime.getTimeInMillis();
+            return !curFn.equals(initialFn) || curTime != initialTime;
+        };
+
+        Runnable promptDiscard = () -> {
+            if (hasUnsavedChanges.get()) {
+                new MaterialAlertDialogBuilder(FlightTrackerActivity.this)
+                        .setTitle("Discard Unsaved Changes?")
+                        .setMessage("You have unsaved changes. Are you sure you want to discard them?")
+                        .setPositiveButton("Discard", (d, which) -> dialog.dismiss())
+                        .setNegativeButton("Keep Editing", null)
+                        .show();
+            } else {
+                dialog.dismiss();
+            }
+        };
+
+        dialog.show();
+
+        Button btnSave = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        btnSave.setOnClickListener(v -> {
+            String fn = currentEtFlight.getText().toString().toUpperCase().replace(" ", "");
+            if (!fn.isEmpty()) {
+                if (existingFlight != null) {
+                    existingFlight.flightNumber = fn;
+                    existingFlight.depTimeMillis = editDateTime.getTimeInMillis();
+                    existingFlight.airlineName = getAirlineNameFromCode(fn);
+                    activeRef.child(existingFlight.id).setValue(existingFlight);
+                    Toast.makeText(FlightTrackerActivity.this, "Flight updated!", Toast.LENGTH_SHORT).show();
+                } else {
+                    fetchAndSaveFlight(fn, editDateTime.getTimeInMillis());
+                }
+            }
+            dialog.dismiss();
+        });
+
+        Button btnCancel = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        btnCancel.setOnClickListener(v -> promptDiscard.run());
+
+        dialog.setOnKeyListener((d, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+                promptDiscard.run();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void showScanSourceOptions() {
@@ -491,8 +584,8 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     String status = data.has("flight_status") && !data.get("flight_status").isJsonNull() ? data.get("flight_status").getAsString().toUpperCase() : "IN FLIGHT";
                     String apiAirline = airlineObj.has("name") && !airlineObj.get("name").isJsonNull() ? airlineObj.get("name").getAsString() : knownAirline;
 
-                    String depTerm = depObj.has("terminal") && !depObj.get("terminal").isJsonNull() ? depObj.get("terminal").getAsString() : "2";
-                    String depGate = depObj.has("gate") && !depObj.get("gate").isJsonNull() ? depObj.get("gate").getAsString() : "J10";
+                    String depTerm = depObj.has("terminal") && !depObj.get("terminal").isJsonNull() ? depObj.get("terminal").getAsString() : "-";
+                    String depGate = depObj.has("gate") && !depObj.get("gate").isJsonNull() ? depObj.get("gate").getAsString() : "-";
                     String arrTerm = arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull() ? arrObj.get("terminal").getAsString() : "-";
                     String arrGate = arrObj.has("gate") && !arrObj.get("gate").isJsonNull() ? arrObj.get("gate").getAsString() : "-";
 
@@ -589,6 +682,24 @@ public class FlightTrackerActivity extends AppCompatActivity {
         intent.putExtra("message", msg);
         PendingIntent pi = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis() + offset, intent, PendingIntent.FLAG_IMMUTABLE);
         if (am != null) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+    }
+
+    @Override
+    public void onEdit(FlightInfo flight) {
+        showAddOrEditFlightDialog(flight);
+    }
+
+    @Override
+    public void onDelete(FlightInfo flight) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Flight?")
+                .setMessage("Are you sure you want to delete flight '" + flight.flightNumber + "'?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    activeRef.child(flight.id).removeValue();
+                    Toast.makeText(FlightTrackerActivity.this, "Flight deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override
