@@ -7,9 +7,11 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonObject;
 import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
@@ -71,6 +74,15 @@ public class FlightTrackerActivity extends AppCompatActivity {
                         Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
                         if (photo != null) performOcrBitmap(photo);
                     }
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<String> pdfPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    processPdfItinerary(uri);
                 }
             }
     );
@@ -192,16 +204,143 @@ public class FlightTrackerActivity extends AppCompatActivity {
     }
 
     private void showScanSourceOptions() {
-        String[] options = {"Take Photo (Camera)", "Choose from Gallery"};
+        String[] options = {"Take Photo (Camera)", "Choose Image (Gallery)", "Upload PDF Itinerary (.pdf)"};
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Scan Boarding Pass")
+                .setTitle("Scan Ticket / Itinerary")
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         cameraLauncher.launch(intent);
-                    } else {
+                    } else if (which == 1) {
                         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                         ocrLauncher.launch(intent);
+                    } else {
+                        pdfPickerLauncher.launch("application/pdf");
+                    }
+                })
+                .show();
+    }
+
+    private void processPdfItinerary(Uri pdfUri) {
+        Toast.makeText(this, "Processing PDF Itinerary...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            StringBuilder fullText = new StringBuilder();
+            try {
+                ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(pdfUri, "r");
+                if (pfd != null) {
+                    PdfRenderer renderer = new PdfRenderer(pfd);
+                    int pageCount = renderer.getPageCount();
+
+                    for (int i = 0; i < pageCount; i++) {
+                        PdfRenderer.Page page = renderer.openPage(i);
+                        Bitmap bitmap = Bitmap.createBitmap(page.getWidth() * 2, page.getHeight() * 2, Bitmap.Config.ARGB_8888);
+                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                        page.close();
+
+                        InputImage image = InputImage.fromBitmap(bitmap, 0);
+                        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+
+                        com.google.android.gms.tasks.Task<Text> task = recognizer.process(image);
+                        Text textResult = com.google.android.gms.tasks.Tasks.await(task);
+                        if (textResult != null && textResult.getText() != null) {
+                            fullText.append("\n").append(textResult.getText());
+                        }
+                    }
+                    renderer.close();
+                    pfd.close();
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Failed to read PDF file.", Toast.LENGTH_SHORT).show());
+                return;
+            }
+
+            final String extractedText = fullText.toString();
+            runOnUiThread(() -> performOcrMultiFlight(extractedText));
+        }).start();
+    }
+
+    private boolean isDuplicateFlight(String flightNum, long depTimeMillis) {
+        if (flightList == null || flightList.isEmpty()) return false;
+        String cleanNewFn = flightNum.replaceAll("\\s+", "").toUpperCase();
+
+        for (FlightInfo existing : flightList) {
+            if (existing.flightNumber != null) {
+                String cleanExistFn = existing.flightNumber.replaceAll("\\s+", "").toUpperCase();
+                if (cleanExistFn.equals(cleanNewFn)) {
+                    long diff = Math.abs(existing.depTimeMillis - depTimeMillis);
+                    if (diff < 15 * 60 * 1000L) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void performOcrMultiFlight(String text) {
+        Pattern p = Pattern.compile("\\b([A-Z0-9]{2,3})\\s?(\\d{3,4})\\b");
+        Matcher m = p.matcher(text);
+        List<String> foundFlightNums = new ArrayList<>();
+
+        while (m.find()) {
+            String matchStr = m.group(0);
+            if (matchStr == null) continue;
+            String code = matchStr.replaceAll("\\s+", "").toUpperCase();
+            if (code.startsWith("NO") || code.startsWith("PNR") || code.startsWith("REF") || code.startsWith("ID")) {
+                continue;
+            }
+            if (!foundFlightNums.contains(code)) {
+                foundFlightNums.add(code);
+            }
+        }
+
+        if (foundFlightNums.isEmpty()) {
+            Toast.makeText(this, "No valid flight numbers detected in PDF.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> newFlightNums = new ArrayList<>();
+        for (String fn : foundFlightNums) {
+            if (isDuplicateFlight(fn, selectedDateTime.getTimeInMillis())) {
+                Toast.makeText(this, "Duplicate flight " + fn + " skipped.", Toast.LENGTH_SHORT).show();
+            } else {
+                newFlightNums.add(fn);
+            }
+        }
+
+        if (newFlightNums.isEmpty()) {
+            Toast.makeText(this, "All detected flights are already in your list!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (newFlightNums.size() == 1) {
+            String fn = newFlightNums.get(0);
+            if (currentEtFlight != null) currentEtFlight.setText(fn);
+            fetchAndSaveFlight(fn);
+        } else {
+            showMultipleFlightsDetectedDialog(newFlightNums);
+        }
+    }
+
+    private void showMultipleFlightsDetectedDialog(List<String> flightNums) {
+        String[] items = new String[flightNums.size() + 1];
+        for (int i = 0; i < flightNums.size(); i++) {
+            items[i] = "Flight " + (i + 1) + ": " + flightNums.get(i);
+        }
+        items[flightNums.size()] = "★ Add All " + flightNums.size() + " Flights Automatically";
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Multiple Flights Detected in PDF!")
+                .setItems(items, (dialog, which) -> {
+                    if (which == flightNums.size()) {
+                        for (String fn : flightNums) {
+                            fetchAndSaveFlight(fn);
+                        }
+                        Toast.makeText(this, "Adding all " + flightNums.size() + " flights...", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String selectedFn = flightNums.get(which);
+                        if (currentEtFlight != null) currentEtFlight.setText(selectedFn);
+                        fetchAndSaveFlight(selectedFn);
                     }
                 })
                 .show();
