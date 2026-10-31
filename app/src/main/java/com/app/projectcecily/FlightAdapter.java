@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.JsonObject;
 import java.util.List;
@@ -36,15 +37,13 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FlightInfo flight = flights.get(position);
-        holder.tvFlightNum.setText(flight.flightNumber);
+        holder.tvFlightNum.setText((flight.airlineName != null && !flight.airlineName.trim().isEmpty() ? flight.airlineName + " " : "") + flight.flightNumber);
         holder.tvDep.setText(flight.depAirport);
         holder.tvArr.setText(flight.arrAirport);
         
         String dateStr = DateFormat.format("MMM dd, HH:mm", flight.depTimeMillis).toString();
         holder.tvETA.setText("Departure: " + dateStr);
 
-        // --- HARD LOGIC OVERRIDE ---
-        // We ignore the string in Firebase and calculate status LIVE based on time
         String displayStatus;
         int bgColor;
         int textColor;
@@ -55,13 +54,11 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
         long arrTime = depTime + (110 * 60 * 1000); // 1h 50m duration
 
         if (now > arrTime + (30 * 60 * 1000)) { 
-            // Truly Landed (30 mins after expected arrival)
             displayStatus = "LANDED";
             bgColor = 0xFFE8F5E9; // Green
             textColor = 0xFF2E7D32;
             cardAlpha = 0.6f;
         } else if (now > depTime) {
-            // In the air
             long timeUntilArrival = arrTime - now;
             if (timeUntilArrival < (45 * 60 * 1000)) {
                 displayStatus = "ARRIVING";
@@ -73,7 +70,6 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
                 textColor = 0xFF666666;
             }
         } else {
-            // Future flight
             long timeUntilDep = depTime - now;
             if (timeUntilDep < (60 * 60 * 1000)) {
                 displayStatus = "DEPARTING";
@@ -86,7 +82,6 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             }
         }
 
-        // Emergency Override for API specific errors
         if ("CANCELLED".equalsIgnoreCase(flight.status)) {
             displayStatus = "CANCELLED";
             bgColor = 0xFFFFEBEE;
@@ -113,13 +108,26 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
                 public void onSuccess(JsonObject data) {
                     String apiStatus = data.get("flight_status").getAsString().toUpperCase();
                     FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                            .getReference("flights").child(flight.id).child("status").setValue(apiStatus);
+                            .getReference("flight_history").child(currentUserId).child(flight.id).child("status").setValue(apiStatus);
                 }
                 @Override
                 public void onError(String message) {
                     Toast.makeText(v.getContext(), "API: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
+        });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            new MaterialAlertDialogBuilder(v.getContext())
+                    .setTitle("Delete Flight?")
+                    .setMessage("Are you sure you want to delete flight '" + flight.flightNumber + "'?")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                                .getReference("flight_history").child(currentUserId).child(flight.id).removeValue();
+                        Toast.makeText(v.getContext(), "Flight deleted", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         });
     }
 
@@ -128,7 +136,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvFlightNum, tvStatus, tvDep, tvArr, tvETA;
-        Button btnTrack, btnRefresh;
+        Button btnTrack, btnRefresh, btnDelete;
         MaterialCardView card;
 
         public ViewHolder(@NonNull View itemView) {
@@ -140,6 +148,7 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
             tvETA = itemView.findViewById(R.id.tvFlightETA);
             btnTrack = itemView.findViewById(R.id.btnTrackLive);
             btnRefresh = itemView.findViewById(R.id.btnRefreshStatus);
+            btnDelete = itemView.findViewById(R.id.btnDeleteFlight);
             card = itemView.findViewById(R.id.flightCard);
         }
     }

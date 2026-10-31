@@ -95,31 +95,46 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="ETA: 15:30 (Today)"
+            android:text="Departure: --"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
+        <!-- 50% Track Live | 25% Refresh | 25% Bright Red Delete -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnTrackLive"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="2"
                 android:text="Track Live" />
 
             <Button
                 android:id="@+id/btnRefreshStatus"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:paddingHorizontal="4dp"
                 android:text="Refresh" />
+
+            <Button
+                android:id="@+id/btnDeleteFlight"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FF3B30"
+                android:paddingHorizontal="4dp"
+                android:text="Delete"
+                android:textColor="#FFFFFF" />
         </LinearLayout>
 
     </LinearLayout>
