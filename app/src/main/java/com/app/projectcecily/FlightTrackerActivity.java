@@ -47,12 +47,39 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
     private static class ParsedFlightData {
         String flightNumber;
+        String airlineName = "Airline";
+        String depCity = "KUL";
+        String arrCity = "KCH";
         long timeMillis;
 
         ParsedFlightData(String flightNumber, long timeMillis) {
             this.flightNumber = flightNumber;
             this.timeMillis = timeMillis;
+            this.airlineName = getAirlineNameFromCode(flightNumber);
         }
+    }
+
+    public static String getAirlineNameFromCode(String flightNum) {
+        if (flightNum == null || flightNum.trim().isEmpty()) return "Airline";
+        String fn = flightNum.replaceAll("\\s+", "").toUpperCase();
+
+        if (fn.startsWith("MH")) return "Malaysia Airlines";
+        if (fn.startsWith("AK") || fn.startsWith("D7") || fn.startsWith("QZ")) return "AirAsia";
+        if (fn.startsWith("SQ")) return "Singapore Airlines";
+        if (fn.startsWith("TR")) return "Scoot";
+        if (fn.startsWith("OD") || fn.startsWith("SL")) return "Batik Air";
+        if (fn.startsWith("FY")) return "Firefly";
+        if (fn.startsWith("TG")) return "Thai Airways";
+        if (fn.startsWith("AA")) return "American Airlines";
+        if (fn.startsWith("DL")) return "Delta Air Lines";
+        if (fn.startsWith("UA")) return "United Airlines";
+        if (fn.startsWith("EK")) return "Emirates";
+        if (fn.startsWith("QR")) return "Qatar Airways";
+        if (fn.startsWith("CX")) return "Cathay Pacific";
+        if (fn.startsWith("NH")) return "ANA";
+        if (fn.startsWith("JL")) return "Japan Airlines";
+
+        return "Airline";
     }
 
     private FlightAdapter adapter;
@@ -279,7 +306,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
                 if (cleanExistFn.equals(cleanNewFn)) {
                     if (depTimeMillis > 0 && existing.depTimeMillis > 0) {
                         long diff = Math.abs(existing.depTimeMillis - depTimeMillis);
-                        if (diff < 24 * 60 * 60 * 1000L) { // Same flight on same day
+                        if (diff < 24 * 60 * 60 * 1000L) {
                             return true;
                         }
                     } else {
@@ -296,7 +323,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         if (text == null || text.trim().isEmpty()) return results;
 
         Pattern flightPattern = Pattern.compile("\\b([A-Z0-9]{2,3})\\s?(\\d{3,4})\\b");
-        Pattern datePattern = Pattern.compile("(\\d{1,2}:\\d{2})\\s*,?\\s*([A-Za-z]+)\\s+(\\d{1,2})\\s*,?\\s*(\\d{4})");
+        Pattern depPattern = Pattern.compile("Departure:\\s*(\\d{1,2}:\\d{2})\\s*,?\\s*([A-Za-z]+)\\s+(\\d{1,2})\\s*,?\\s*(\\d{4})");
 
         String[] lines = text.split("\n");
         for (int i = 0; i < lines.length; i++) {
@@ -315,15 +342,17 @@ public class FlightTrackerActivity extends AppCompatActivity {
                 int endLine = Math.min(lines.length - 1, i + 6);
 
                 for (int j = startLine; j <= endLine; j++) {
-                    Matcher dm = datePattern.matcher(lines[j]);
-                    if (dm.find()) {
-                        String timePart = dm.group(1);
-                        String monthPart = dm.group(2);
-                        String dayPart = dm.group(3);
-                        String yearPart = dm.group(4);
+                    String checkLine = lines[j];
+                    if (checkLine.toLowerCase().contains("departure:")) {
+                        Matcher dm = depPattern.matcher(checkLine);
+                        if (dm.find()) {
+                            String timePart = dm.group(1);
+                            String monthPart = dm.group(2);
+                            String dayPart = dm.group(3);
+                            String yearPart = dm.group(4);
 
-                        extractedMillis = parseDateAndTimeToMillis(timePart, monthPart, dayPart, yearPart);
-                        if (extractedMillis > 0) break;
+                            extractedMillis = parseDateAndTimeToMillis(timePart, monthPart, dayPart, yearPart);
+                        }
                     }
                 }
 
@@ -336,7 +365,9 @@ public class FlightTrackerActivity extends AppCompatActivity {
                 }
 
                 if (!exists) {
-                    results.add(new ParsedFlightData(flightNum, extractedMillis));
+                    ParsedFlightData pData = new ParsedFlightData(flightNum, extractedMillis);
+                    pData.airlineName = getAirlineNameFromCode(flightNum);
+                    results.add(pData);
                 }
             }
         }
@@ -396,7 +427,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
         if (newFlights.size() == 1) {
             ParsedFlightData target = newFlights.get(0);
             if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
-            fetchAndSaveFlight(target.flightNumber, target.timeMillis);
+            fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName);
         } else {
             showMultipleFlightsDetectedDialog(newFlights);
         }
@@ -416,20 +447,26 @@ public class FlightTrackerActivity extends AppCompatActivity {
                 .setItems(items, (dialog, which) -> {
                     if (which == flightsData.size()) {
                         for (ParsedFlightData p : flightsData) {
-                            fetchAndSaveFlight(p.flightNumber, p.timeMillis);
+                            fetchAndSaveFlight(p.flightNumber, p.timeMillis, p.airlineName);
                         }
                         Toast.makeText(this, "Adding all " + flightsData.size() + " flights...", Toast.LENGTH_SHORT).show();
                     } else {
                         ParsedFlightData target = flightsData.get(which);
                         if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
-                        fetchAndSaveFlight(target.flightNumber, target.timeMillis);
+                        fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName);
                     }
                 })
                 .show();
     }
 
     private void fetchAndSaveFlight(String flightNum, long targetTimeMillis) {
+        fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum));
+    }
+
+    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String defaultAirlineName) {
         final long initialTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
+        final String knownAirline = (defaultAirlineName != null && !defaultAirlineName.equals("Airline")) ? defaultAirlineName : getAirlineNameFromCode(flightNum);
+
         Toast.makeText(this, "Fetching route details...", Toast.LENGTH_SHORT).show();
 
         String dateYmd = null;
@@ -452,14 +489,13 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     String arrAirportName = arrObj.has("airport") && !arrObj.get("airport").isJsonNull() ? arrObj.get("airport").getAsString() : "Kuching";
 
                     String status = data.has("flight_status") && !data.get("flight_status").isJsonNull() ? data.get("flight_status").getAsString().toUpperCase() : "IN FLIGHT";
-                    String airline = airlineObj.has("name") && !airlineObj.get("name").isJsonNull() ? airlineObj.get("name").getAsString() : "AirAsia";
+                    String apiAirline = airlineObj.has("name") && !airlineObj.get("name").isJsonNull() ? airlineObj.get("name").getAsString() : knownAirline;
 
                     String depTerm = depObj.has("terminal") && !depObj.get("terminal").isJsonNull() ? depObj.get("terminal").getAsString() : "2";
                     String depGate = depObj.has("gate") && !depObj.get("gate").isJsonNull() ? depObj.get("gate").getAsString() : "J10";
                     String arrTerm = arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull() ? arrObj.get("terminal").getAsString() : "-";
                     String arrGate = arrObj.has("gate") && !arrObj.get("gate").isJsonNull() ? arrObj.get("gate").getAsString() : "-";
 
-                    // Keep user's explicit selection or PDF extracted departure timestamp permanently!
                     long finalDepTime = initialTime;
                     if (finalDepTime <= 0 && depObj.has("scheduled") && !depObj.get("scheduled").isJsonNull()) {
                         long apiSchedTime = parseIsoTimeToMillis(depObj.get("scheduled").getAsString());
@@ -468,7 +504,7 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
                     String id = activeRef.push().getKey();
                     FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, finalDepTime, userId);
-                    flight.airlineName = airline;
+                    flight.airlineName = knownAirline.equals("Airline") ? apiAirline : knownAirline;
                     flight.depCity = depAirportName;
                     flight.arrCity = arrAirportName;
                     flight.status = status;
@@ -483,21 +519,22 @@ public class FlightTrackerActivity extends AppCompatActivity {
 
                     Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + depIata + " -> " + arrIata, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    saveFallback(flightNum, initialTime);
+                    saveFallback(flightNum, initialTime, knownAirline);
                 }
             }
 
             @Override
             public void onError(String message) {
-                saveFallback(flightNum, initialTime);
+                saveFallback(flightNum, initialTime, knownAirline);
             }
         });
     }
 
-    private void saveFallback(String flightNum, long targetTimeMillis) {
+    private void saveFallback(String flightNum, long targetTimeMillis, String knownAirline) {
         String id = activeRef.push().getKey();
         long depTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         FlightInfo flight = new FlightInfo(id, flightNum, "KUL", "KCH", depTime, userId);
+        flight.airlineName = knownAirline;
         activeRef.child(id).setValue(flight);
         historyRef.child(id).setValue(flight);
         Toast.makeText(this, "Route info saved", Toast.LENGTH_SHORT).show();

@@ -71,9 +71,16 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
 
         dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Live Flight Tracking");
+        View appBarView = findViewById(R.id.appBarLayout);
+        UIUtils.applyTopInsetToAppBar(appBarView);
+
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setTitle("Live Flight Tracking");
+            }
         }
 
         tvFlightNum = findViewById(R.id.tvMapFlightNum);
@@ -100,7 +107,6 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         ivPlaneTrackIcon = findViewById(R.id.ivPlaneTrackIcon);
         vRouteLine = findViewById(R.id.vRouteLine);
 
-        UIUtils.applyTopInsetPadding(findViewById(R.id.cardFlightTopProgress));
         UIUtils.applyBottomMargin(findViewById(R.id.cardFlightBottomDetails));
 
         listenForPartnerProfile();
@@ -173,8 +179,8 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         tvArrIata.setText(info.arrAirport);
         tvArrCity.setText(info.arrCity != null ? info.arrCity : "Arrival");
 
-        tvDepTime.setText(info.depTimeStr != null ? info.depTimeStr : "7:17 am");
-        tvArrTime.setText(info.arrTimeStr != null ? info.arrTimeStr : "9:04 am");
+        tvDepTime.setText(info.depTimeStr != null ? info.depTimeStr : "05:45");
+        tvArrTime.setText(info.arrTimeStr != null ? info.arrTimeStr : "07:35");
         tvDuration.setText(info.durationStr != null ? info.durationStr : "1h 47m");
 
         tvDepDate.setText(info.depDateStr != null ? info.depDateStr : "Sat, 31 Oct");
@@ -185,8 +191,6 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
 
         tvArrTerminal.setText(info.arrTerminal != null ? info.arrTerminal : "-");
         tvArrGate.setText(info.arrGate != null ? info.arrGate : "-");
-
-        tvStatusText.setText(info.status != null ? info.status : "IN FLIGHT");
 
         LatLng depPos = AIRPORTS.get(info.depAirport.toUpperCase());
         LatLng arrPos = AIRPORTS.get(info.arrAirport.toUpperCase());
@@ -215,16 +219,35 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
             @Override
             public void run() {
                 long now = System.currentTimeMillis();
-                long totalDuration = 2 * 60 * 60 * 1000;
-                long elapsed = now - info.depTimeMillis;
+                long totalDuration = 2 * 60 * 60 * 1000; // 2 hours duration
+                long depTime = info.depTimeMillis;
+                long arrTime = depTime + totalDuration;
 
-                double progress = (double) elapsed / totalDuration;
-                if (progress < 0) progress = 0.45; // Default 45% for demo/simulation
-                if (progress > 1) progress = 1.0;
+                double progress;
+                if (now < depTime) {
+                    // Future / Scheduled flight
+                    progress = 0.0;
+                    pbProgress.setProgress(0);
+                    tvProgress.setText("Awaiting Flight");
+                    tvStatusText.setText("AWAITING");
+                } else if (now > arrTime) {
+                    // Completed / Landed flight
+                    progress = 1.0;
+                    pbProgress.setProgress(100);
+                    tvProgress.setText("Flight Landed");
+                    tvStatusText.setText("LANDED");
+                } else {
+                    // Mid-air flight
+                    long elapsed = now - depTime;
+                    progress = (double) elapsed / totalDuration;
+                    if (progress < 0) progress = 0;
+                    if (progress > 1) progress = 1;
 
-                int pct = (int) (progress * 100);
-                pbProgress.setProgress(pct);
-                tvProgress.setText("In Flight - " + pct + "% Completed");
+                    int pct = (int) (progress * 100);
+                    pbProgress.setProgress(pct);
+                    tvProgress.setText("In Flight - " + pct + "% Completed");
+                    tvStatusText.setText("IN FLIGHT");
+                }
 
                 // Position plane track icon in tandem with progress bar
                 final double finalProgress = progress;
@@ -269,7 +292,9 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(planePos, 5.5f));
 
-                if (progress < 1) handler.postDelayed(this, 5000);
+                if (now >= depTime && now <= arrTime && progress < 1) {
+                    handler.postDelayed(this, 5000);
+                }
             }
         };
         handler.post(updateRunnable);
@@ -287,10 +312,8 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
             ringPaint.setColor(Color.parseColor("#FF4081"));
         }
 
-        // Draw pin ring
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, ringPaint);
 
-        // Draw avatar image or fallback
         Bitmap avatar = null;
         if (partnerPhotoBase64 != null && !partnerPhotoBase64.isEmpty()) {
             try {
@@ -316,7 +339,6 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
             }
         }
 
-        // Draw pin tip triangle at bottom
         Paint tipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         tipPaint.setColor(ringPaint.getColor());
         android.graphics.Path path = new android.graphics.Path();
