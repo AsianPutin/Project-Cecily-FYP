@@ -186,19 +186,40 @@ public class FlightTrackerActivity extends AppCompatActivity {
             @Override
             public void onSuccess(JsonObject data) {
                 try {
-                    String dep = data.getAsJsonObject("departure").get("iata").getAsString();
-                    String arr = data.getAsJsonObject("arrival").get("iata").getAsString();
-                    String status = data.get("flight_status").getAsString().toUpperCase();
+                    JsonObject depObj = data.has("departure") && !data.get("departure").isJsonNull() ? data.getAsJsonObject("departure") : new JsonObject();
+                    JsonObject arrObj = data.has("arrival") && !data.get("arrival").isJsonNull() ? data.getAsJsonObject("arrival") : new JsonObject();
+                    JsonObject airlineObj = data.has("airline") && !data.get("airline").isJsonNull() ? data.getAsJsonObject("airline") : new JsonObject();
+
+                    String depIata = depObj.has("iata") && !depObj.get("iata").isJsonNull() ? depObj.get("iata").getAsString() : "KUL";
+                    String arrIata = arrObj.has("iata") && !arrObj.get("iata").isJsonNull() ? arrObj.get("iata").getAsString() : "KCH";
+
+                    String depAirportName = depObj.has("airport") && !depObj.get("airport").isJsonNull() ? depObj.get("airport").getAsString() : "Kuala Lumpur";
+                    String arrAirportName = arrObj.has("airport") && !arrObj.get("airport").isJsonNull() ? arrObj.get("airport").getAsString() : "Kuching";
+
+                    String status = data.has("flight_status") && !data.get("flight_status").isJsonNull() ? data.get("flight_status").getAsString().toUpperCase() : "IN FLIGHT";
+                    String airline = airlineObj.has("name") && !airlineObj.get("name").isJsonNull() ? airlineObj.get("name").getAsString() : "AirAsia";
+
+                    String depTerm = depObj.has("terminal") && !depObj.get("terminal").isJsonNull() ? depObj.get("terminal").getAsString() : "2";
+                    String depGate = depObj.has("gate") && !depObj.get("gate").isJsonNull() ? depObj.get("gate").getAsString() : "J10";
+                    String arrTerm = arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull() ? arrObj.get("terminal").getAsString() : "-";
+                    String arrGate = arrObj.has("gate") && !arrObj.get("gate").isJsonNull() ? arrObj.get("gate").getAsString() : "-";
 
                     String id = activeRef.push().getKey();
-                    FlightInfo flight = new FlightInfo(id, flightNum, dep, arr, selectedDateTime.getTimeInMillis(), userId);
+                    FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, selectedDateTime.getTimeInMillis(), userId);
+                    flight.airlineName = airline;
+                    flight.depCity = depAirportName;
+                    flight.arrCity = arrAirportName;
                     flight.status = status;
-                    
+                    flight.depTerminal = depTerm;
+                    flight.depGate = depGate;
+                    flight.arrTerminal = arrTerm;
+                    flight.arrGate = arrGate;
+
                     activeRef.child(id).setValue(flight);
                     historyRef.child(id).setValue(flight);
                     scheduleReminders(flight);
-                    
-                    Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + dep + " -> " + arr, Toast.LENGTH_LONG).show();
+
+                    Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + depIata + " -> " + arrIata, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     saveFallback(flightNum);
                 }
