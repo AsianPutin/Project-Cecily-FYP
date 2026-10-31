@@ -432,7 +432,12 @@ public class FlightTrackerActivity extends AppCompatActivity {
         final long initialTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         Toast.makeText(this, "Fetching route details...", Toast.LENGTH_SHORT).show();
 
-        apiHelper.getFlightStatus(flightNum, new AviationStackHelper.FlightCallback() {
+        String dateYmd = null;
+        if (initialTime > 0) {
+            dateYmd = android.text.format.DateFormat.format("yyyy-MM-dd", initialTime).toString();
+        }
+
+        apiHelper.getFlightStatus(flightNum, dateYmd, new AviationStackHelper.FlightCallback() {
             @Override
             public void onSuccess(JsonObject data) {
                 try {
@@ -454,8 +459,9 @@ public class FlightTrackerActivity extends AppCompatActivity {
                     String arrTerm = arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull() ? arrObj.get("terminal").getAsString() : "-";
                     String arrGate = arrObj.has("gate") && !arrObj.get("gate").isJsonNull() ? arrObj.get("gate").getAsString() : "-";
 
+                    // Keep user's explicit selection or PDF extracted departure timestamp permanently!
                     long finalDepTime = initialTime;
-                    if (depObj.has("scheduled") && !depObj.get("scheduled").isJsonNull()) {
+                    if (finalDepTime <= 0 && depObj.has("scheduled") && !depObj.get("scheduled").isJsonNull()) {
                         long apiSchedTime = parseIsoTimeToMillis(depObj.get("scheduled").getAsString());
                         if (apiSchedTime > 0) finalDepTime = apiSchedTime;
                     }

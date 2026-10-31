@@ -26,8 +26,15 @@ public class AviationStackHelper {
     }
 
     public void getFlightStatus(String flightIata, FlightCallback callback) {
+        getFlightStatus(flightIata, null, callback);
+    }
+
+    public void getFlightStatus(String flightIata, String flightDateYmd, FlightCallback callback) {
         String url = BASE_URL + "?access_key=" + API_KEY + "&flight_iata=" + flightIata;
-        
+        if (flightDateYmd != null && !flightDateYmd.trim().isEmpty()) {
+            url += "&flight_date=" + flightDateYmd.trim();
+        }
+
         Request request = new Request.Builder().url(url).build();
 
         client.newCall(request).enqueue(new Callback() {
