@@ -4,9 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.view.MenuItem;
@@ -16,26 +19,28 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class FlightMapActivity extends AppCompatActivity {
 
-    private GoogleMap mMap;
+    private MapView map;
     private String flightId;
     private DatabaseReference dbRef;
     private Marker planeMarker, partnerMarker;
@@ -54,17 +59,19 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
     private final Handler handler = new Handler();
     private Runnable updateRunnable;
 
-    private static final Map<String, LatLng> AIRPORTS = new HashMap<String, LatLng>() {{
-        put("KUL", new LatLng(2.7456, 101.7072));
-        put("KCH", new LatLng(1.4847, 110.3469));
-        put("BKI", new LatLng(5.9372, 116.0513));
-        put("SIN", new LatLng(1.3644, 103.9915));
-        put("PEN", new LatLng(5.2971, 100.2769));
+    private static final Map<String, GeoPoint> AIRPORTS = new HashMap<String, GeoPoint>() {{
+        put("KUL", new GeoPoint(2.7456, 101.7072));
+        put("KCH", new GeoPoint(1.4847, 110.3469));
+        put("BKI", new GeoPoint(5.9372, 116.0513));
+        put("SIN", new GeoPoint(1.3644, 103.9915));
+        put("PEN", new GeoPoint(5.2971, 100.2769));
     }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         setContentView(R.layout.activity_flight_map);
 
         flightId = getIntent().getStringExtra("flight_id");
@@ -83,6 +90,10 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
                 getSupportActionBar().setTitle("Live Flight Tracking");
             }
         }
+
+        map = findViewById(R.id.flight_map);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setMultiTouchControls(true);
 
         tvFlightNum = findViewById(R.id.tvMapFlightNum);
         tvDepTime = findViewById(R.id.tvMapDepTime);
@@ -111,11 +122,7 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         UIUtils.applyBottomMargin(findViewById(R.id.cardFlightBottomDetails));
 
         listenForPartnerProfile();
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.flight_map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
+        listenForFlightUpdates();
     }
 
     private void listenForPartnerProfile() {
@@ -150,12 +157,6 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
             pbProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));
             if (vRouteLine != null) vRouteLine.setBackgroundColor(accent);
         } catch (Exception ignored) {}
-    }
-
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-        listenForFlightUpdates();
     }
 
     private void listenForFlightUpdates() {
@@ -235,34 +236,64 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         tvArrTerminal.setText(arrTerm);
         tvArrGate.setText(arrGate);
 
-        LatLng depPos = AIRPORTS.get(depIataCode.toUpperCase());
-        LatLng arrPos = AIRPORTS.get(arrIataCode.toUpperCase());
+        GeoPoint depPos = AIRPORTS.get(depIataCode.toUpperCase());
+        GeoPoint arrPos = AIRPORTS.get(arrIataCode.toUpperCase());
 
-        if (depPos == null) depPos = new LatLng(1.4847, 110.3469); // KCH default
-        if (arrPos == null) arrPos = new LatLng(2.7456, 101.7072); // KUL default
+        if (depPos == null) depPos = new GeoPoint(1.4847, 110.3469); // KCH default
+        if (arrPos == null) arrPos = new GeoPoint(2.7456, 101.7072); // KUL default
 
-        mMap.clear();
-        mMap.addMarker(new MarkerOptions().position(depPos).title(depIataCode));
-        mMap.addMarker(new MarkerOptions().position(arrPos).title(arrIataCode));
+        map.getOverlays().clear();
 
+        // Draw dotted flight trajectory polyline!
+        List<GeoPoint> polyPoints = new ArrayList<>();
+        polyPoints.add(depPos);
+        polyPoints.add(arrPos);
+
+        Polyline polyline = new Polyline(map);
+        polyline.setPoints(polyPoints);
+
+        int routeColor = Color.parseColor("#FF4081");
         try {
-            int routeColor = Color.parseColor(partnerAccentColor);
-            mMap.addPolyline(new PolylineOptions().add(depPos, arrPos).color(routeColor).width(8));
-        } catch (Exception e) {
-            mMap.addPolyline(new PolylineOptions().add(depPos, arrPos).color(Color.parseColor("#FF4081")).width(8));
-        }
+            routeColor = Color.parseColor(partnerAccentColor);
+        } catch (Exception ignored) {}
+
+        polyline.getOutlinePaint().setColor(routeColor);
+        polyline.getOutlinePaint().setStrokeWidth(8.0f);
+        polyline.getOutlinePaint().setPathEffect(new DashPathEffect(new float[]{20, 15}, 0));
+        map.getOverlays().add(polyline);
+
+        // Add Departure Airport Marker
+        Marker depMarker = new Marker(map);
+        depMarker.setPosition(depPos);
+        depMarker.setTitle(depIataCode + " (" + depCityName + ")");
+        depMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        map.getOverlays().add(depMarker);
+
+        // Add Arrival Airport Marker
+        Marker arrMarker = new Marker(map);
+        arrMarker.setPosition(arrPos);
+        arrMarker.setTitle(arrIataCode + " (" + arrCityName + ")");
+        arrMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        map.getOverlays().add(arrMarker);
+
+        GeoPoint centerPoint = new GeoPoint(
+                (depPos.getLatitude() + arrPos.getLatitude()) / 2.0,
+                (depPos.getLongitude() + arrPos.getLongitude()) / 2.0
+        );
+        map.getController().setZoom(6.0);
+        map.getController().setCenter(centerPoint);
 
         startPseudoTracking(info, depPos, arrPos);
     }
 
-    private void startPseudoTracking(FlightInfo info, LatLng start, LatLng end) {
+    private void startPseudoTracking(FlightInfo info, GeoPoint start, GeoPoint end) {
         if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
 
         updateRunnable = new Runnable() {
             @Override
             public void run() {
                 long now = System.currentTimeMillis();
-                long totalDuration = 2 * 60 * 60 * 1000; // 2 hours duration
+                long totalDuration = 2 * 60 * 60 * 1000;
                 long depTime = info.depTimeMillis;
                 long arrTime = depTime + totalDuration;
 
@@ -301,33 +332,28 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
                     }
                 });
 
-                double lat = start.latitude + (end.latitude - start.latitude) * progress;
-                double lon = start.longitude + (end.longitude - start.longitude) * progress;
-                LatLng planePos = new LatLng(lat, lon);
-
-                LatLng avatarPos = new LatLng(lat + 0.35, lon);
+                double lat = start.getLatitude() + (end.getLatitude() - start.getLatitude()) * progress;
+                double lon = start.getLongitude() + (end.getLongitude() - start.getLongitude()) * progress;
+                GeoPoint planePos = new GeoPoint(lat, lon);
+                GeoPoint avatarPos = new GeoPoint(lat + 0.35, lon);
 
                 if (planeMarker == null) {
-                    planeMarker = mMap.addMarker(new MarkerOptions()
-                            .position(planePos)
-                            .icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_send))
-                            .title(info.flightNumber));
-                } else {
-                    planeMarker.setPosition(planePos);
+                    planeMarker = new Marker(map);
+                    planeMarker.setTitle(info.flightNumber);
+                    map.getOverlays().add(planeMarker);
                 }
+                planeMarker.setPosition(planePos);
 
                 Bitmap partnerPinBitmap = createPartnerAvatarPinBitmap();
                 if (partnerMarker == null) {
-                    partnerMarker = mMap.addMarker(new MarkerOptions()
-                            .position(avatarPos)
-                            .icon(BitmapDescriptorFactory.fromBitmap(partnerPinBitmap))
-                            .title("Partner on Board"));
-                } else {
-                    partnerMarker.setPosition(avatarPos);
-                    partnerMarker.setIcon(BitmapDescriptorFactory.fromBitmap(partnerPinBitmap));
+                    partnerMarker = new Marker(map);
+                    partnerMarker.setTitle("Partner on Board");
+                    map.getOverlays().add(partnerMarker);
                 }
+                partnerMarker.setPosition(avatarPos);
+                partnerMarker.setIcon(new BitmapDrawable(getResources(), partnerPinBitmap));
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(planePos, 5.5f));
+                map.invalidate();
 
                 if (now >= depTime && now <= arrTime && progress < 1) {
                     handler.postDelayed(this, 5000);
@@ -386,6 +412,18 @@ public class FlightMapActivity extends AppCompatActivity implements OnMapReadyCa
         canvas.drawPath(path, tipPaint);
 
         return bitmap;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (map != null) map.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (map != null) map.onPause();
     }
 
     @Override
