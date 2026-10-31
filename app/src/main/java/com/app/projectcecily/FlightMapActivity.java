@@ -2,10 +2,12 @@ package com.app.projectcecily;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -188,6 +191,52 @@ public class FlightMapActivity extends AppCompatActivity {
         return DateFormat.format("EEE, dd MMM", millis).toString();
     }
 
+    private List<GeoPoint> createCurvedRoute(GeoPoint start, GeoPoint end) {
+        List<GeoPoint> points = new ArrayList<>();
+        double midLat = (start.getLatitude() + end.getLatitude()) / 2.0;
+        double midLon = (start.getLongitude() + end.getLongitude()) / 2.0;
+
+        double dLat = end.getLatitude() - start.getLatitude();
+        double dLon = end.getLongitude() - start.getLongitude();
+
+        double controlLat = midLat - (dLon * 0.25);
+        double controlLon = midLon + (dLat * 0.25);
+
+        int numPoints = 40;
+        for (int i = 0; i <= numPoints; i++) {
+            double t = (double) i / numPoints;
+            double lat = (1 - t) * (1 - t) * start.getLatitude() + 2 * (1 - t) * t * controlLat + t * t * end.getLatitude();
+            double lon = (1 - t) * (1 - t) * start.getLongitude() + 2 * (1 - t) * t * controlLon + t * t * end.getLongitude();
+            points.add(new GeoPoint(lat, lon));
+        }
+        return points;
+    }
+
+    private Bitmap createAirportDotBitmap() {
+        int size = 56;
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        int color = Color.parseColor("#FF4081");
+        try {
+            color = Color.parseColor(partnerAccentColor);
+        } catch (Exception ignored) {}
+
+        Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        ringPaint.setColor(color);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, ringPaint);
+
+        Paint whitePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        whitePaint.setColor(Color.WHITE);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 6, whitePaint);
+
+        Paint innerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        innerPaint.setColor(color);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 14, innerPaint);
+
+        return bitmap;
+    }
+
     private void updateMapAndDetails(FlightInfo info) {
         tvFlightNum.setText((info.airlineName != null ? info.airlineName + " " : "") + info.flightNumber);
 
@@ -244,13 +293,10 @@ public class FlightMapActivity extends AppCompatActivity {
 
         map.getOverlays().clear();
 
-        // Draw dotted flight trajectory polyline!
-        List<GeoPoint> polyPoints = new ArrayList<>();
-        polyPoints.add(depPos);
-        polyPoints.add(arrPos);
+        List<GeoPoint> curvePoints = createCurvedRoute(depPos, arrPos);
 
         Polyline polyline = new Polyline(map);
-        polyline.setPoints(polyPoints);
+        polyline.setPoints(curvePoints);
 
         int routeColor = Color.parseColor("#FF4081");
         try {
@@ -262,31 +308,31 @@ public class FlightMapActivity extends AppCompatActivity {
         polyline.getOutlinePaint().setPathEffect(new DashPathEffect(new float[]{20, 15}, 0));
         map.getOverlays().add(polyline);
 
-        // Add Departure Airport Marker
+        Bitmap dotBitmap = createAirportDotBitmap();
+
+        // Departure Airport Circular Dot Marker
         Marker depMarker = new Marker(map);
         depMarker.setPosition(depPos);
         depMarker.setTitle(depIataCode + " (" + depCityName + ")");
-        depMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        depMarker.setIcon(new BitmapDrawable(getResources(), dotBitmap));
+        depMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         map.getOverlays().add(depMarker);
 
-        // Add Arrival Airport Marker
+        // Arrival Airport Circular Dot Marker
         Marker arrMarker = new Marker(map);
         arrMarker.setPosition(arrPos);
         arrMarker.setTitle(arrIataCode + " (" + arrCityName + ")");
-        arrMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        arrMarker.setIcon(new BitmapDrawable(getResources(), dotBitmap));
+        arrMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         map.getOverlays().add(arrMarker);
 
-        GeoPoint centerPoint = new GeoPoint(
-                (depPos.getLatitude() + arrPos.getLatitude()) / 2.0,
-                (depPos.getLongitude() + arrPos.getLongitude()) / 2.0
-        );
-        map.getController().setZoom(6.0);
-        map.getController().setCenter(centerPoint);
+        BoundingBox box = BoundingBox.fromGeoPoints(curvePoints);
+        map.zoomToBoundingBox(box, true, 180);
 
-        startPseudoTracking(info, depPos, arrPos);
+        startPseudoTracking(info, curvePoints);
     }
 
-    private void startPseudoTracking(FlightInfo info, GeoPoint start, GeoPoint end) {
+    private void startPseudoTracking(FlightInfo info, List<GeoPoint> curvePoints) {
         if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
 
         updateRunnable = new Runnable() {
@@ -332,10 +378,12 @@ public class FlightMapActivity extends AppCompatActivity {
                     }
                 });
 
-                double lat = start.getLatitude() + (end.getLatitude() - start.getLatitude()) * progress;
-                double lon = start.getLongitude() + (end.getLongitude() - start.getLongitude()) * progress;
-                GeoPoint planePos = new GeoPoint(lat, lon);
-                GeoPoint avatarPos = new GeoPoint(lat + 0.35, lon);
+                int pointIdx = (int) (progress * (curvePoints.size() - 1));
+                if (pointIdx < 0) pointIdx = 0;
+                if (pointIdx >= curvePoints.size()) pointIdx = curvePoints.size() - 1;
+
+                GeoPoint planePos = curvePoints.get(pointIdx);
+                GeoPoint avatarPos = new GeoPoint(planePos.getLatitude() + 0.35, planePos.getLongitude());
 
                 if (planeMarker == null) {
                     planeMarker = new Marker(map);
@@ -386,20 +434,25 @@ public class FlightMapActivity extends AppCompatActivity {
             } catch (Exception ignored) {}
         }
 
-        int innerSize = size - 16;
-        Paint innerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        innerPaint.setColor(Color.WHITE);
-        canvas.drawCircle(size / 2f, size / 2f, innerSize / 2f, innerPaint);
+        if (avatar == null) {
+            avatar = BitmapFactory.decodeResource(getResources(), R.drawable.ic_blank_user);
+        }
 
+        int innerSize = size - 16;
         if (avatar != null) {
             Bitmap scaled = Bitmap.createScaledBitmap(avatar, innerSize, innerSize, true);
-            canvas.drawBitmap(scaled, 8, 8, null);
-        } else {
-            Bitmap fallback = BitmapFactory.decodeResource(getResources(), R.drawable.ic_blank_user);
-            if (fallback != null) {
-                Bitmap scaled = Bitmap.createScaledBitmap(fallback, innerSize, innerSize, true);
-                canvas.drawBitmap(scaled, 8, 8, null);
-            }
+
+            // 100% CIRCULAR CROPPING USING BITMAP SHADER (No square overflow!)
+            Bitmap circularAvatar = Bitmap.createBitmap(innerSize, innerSize, Bitmap.Config.ARGB_8888);
+            Canvas avatarCanvas = new Canvas(circularAvatar);
+            Paint avatarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+            BitmapShader shader = new BitmapShader(scaled, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+            avatarPaint.setShader(shader);
+
+            avatarCanvas.drawCircle(innerSize / 2f, innerSize / 2f, innerSize / 2f, avatarPaint);
+
+            canvas.drawBitmap(circularAvatar, 8, 8, null);
         }
 
         Paint tipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
