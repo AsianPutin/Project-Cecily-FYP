@@ -114,8 +114,7 @@ public class AccountActivity extends AppCompatActivity {
         ivProfilePic.setOnClickListener(profilePicClickListener);
         findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
-        findViewById(R.id.btnAppearance).setOnClickListener(v -> startActivity(new Intent(this, AppearanceActivity.class)));
-        findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
+        findViewById(R.id.btnSettings).setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
@@ -324,7 +323,7 @@ public class AccountActivity extends AppCompatActivity {
         });
     }
 
-    private void showEditProfileDialog() {
+    public void showEditProfileDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_edit_profile, null);
         TextInputEditText etYourName = view.findViewById(R.id.etYourName);
         etYourName.setText(tvUserName.getText().toString());

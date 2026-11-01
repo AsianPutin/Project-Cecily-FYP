@@ -1,12 +1,9 @@
 package com.app.projectcecily;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -37,19 +34,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.cardNotificationSettings).setOnClickListener(v -> {
-            try {
-                Intent intent = new Intent();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-                    intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
-                } else {
-                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(android.net.Uri.parse("package:" + getPackageName()));
-                }
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this, "Opening system notification settings...", Toast.LENGTH_SHORT).show();
-            }
+            startActivity(new Intent(this, NotificationSettingsActivity.class));
         });
     }
 

@@ -137,20 +137,12 @@
 
             <!-- Settings Options -->
             <Button
-                android:id="@+id/btnAppearance"
+                android:id="@+id/btnSettings"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Appearance &amp; Theme" />
-
-            <Button
-                android:id="@+id/btnEditProfile"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Change Profile Info" />
+                android:text="Settings" />
 
             <Button
                 android:id="@+id/btnRelationshipDetails"
