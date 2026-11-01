@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -24,7 +25,7 @@ public class ThemeUtils {
     private static final String KEY_THEME_MODE = "theme_mode";
     private static final String KEY_ACCENT_COLOR = "accent_color";
 
-    public static final String DEFAULT_ACCENT = "#007AFF"; // Classic Blue
+    public static final String DEFAULT_ACCENT = "#25D366"; // Green
 
     public static void applySavedThemeMode(Context context) {
         int savedMode = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -48,6 +49,16 @@ public class ThemeUtils {
     public static int getAccentColor(Context context) {
         String hex = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .getString(KEY_ACCENT_COLOR, DEFAULT_ACCENT);
+
+        if ("DYNAMIC".equalsIgnoreCase(hex)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    return context.getColor(android.R.color.system_accent1_500);
+                } catch (Exception ignored) {}
+            }
+            return Color.parseColor(DEFAULT_ACCENT);
+        }
+
         try {
             return Color.parseColor(hex);
         } catch (Exception e) {

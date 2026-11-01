@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -13,7 +14,8 @@ import com.google.android.material.card.MaterialCardView;
 
 public class AppearanceActivity extends AppCompatActivity {
 
-    private MaterialButtonToggleGroup themeToggleGroup;
+    private MaterialButtonToggleGroup themeToggleGroup, toggleColorStyle;
+    private LinearLayout layoutAccentGrid;
 
     private MaterialCardView cardBlue, cardPink, cardGreen, cardOrange, cardPurple, cardRed, cardTeal, cardGold;
     private ImageView checkBlue, checkPink, checkGreen, checkOrange, checkPurple, checkRed, checkTeal, checkGold;
@@ -38,6 +40,8 @@ public class AppearanceActivity extends AppCompatActivity {
         UIUtils.applyBottomPadding(findViewById(R.id.appearance_scroll));
 
         themeToggleGroup = findViewById(R.id.themeToggleGroup);
+        toggleColorStyle = findViewById(R.id.toggleColorStyle);
+        layoutAccentGrid = findViewById(R.id.layoutAccentGrid);
 
         cardBlue = findViewById(R.id.colorBlue);
         cardPink = findViewById(R.id.colorPink);
@@ -58,6 +62,7 @@ public class AppearanceActivity extends AppCompatActivity {
         checkGold = findViewById(R.id.checkGold);
 
         setupThemeToggle();
+        setupColorStyleToggle();
         setupColorSwatches();
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
     }
@@ -82,6 +87,52 @@ public class AppearanceActivity extends AppCompatActivity {
             }
             ThemeUtils.saveThemeMode(this, newMode);
         });
+    }
+
+    private void setupColorStyleToggle() {
+        String currentHex = ThemeUtils.getAccentColorHex(this);
+        boolean isDynamic = "DYNAMIC".equalsIgnoreCase(currentHex);
+
+        if (isDynamic) {
+            toggleColorStyle.check(R.id.btnStyleMaterialYou);
+            setGridEnabled(false);
+        } else {
+            toggleColorStyle.check(R.id.btnStyleDefault);
+            setGridEnabled(true);
+        }
+
+        toggleColorStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            if (checkedId == R.id.btnStyleMaterialYou) {
+                ThemeUtils.saveAccentColor(this, "DYNAMIC");
+                setGridEnabled(false);
+                ThemeUtils.applyAccentToActivity(this);
+                Toast.makeText(this, "Material You (Wallpaper Theme) active!", Toast.LENGTH_SHORT).show();
+            } else {
+                ThemeUtils.saveAccentColor(this, "#25D366");
+                setGridEnabled(true);
+                updateSelectedAccentUI("#25D366");
+                ThemeUtils.applyAccentToActivity(this);
+                Toast.makeText(this, "Default accent colors active!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setGridEnabled(boolean enabled) {
+        if (layoutAccentGrid != null) {
+            layoutAccentGrid.setAlpha(enabled ? 1.0f : 0.4f);
+            setViewGroupEnabled(layoutAccentGrid, enabled);
+        }
+    }
+
+    private void setViewGroupEnabled(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                setViewGroupEnabled(group.getChildAt(i), enabled);
+            }
+        }
     }
 
     private void setupColorSwatches() {
@@ -110,6 +161,12 @@ public class AppearanceActivity extends AppCompatActivity {
     }
 
     private void updateSelectedAccentUI(String currentHex) {
+        boolean isDynamic = "DYNAMIC".equalsIgnoreCase(currentHex);
+        if (isDynamic) {
+            clearAllCheckmarks();
+            return;
+        }
+
         updateSwatch(cardBlue, checkBlue, "#007AFF".equalsIgnoreCase(currentHex), Color.WHITE);
         updateSwatch(cardPink, checkPink, "#FF4081".equalsIgnoreCase(currentHex), Color.WHITE);
         updateSwatch(cardGreen, checkGreen, "#25D366".equalsIgnoreCase(currentHex), Color.WHITE);
@@ -118,6 +175,13 @@ public class AppearanceActivity extends AppCompatActivity {
         updateSwatch(cardRed, checkRed, "#E91E63".equalsIgnoreCase(currentHex), Color.WHITE);
         updateSwatch(cardTeal, checkTeal, "#009688".equalsIgnoreCase(currentHex), Color.WHITE);
         updateSwatch(cardGold, checkGold, "#FFC107".equalsIgnoreCase(currentHex), Color.BLACK);
+    }
+
+    private void clearAllCheckmarks() {
+        ImageView[] checks = {checkBlue, checkPink, checkGreen, checkOrange, checkPurple, checkRed, checkTeal, checkGold};
+        MaterialCardView[] cards = {cardBlue, cardPink, cardGreen, cardOrange, cardPurple, cardRed, cardTeal, cardGold};
+        for (ImageView chk : checks) if (chk != null) chk.setVisibility(View.GONE);
+        for (MaterialCardView cd : cards) if (cd != null) cd.setStrokeWidth(0);
     }
 
     private void updateSwatch(MaterialCardView card, ImageView check, boolean isSelected, int checkTint) {
