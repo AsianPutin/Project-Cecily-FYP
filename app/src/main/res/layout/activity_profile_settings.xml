@@ -179,6 +179,7 @@
                             android:inputType="textPersonName" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- My Gender Segmented Toggle -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -187,11 +188,41 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
-                    <Spinner
-                        android:id="@+id/spMyGender"
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleMyGender"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="4dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <Button
+                            android:id="@+id/btnMyMale"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="11sp"
+                            android:text="Male" />
+
+                        <Button
+                            android:id="@+id/btnMyFemale"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="11sp"
+                            android:text="Female" />
+
+                        <Button
+                            android:id="@+id/btnMyPreferNot"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="10sp"
+                            android:text="Prefer not to say" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
@@ -244,6 +275,7 @@
                             android:inputType="textPersonName" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Partner Gender Segmented Toggle -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -252,11 +284,41 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
-                    <Spinner
-                        android:id="@+id/spPartnerGender"
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/togglePartnerGender"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="4dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <Button
+                            android:id="@+id/btnPartnerMale"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="11sp"
+                            android:text="Male" />
+
+                        <Button
+                            android:id="@+id/btnPartnerFemale"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="11sp"
+                            android:text="Female" />
+
+                        <Button
+                            android:id="@+id/btnPartnerPreferNot"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="10sp"
+                            android:text="Prefer not to say" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"

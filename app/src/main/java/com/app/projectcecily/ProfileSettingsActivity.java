@@ -4,12 +4,11 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,10 +23,10 @@ public class ProfileSettingsActivity extends AppCompatActivity {
     private TextInputEditText etOldPassword, etNewPassword, etConfirmNewPassword;
 
     private TextInputEditText etMyName, etMyBirthday;
-    private Spinner spMyGender;
+    private MaterialButtonToggleGroup toggleMyGender;
 
     private TextInputEditText etPartnerName, etPartnerBirthday;
-    private Spinner spPartnerGender;
+    private MaterialButtonToggleGroup togglePartnerGender;
 
     private String userId, partnerId = "";
     private DatabaseReference dbRef;
@@ -65,30 +64,19 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         Button btnSaveSecurity = findViewById(R.id.btnSaveSecurity);
 
         etMyName = findViewById(R.id.etMyName);
-        spMyGender = findViewById(R.id.spMyGender);
+        toggleMyGender = findViewById(R.id.toggleMyGender);
         etMyBirthday = findViewById(R.id.etMyBirthday);
 
         etPartnerName = findViewById(R.id.etPartnerName);
-        spPartnerGender = findViewById(R.id.spPartnerGender);
+        togglePartnerGender = findViewById(R.id.togglePartnerGender);
         etPartnerBirthday = findViewById(R.id.etPartnerBirthday);
         Button btnSaveProfileDetails = findViewById(R.id.btnSaveProfileDetails);
 
-        setupGenderSpinners();
         setupDatePickers();
-
         loadProfileData();
 
         btnSaveSecurity.setOnClickListener(v -> updateSecurityCredentials());
         btnSaveProfileDetails.setOnClickListener(v -> saveProfileDetails());
-    }
-
-    private void setupGenderSpinners() {
-        String[] genderOptions = {"Male", "Female", "Prefer not to say"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, genderOptions);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        spMyGender.setAdapter(adapter);
-        spPartnerGender.setAdapter(adapter);
     }
 
     private void setupDatePickers() {
@@ -130,8 +118,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                 if (details.partnerBirthday != null && !details.partnerBirthday.isEmpty()) {
                     etPartnerBirthday.setText(details.partnerBirthday);
                 }
-                setGenderSpinner(spMyGender, details.yourGender);
-                setGenderSpinner(spPartnerGender, details.partnerGender);
+                setGenderToggle(toggleMyGender, details.yourGender, true);
+                setGenderToggle(togglePartnerGender, details.partnerGender, false);
             }
         });
 
@@ -148,18 +136,28 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void setGenderSpinner(Spinner spinner, String gender) {
-        if (gender == null) return;
-        if (gender.contains("Male") && !gender.contains("Fe")) spinner.setSelection(0);
-        else if (gender.contains("Female")) spinner.setSelection(1);
-        else spinner.setSelection(2); // Prefer not to say
+    private void setGenderToggle(MaterialButtonToggleGroup toggleGroup, String gender, boolean isMy) {
+        if (gender == null) {
+            toggleGroup.check(isMy ? R.id.btnMyMale : R.id.btnPartnerMale);
+            return;
+        }
+        if (gender.contains("Female")) {
+            toggleGroup.check(isMy ? R.id.btnMyFemale : R.id.btnPartnerFemale);
+        } else if (gender.contains("Male") && !gender.contains("Fe")) {
+            toggleGroup.check(isMy ? R.id.btnMyMale : R.id.btnPartnerMale);
+        } else {
+            toggleGroup.check(isMy ? R.id.btnMyPreferNot : R.id.btnPartnerPreferNot);
+        }
     }
 
-    private String getGenderFromSpinner(Spinner spinner) {
-        int pos = spinner.getSelectedItemPosition();
-        if (pos == 0) return "Male";
-        if (pos == 1) return "Female";
-        return "Prefer not to say";
+    private String getGenderFromToggle(MaterialButtonToggleGroup toggleGroup, boolean isMy) {
+        int checkedId = toggleGroup.getCheckedButtonId();
+        if (checkedId == (isMy ? R.id.btnMyFemale : R.id.btnPartnerFemale)) {
+            return "Female";
+        } else if (checkedId == (isMy ? R.id.btnMyPreferNot : R.id.btnPartnerPreferNot)) {
+            return "Prefer not to say";
+        }
+        return "Male";
     }
 
     private void updateSecurityCredentials() {
@@ -231,8 +229,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             dbRef.child("profiles").child(partnerId).child("name").setValue(pName);
         }
 
-        cachedDetails.yourGender = getGenderFromSpinner(spMyGender);
-        cachedDetails.partnerGender = getGenderFromSpinner(spPartnerGender);
+        cachedDetails.yourGender = getGenderFromToggle(toggleMyGender, true);
+        cachedDetails.partnerGender = getGenderFromToggle(togglePartnerGender, false);
         cachedDetails.yourBirthday = etMyBirthday.getText() != null ? etMyBirthday.getText().toString().trim() : "";
         cachedDetails.partnerBirthday = etPartnerBirthday.getText() != null ? etPartnerBirthday.getText().toString().trim() : "";
 

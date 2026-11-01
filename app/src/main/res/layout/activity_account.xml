@@ -135,14 +135,30 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Settings Option -->
+            <!-- 3 Sleek Settings Buttons on Account Screen -->
             <Button
-                android:id="@+id/btnSettings"
+                android:id="@+id/btnProfileInfo"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Settings" />
+                android:text="Profile &amp; Personal Info" />
+
+            <Button
+                android:id="@+id/btnAppearance"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Appearance &amp; Theme" />
+
+            <Button
+                android:id="@+id/btnNotificationSettings"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Notification Settings" />
 
             <!-- Account Actions (Unpair & Log Out) -->
             <LinearLayout

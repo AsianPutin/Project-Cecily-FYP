@@ -45,6 +45,42 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         loadPreferences();
         setupSwitchListeners();
+        applySwitchAccentTints();
+    }
+
+    private void applySwitchAccentTints() {
+        int accent = ThemeUtils.getAccentColor(this);
+        int uncheckedTrack = android.graphics.Color.parseColor("#444444");
+
+        int[][] states = new int[][]{
+            new int[]{android.R.attr.state_checked},
+            new int[]{-android.R.attr.state_checked}
+        };
+
+        int[] thumbColors = new int[]{
+            android.graphics.Color.WHITE,
+            android.graphics.Color.parseColor("#AAAAAA")
+        };
+
+        int[] trackColors = new int[]{
+            accent,
+            uncheckedTrack
+        };
+
+        android.content.res.ColorStateList thumbTintList = new android.content.res.ColorStateList(states, thumbColors);
+        android.content.res.ColorStateList trackTintList = new android.content.res.ColorStateList(states, trackColors);
+
+        MaterialSwitch[] switches = {
+            switchFlightReminders, switchLandingAlerts, switchPartnerPokes,
+            switchProximityAlerts, switchWishlistAlerts, switchSound, switchVibration
+        };
+
+        for (MaterialSwitch sw : switches) {
+            if (sw != null) {
+                sw.setThumbTintList(thumbTintList);
+                sw.setTrackTintList(trackTintList);
+            }
+        }
     }
 
     private void loadPreferences() {
@@ -71,6 +107,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
+        applySwitchAccentTints();
     }
 
     @Override
