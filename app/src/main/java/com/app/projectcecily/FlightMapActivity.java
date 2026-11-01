@@ -6,7 +6,10 @@ import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -46,7 +49,7 @@ public class FlightMapActivity extends AppCompatActivity {
     private MapView map;
     private String flightId;
     private DatabaseReference dbRef;
-    private Marker planeMarker, partnerMarker;
+    private Marker planeMarker;
 
     private TextView tvFlightNum, tvDepTime, tvProgress, tvArrTime;
     private TextView tvDepIata, tvDepCity, tvArrIata, tvArrCity, tvDuration;
@@ -189,6 +192,17 @@ public class FlightMapActivity extends AppCompatActivity {
     private String formatDateSystem(long millis) {
         if (millis <= 0) return "Date pending";
         return DateFormat.format("EEE, dd MMM", millis).toString();
+    }
+
+    private float calculateBearing(GeoPoint p1, GeoPoint p2) {
+        if (p1 == null || p2 == null) return 90f;
+        double dLon = Math.toRadians(p2.getLongitude() - p1.getLongitude());
+        double lat1 = Math.toRadians(p1.getLatitude());
+        double lat2 = Math.toRadians(p2.getLatitude());
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        float bearing = (float) Math.toDegrees(Math.atan2(y, x));
+        return (bearing + 360) % 360;
     }
 
     private List<GeoPoint> createCurvedRoute(GeoPoint start, GeoPoint end) {
@@ -383,7 +397,10 @@ public class FlightMapActivity extends AppCompatActivity {
                 if (pointIdx >= curvePoints.size()) pointIdx = curvePoints.size() - 1;
 
                 GeoPoint planePos = curvePoints.get(pointIdx);
-                GeoPoint avatarPos = new GeoPoint(planePos.getLatitude() + 0.35, planePos.getLongitude());
+                GeoPoint nextPos = (pointIdx < curvePoints.size() - 1) ? curvePoints.get(pointIdx + 1) : planePos;
+
+                float bearing = calculateBearing(planePos, nextPos);
+                Bitmap compositeBitmap = createPlaneWithAvatarBitmap(bearing);
 
                 if (planeMarker == null) {
                     planeMarker = new Marker(map);
@@ -391,15 +408,8 @@ public class FlightMapActivity extends AppCompatActivity {
                     map.getOverlays().add(planeMarker);
                 }
                 planeMarker.setPosition(planePos);
-
-                Bitmap partnerPinBitmap = createPartnerAvatarPinBitmap();
-                if (partnerMarker == null) {
-                    partnerMarker = new Marker(map);
-                    partnerMarker.setTitle("Partner on Board");
-                    map.getOverlays().add(partnerMarker);
-                }
-                partnerMarker.setPosition(avatarPos);
-                partnerMarker.setIcon(new BitmapDrawable(getResources(), partnerPinBitmap));
+                planeMarker.setIcon(new BitmapDrawable(getResources(), compositeBitmap));
+                planeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
 
                 map.invalidate();
 
@@ -409,6 +419,48 @@ public class FlightMapActivity extends AppCompatActivity {
             }
         };
         handler.post(updateRunnable);
+    }
+
+    private Bitmap createPlaneWithAvatarBitmap(float bearingAngle) {
+        Bitmap avatarPin = createPartnerAvatarPinBitmap();
+        int avatarWidth = avatarPin.getWidth();
+        int avatarHeight = avatarPin.getHeight();
+
+        int planeSize = 48;
+        int gap = 6; // Fixed 6-pixel gap between avatar pin tip and airplane icon!
+
+        int totalWidth = Math.max(avatarWidth, planeSize + 20);
+        int totalHeight = avatarHeight + gap + planeSize;
+
+        Bitmap composite = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(composite);
+
+        // 1. Draw Partner Avatar Pin at top (x centered, y = 0)
+        float avatarX = (totalWidth - avatarWidth) / 2f;
+        canvas.drawBitmap(avatarPin, avatarX, 0, null);
+
+        // 2. Draw Rotated Airplane Icon at bottom (fixed 6px gap below avatar pin tip!)
+        Bitmap planeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_plane);
+        if (planeIcon != null) {
+            Bitmap scaledPlane = Bitmap.createScaledBitmap(planeIcon, planeSize, planeSize, true);
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(bearingAngle, planeSize / 2f, planeSize / 2f);
+
+            int accent = Color.parseColor("#FF4081");
+            try { accent = Color.parseColor(partnerAccentColor); } catch (Exception ignored) {}
+
+            Paint planePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            planePaint.setColorFilter(new PorterDuffColorFilter(accent, PorterDuff.Mode.SRC_IN));
+
+            float planeX = (totalWidth - planeSize) / 2f;
+            float planeY = avatarHeight + gap;
+            matrix.postTranslate(planeX, planeY);
+
+            canvas.drawBitmap(scaledPlane, matrix, planePaint);
+        }
+
+        return composite;
     }
 
     private Bitmap createPartnerAvatarPinBitmap() {
@@ -442,7 +494,7 @@ public class FlightMapActivity extends AppCompatActivity {
         if (avatar != null) {
             Bitmap scaled = Bitmap.createScaledBitmap(avatar, innerSize, innerSize, true);
 
-            // 100% CIRCULAR CROPPING USING BITMAP SHADER (No square overflow!)
+            // 100% CIRCULAR CROPPING USING BITMAP SHADER (Zero square overflow!)
             Bitmap circularAvatar = Bitmap.createBitmap(innerSize, innerSize, Bitmap.Config.ARGB_8888);
             Canvas avatarCanvas = new Canvas(circularAvatar);
             Paint avatarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
