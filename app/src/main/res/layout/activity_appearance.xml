@@ -194,80 +194,58 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
-                    <!-- Symmetrical Accent Color Palette Grid -->
+                    <!-- 6-Column x 3-Row Accent Color Palette Grid -->
                     <LinearLayout
                         android:id="@+id/layoutAccentGrid"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:orientation="vertical">
 
-                        <!-- Row 1: Blue, Pink, Green, Orange -->
+                        <!-- Row 1: None (X), Red, Orange, Yellow, Lime, Green -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:orientation="horizontal">
 
-                            <!-- Blue -->
+                            <!-- Item 1: None (X) Reset -->
                             <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorBlue"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:id="@+id/colorNone"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#007AFF"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#222222"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
-                                    android:id="@+id/checkBlue"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:id="@+id/iconNone"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Blue"
-                                    android:src="@drawable/ic_check"
-                                    android:visibility="gone" />
+                                    android:contentDescription="Reset Color"
+                                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                                    app:tint="#888888" />
                             </com.google.android.material.card.MaterialCardView>
 
-                            <!-- Pink -->
+                            <!-- Red -->
                             <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorPink"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:id="@+id/colorRed"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#FF4081"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#E53935"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
-                                    android:id="@+id/checkPink"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:id="@+id/checkRed"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Pink"
-                                    android:src="@drawable/ic_check"
-                                    android:visibility="gone" />
-                            </com.google.android.material.card.MaterialCardView>
-
-                            <!-- Green -->
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorGreen"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                app:cardBackgroundColor="#25D366"
-                                app:cardCornerRadius="28dp"
-                                app:strokeWidth="0dp">
-                                <ImageView
-                                    android:id="@+id/checkGreen"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
-                                    android:layout_gravity="center"
-                                    android:contentDescription="Select Green"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
                             </com.google.android.material.card.MaterialCardView>
@@ -275,71 +253,129 @@
                             <!-- Orange -->
                             <com.google.android.material.card.MaterialCardView
                                 android:id="@+id/colorOrange"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#FF9500"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#FB8C00"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
                                     android:id="@+id/checkOrange"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Orange"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Yellow -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorYellow"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#FDD835"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkYellow"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Lime -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorLime"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#C0CA33"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkLime"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Green -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorGreen"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#4CAF50"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkGreen"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
                             </com.google.android.material.card.MaterialCardView>
 
                         </LinearLayout>
 
-                        <!-- Row 2: Purple, Red, Teal, Gold -->
+                        <!-- Row 2: Dark Green, Mint, Teal, Cyan, Blue, Indigo -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
 
-                            <!-- Purple -->
+                            <!-- Dark Green -->
                             <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorPurple"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:id="@+id/colorDarkGreen"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#9C27B0"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#2E7D32"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
-                                    android:id="@+id/checkPurple"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:id="@+id/checkDarkGreen"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Purple"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
                             </com.google.android.material.card.MaterialCardView>
 
-                            <!-- Red -->
+                            <!-- Mint -->
                             <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorRed"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:id="@+id/colorMint"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#E91E63"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#00E676"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
-                                    android:id="@+id/checkRed"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:id="@+id/checkMint"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Red"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
                             </com.google.android.material.card.MaterialCardView>
@@ -347,43 +383,211 @@
                             <!-- Teal -->
                             <com.google.android.material.card.MaterialCardView
                                 android:id="@+id/colorTeal"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#009688"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#00897B"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
                                     android:id="@+id/checkTeal"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Teal"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
                             </com.google.android.material.card.MaterialCardView>
 
-                            <!-- Gold -->
+                            <!-- Cyan -->
                             <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/colorGold"
-                                android:layout_width="56dp"
-                                android:layout_height="56dp"
-                                android:layout_margin="10dp"
+                                android:id="@+id/colorCyan"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                app:cardBackgroundColor="#FFC107"
-                                app:cardCornerRadius="28dp"
+                                app:cardBackgroundColor="#00ACC1"
+                                app:cardCornerRadius="14dp"
                                 app:strokeWidth="0dp">
                                 <ImageView
-                                    android:id="@+id/checkGold"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
+                                    android:id="@+id/checkCyan"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Select Gold"
                                     android:src="@drawable/ic_check"
                                     android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Blue -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorBlue"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#1E88E5"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkBlue"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Indigo -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorIndigo"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#3F51B5"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkIndigo"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                        </LinearLayout>
+
+                        <!-- Row 3: Deep Purple, Purple, Magenta, Brown, Slate, Custom Picker -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
+
+                            <!-- Deep Purple -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorDeepPurple"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#673AB7"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkDeepPurple"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Purple -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorPurple"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#9C27B0"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkPurple"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Magenta -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorMagenta"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#E91E63"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkMagenta"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Brown -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorBrown"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#795548"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkBrown"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Slate -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorSlate"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#546E7A"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:id="@+id/checkSlate"
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Eyedropper Custom Picker -->
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/colorCustomPicker"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_margin="4dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="#333333"
+                                app:cardCornerRadius="14dp"
+                                app:strokeWidth="0dp">
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Custom Color Eyedropper"
+                                    android:src="@android:drawable/ic_menu_edit"
+                                    app:tint="#CCCCCC" />
                             </com.google.android.material.card.MaterialCardView>
 
                         </LinearLayout>

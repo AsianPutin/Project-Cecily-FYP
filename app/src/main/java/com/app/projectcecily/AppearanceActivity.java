@@ -1,24 +1,36 @@
 package com.app.projectcecily;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class AppearanceActivity extends AppCompatActivity {
 
     private MaterialButtonToggleGroup themeToggleGroup, toggleColorStyle;
     private LinearLayout layoutAccentGrid;
 
-    private MaterialCardView cardBlue, cardPink, cardGreen, cardOrange, cardPurple, cardRed, cardTeal, cardGold;
-    private ImageView checkBlue, checkPink, checkGreen, checkOrange, checkPurple, checkRed, checkTeal, checkGold;
+    private MaterialCardView cardNone, cardRed, cardOrange, cardYellow, cardLime, cardGreen;
+    private MaterialCardView cardDarkGreen, cardMint, cardTeal, cardCyan, cardBlue, cardIndigo;
+    private MaterialCardView cardDeepPurple, cardPurple, cardMagenta, cardBrown, cardSlate, cardCustomPicker;
+
+    private ImageView checkRed, checkOrange, checkYellow, checkLime, checkGreen;
+    private ImageView checkDarkGreen, checkMint, checkTeal, checkCyan, checkBlue, checkIndigo;
+    private ImageView checkDeepPurple, checkPurple, checkMagenta, checkBrown, checkSlate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,23 +55,45 @@ public class AppearanceActivity extends AppCompatActivity {
         toggleColorStyle = findViewById(R.id.toggleColorStyle);
         layoutAccentGrid = findViewById(R.id.layoutAccentGrid);
 
-        cardBlue = findViewById(R.id.colorBlue);
-        cardPink = findViewById(R.id.colorPink);
-        cardGreen = findViewById(R.id.colorGreen);
-        cardOrange = findViewById(R.id.colorOrange);
-        cardPurple = findViewById(R.id.colorPurple);
+        cardNone = findViewById(R.id.colorNone);
         cardRed = findViewById(R.id.colorRed);
-        cardTeal = findViewById(R.id.colorTeal);
-        cardGold = findViewById(R.id.colorGold);
+        cardOrange = findViewById(R.id.colorOrange);
+        cardYellow = findViewById(R.id.colorYellow);
+        cardLime = findViewById(R.id.colorLime);
+        cardGreen = findViewById(R.id.colorGreen);
 
-        checkBlue = findViewById(R.id.checkBlue);
-        checkPink = findViewById(R.id.checkPink);
-        checkGreen = findViewById(R.id.checkGreen);
-        checkOrange = findViewById(R.id.checkOrange);
-        checkPurple = findViewById(R.id.checkPurple);
+        cardDarkGreen = findViewById(R.id.colorDarkGreen);
+        cardMint = findViewById(R.id.colorMint);
+        cardTeal = findViewById(R.id.colorTeal);
+        cardCyan = findViewById(R.id.colorCyan);
+        cardBlue = findViewById(R.id.colorBlue);
+        cardIndigo = findViewById(R.id.colorIndigo);
+
+        cardDeepPurple = findViewById(R.id.colorDeepPurple);
+        cardPurple = findViewById(R.id.colorPurple);
+        cardMagenta = findViewById(R.id.colorMagenta);
+        cardBrown = findViewById(R.id.colorBrown);
+        cardSlate = findViewById(R.id.colorSlate);
+        cardCustomPicker = findViewById(R.id.colorCustomPicker);
+
         checkRed = findViewById(R.id.checkRed);
+        checkOrange = findViewById(R.id.checkOrange);
+        checkYellow = findViewById(R.id.checkYellow);
+        checkLime = findViewById(R.id.checkLime);
+        checkGreen = findViewById(R.id.checkGreen);
+
+        checkDarkGreen = findViewById(R.id.checkDarkGreen);
+        checkMint = findViewById(R.id.checkMint);
         checkTeal = findViewById(R.id.checkTeal);
-        checkGold = findViewById(R.id.checkGold);
+        checkCyan = findViewById(R.id.checkCyan);
+        checkBlue = findViewById(R.id.checkBlue);
+        checkIndigo = findViewById(R.id.checkIndigo);
+
+        checkDeepPurple = findViewById(R.id.checkDeepPurple);
+        checkPurple = findViewById(R.id.checkPurple);
+        checkMagenta = findViewById(R.id.checkMagenta);
+        checkBrown = findViewById(R.id.checkBrown);
+        checkSlate = findViewById(R.id.checkSlate);
 
         setupThemeToggle();
         setupColorStyleToggle();
@@ -136,14 +170,86 @@ public class AppearanceActivity extends AppCompatActivity {
     }
 
     private void setupColorSwatches() {
-        if (cardBlue != null) cardBlue.setOnClickListener(v -> selectAccent("#007AFF"));
-        if (cardPink != null) cardPink.setOnClickListener(v -> selectAccent("#FF4081"));
-        if (cardGreen != null) cardGreen.setOnClickListener(v -> selectAccent("#25D366"));
-        if (cardOrange != null) cardOrange.setOnClickListener(v -> selectAccent("#FF9500"));
+        if (cardNone != null) cardNone.setOnClickListener(v -> selectAccent("#25D366"));
+        if (cardRed != null) cardRed.setOnClickListener(v -> selectAccent("#E53935"));
+        if (cardOrange != null) cardOrange.setOnClickListener(v -> selectAccent("#FB8C00"));
+        if (cardYellow != null) cardYellow.setOnClickListener(v -> selectAccent("#FDD835"));
+        if (cardLime != null) cardLime.setOnClickListener(v -> selectAccent("#C0CA33"));
+        if (cardGreen != null) cardGreen.setOnClickListener(v -> selectAccent("#4CAF50"));
+
+        if (cardDarkGreen != null) cardDarkGreen.setOnClickListener(v -> selectAccent("#2E7D32"));
+        if (cardMint != null) cardMint.setOnClickListener(v -> selectAccent("#00E676"));
+        if (cardTeal != null) cardTeal.setOnClickListener(v -> selectAccent("#00897B"));
+        if (cardCyan != null) cardCyan.setOnClickListener(v -> selectAccent("#00ACC1"));
+        if (cardBlue != null) cardBlue.setOnClickListener(v -> selectAccent("#1E88E5"));
+        if (cardIndigo != null) cardIndigo.setOnClickListener(v -> selectAccent("#3F51B5"));
+
+        if (cardDeepPurple != null) cardDeepPurple.setOnClickListener(v -> selectAccent("#673AB7"));
         if (cardPurple != null) cardPurple.setOnClickListener(v -> selectAccent("#9C27B0"));
-        if (cardRed != null) cardRed.setOnClickListener(v -> selectAccent("#E91E63"));
-        if (cardTeal != null) cardTeal.setOnClickListener(v -> selectAccent("#009688"));
-        if (cardGold != null) cardGold.setOnClickListener(v -> selectAccent("#FFC107"));
+        if (cardMagenta != null) cardMagenta.setOnClickListener(v -> selectAccent("#E91E63"));
+        if (cardBrown != null) cardBrown.setOnClickListener(v -> selectAccent("#795548"));
+        if (cardSlate != null) cardSlate.setOnClickListener(v -> selectAccent("#546E7A"));
+
+        if (cardCustomPicker != null) cardCustomPicker.setOnClickListener(v -> showCustomColorPickerDialog());
+    }
+
+    private void showCustomColorPickerDialog() {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_color_picker, null);
+        View previewCircle = view.findViewById(R.id.previewColorCircle);
+        TextInputEditText etHexCode = view.findViewById(R.id.etHexCode);
+        ColorPickerView colorPickerView = view.findViewById(R.id.colorPickerView);
+        SeekBar hueSeekBar = view.findViewById(R.id.hueSeekBar);
+        Button btnCancel = view.findViewById(R.id.btnCancelColor);
+        Button btnSave = view.findViewById(R.id.btnSaveColor);
+
+        int currentColor = ThemeUtils.getAccentColor(this);
+        String currentHex = String.format("#%06X", (0xFFFFFF & currentColor));
+
+        etHexCode.setText(currentHex);
+        previewCircle.getBackground().setTint(currentColor);
+        colorPickerView.setColor(currentColor);
+
+        float[] initialHsv = new float[3];
+        Color.colorToHSV(currentColor, initialHsv);
+        hueSeekBar.setProgress((int) initialHsv[0]);
+
+        colorPickerView.setOnColorChangeListener((color, hue, sat, val) -> {
+            String hex = String.format("#%06X", (0xFFFFFF & color));
+            etHexCode.setText(hex);
+            previewCircle.getBackground().setTint(color);
+        });
+
+        hueSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    colorPickerView.setHue(progress);
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnSave.setOnClickListener(v -> {
+            String typedHex = etHexCode.getText() != null ? etHexCode.getText().toString().trim() : "";
+            try {
+                Color.parseColor(typedHex);
+                selectAccent(typedHex);
+                dialog.dismiss();
+            } catch (Exception e) {
+                Toast.makeText(this, "Invalid HEX color format!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
     }
 
     @Override
@@ -167,19 +273,33 @@ public class AppearanceActivity extends AppCompatActivity {
             return;
         }
 
-        updateSwatch(cardBlue, checkBlue, "#007AFF".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardPink, checkPink, "#FF4081".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardGreen, checkGreen, "#25D366".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardOrange, checkOrange, "#FF9500".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardRed, checkRed, "#E53935".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardOrange, checkOrange, "#FB8C00".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardYellow, checkYellow, "#FDD835".equalsIgnoreCase(currentHex), Color.BLACK);
+        updateSwatch(cardLime, checkLime, "#C0CA33".equalsIgnoreCase(currentHex), Color.BLACK);
+        updateSwatch(cardGreen, checkGreen, "#4CAF50".equalsIgnoreCase(currentHex), Color.WHITE);
+
+        updateSwatch(cardDarkGreen, checkDarkGreen, "#2E7D32".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardMint, checkMint, "#00E676".equalsIgnoreCase(currentHex), Color.BLACK);
+        updateSwatch(cardTeal, checkTeal, "#00897B".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardCyan, checkCyan, "#00ACC1".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardBlue, checkBlue, "#1E88E5".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardIndigo, checkIndigo, "#3F51B5".equalsIgnoreCase(currentHex), Color.WHITE);
+
+        updateSwatch(cardDeepPurple, checkDeepPurple, "#673AB7".equalsIgnoreCase(currentHex), Color.WHITE);
         updateSwatch(cardPurple, checkPurple, "#9C27B0".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardRed, checkRed, "#E91E63".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardTeal, checkTeal, "#009688".equalsIgnoreCase(currentHex), Color.WHITE);
-        updateSwatch(cardGold, checkGold, "#FFC107".equalsIgnoreCase(currentHex), Color.BLACK);
+        updateSwatch(cardMagenta, checkMagenta, "#E91E63".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardBrown, checkBrown, "#795548".equalsIgnoreCase(currentHex), Color.WHITE);
+        updateSwatch(cardSlate, checkSlate, "#546E7A".equalsIgnoreCase(currentHex), Color.WHITE);
     }
 
     private void clearAllCheckmarks() {
-        ImageView[] checks = {checkBlue, checkPink, checkGreen, checkOrange, checkPurple, checkRed, checkTeal, checkGold};
-        MaterialCardView[] cards = {cardBlue, cardPink, cardGreen, cardOrange, cardPurple, cardRed, cardTeal, cardGold};
+        ImageView[] checks = {checkRed, checkOrange, checkYellow, checkLime, checkGreen,
+                              checkDarkGreen, checkMint, checkTeal, checkCyan, checkBlue, checkIndigo,
+                              checkDeepPurple, checkPurple, checkMagenta, checkBrown, checkSlate};
+        MaterialCardView[] cards = {cardNone, cardRed, cardOrange, cardYellow, cardLime, cardGreen,
+                                   cardDarkGreen, cardMint, cardTeal, cardCyan, cardBlue, cardIndigo,
+                                   cardDeepPurple, cardPurple, cardMagenta, cardBrown, cardSlate, cardCustomPicker};
         for (ImageView chk : checks) if (chk != null) chk.setVisibility(View.GONE);
         for (MaterialCardView cd : cards) if (cd != null) cd.setStrokeWidth(0);
     }
