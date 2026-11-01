@@ -49,6 +49,13 @@ import java.util.regex.Pattern;
 
 public class FlightTrackerActivity extends AppCompatActivity implements FlightAdapter.OnFlightActionListener {
 
+    public static String getPairKey(Context context) {
+        String uId = UserManager.getUserId(context);
+        String pId = UserManager.getPartnerId(context);
+        if (pId == null || pId.trim().isEmpty()) return uId;
+        return uId.compareTo(pId) < 0 ? uId + "_" + pId : pId + "_" + uId;
+    }
+
     public static String resolveIataFromCity(String text) {
         if (text == null || text.trim().isEmpty()) return "KUL";
         String clean = text.toUpperCase();
@@ -148,8 +155,28 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         setContentView(R.layout.activity_flight);
 
         userId = UserManager.getUserId(this);
-        activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
+        String pairKey = getPairKey(this);
+
+        activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flights").child(pairKey);
         historyRef = activeRef;
+
+        // Auto-migrate legacy single-user flights
+        DatabaseReference legacyRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
+        legacyRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        FlightInfo oldInfo = ds.getValue(FlightInfo.class);
+                        if (oldInfo != null && oldInfo.id != null) {
+                            activeRef.child(oldInfo.id).setValue(oldInfo);
+                        }
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
 
         checkExactAlarmPermission();
 

@@ -168,7 +168,8 @@ public class FlightMapActivity extends AppCompatActivity {
     }
 
     private void listenForFlightUpdates() {
-        dbRef.child("flight_history").child(UserManager.getUserId(this)).child(flightId).addValueEventListener(new ValueEventListener() {
+        String pairKey = FlightTrackerActivity.getPairKey(this);
+        dbRef.child("flights").child(pairKey).child(flightId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 FlightInfo info = snapshot.getValue(FlightInfo.class);
