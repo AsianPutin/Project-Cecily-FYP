@@ -196,12 +196,15 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             tvSchedule.setLayoutParams(textParams);
 
-            // Delete X button
+            // Delete X button (Red and Bigger for easy tapping)
             ImageView ivDelete = new ImageView(this);
             ivDelete.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-            LinearLayout.LayoutParams delParams = new LinearLayout.LayoutParams(44, 44);
+            int deleteSize = (int) (32 * getResources().getDisplayMetrics().density);
+            int deletePadding = (int) (4 * getResources().getDisplayMetrics().density);
+            LinearLayout.LayoutParams delParams = new LinearLayout.LayoutParams(deleteSize, deleteSize);
             ivDelete.setLayoutParams(delParams);
-            ivDelete.setColorFilter(android.graphics.Color.parseColor("#888888"));
+            ivDelete.setPadding(deletePadding, deletePadding, deletePadding, deletePadding);
+            ivDelete.setColorFilter(android.graphics.Color.parseColor("#FF3B30"));
             ivDelete.setClickable(true);
             ivDelete.setFocusable(true);
 
