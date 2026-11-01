@@ -42,9 +42,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class FlightMapActivity extends AppCompatActivity {
 
@@ -55,8 +57,8 @@ public class FlightMapActivity extends AppCompatActivity {
 
     private TextView tvFlightNum, tvDepTime, tvProgress, tvArrTime;
     private TextView tvDepIata, tvDepCity, tvArrIata, tvArrCity, tvDuration;
-    private TextView tvDepDate, tvDepTerminal, tvDepGate;
-    private TextView tvArrDate, tvArrTerminal, tvArrGate, tvStatusText;
+    private TextView tvDepDate;
+    private TextView tvArrDate, tvStatusText;
     private ProgressBar pbProgress;
     private ImageView ivPlaneTrackIcon;
     private View vRouteLine;
@@ -115,12 +117,7 @@ public class FlightMapActivity extends AppCompatActivity {
         tvDuration = findViewById(R.id.tvMapDuration);
 
         tvDepDate = findViewById(R.id.tvMapDepDate);
-        tvDepTerminal = findViewById(R.id.tvMapDepTerminal);
-        tvDepGate = findViewById(R.id.tvMapDepGate);
-
         tvArrDate = findViewById(R.id.tvMapArrDate);
-        tvArrTerminal = findViewById(R.id.tvMapArrTerminal);
-        tvArrGate = findViewById(R.id.tvMapArrGate);
         tvStatusText = findViewById(R.id.tvMapStatusText);
 
         pbProgress = findViewById(R.id.pbFlightProgress);
@@ -185,16 +182,44 @@ public class FlightMapActivity extends AppCompatActivity {
 
     private String formatTimeSystem(long millis) {
         if (millis <= 0) return "--:--";
+        TimeZone tz = TimeZone.getDefault();
+        String tzCode = tz.getDisplayName(tz.inDaylightTime(new Date(millis)), TimeZone.SHORT);
+
+        String timeStr;
         if (DateFormat.is24HourFormat(this)) {
-            return DateFormat.format("HH:mm", millis).toString();
+            timeStr = DateFormat.format("HH:mm", millis).toString();
         } else {
-            return DateFormat.format("h:mm a", millis).toString().toLowerCase();
+            timeStr = DateFormat.format("h:mm a", millis).toString().toLowerCase();
         }
+
+        return timeStr + " (" + tzCode + ")";
     }
 
     private String formatDateSystem(long millis) {
         if (millis <= 0) return "Date pending";
         return DateFormat.format("EEE, dd MMM", millis).toString();
+    }
+
+    private String resolveCityAndCountry(String iata, String defaultCity) {
+        if (iata != null && !iata.trim().isEmpty()) {
+            String clean = iata.trim().toUpperCase();
+            if ("KCH".equals(clean)) return "Kuching, Malaysia";
+            if ("KUL".equals(clean)) return "Kuala Lumpur, Malaysia";
+            if ("BKI".equals(clean)) return "Kota Kinabalu, Malaysia";
+            if ("SIN".equals(clean)) return "Singapore, Singapore";
+            if ("PEN".equals(clean)) return "Penang, Malaysia";
+        }
+        if (defaultCity != null && !defaultCity.trim().isEmpty() && !"Arrival".equalsIgnoreCase(defaultCity.trim())) {
+            String clean = defaultCity.trim();
+            if (clean.toLowerCase().contains("kuching")) return "Kuching, Malaysia";
+            if (clean.toLowerCase().contains("kuala lumpur")) return "Kuala Lumpur, Malaysia";
+            if (clean.toLowerCase().contains("kota kinabalu")) return "Kota Kinabalu, Malaysia";
+            if (clean.toLowerCase().contains("singapore")) return "Singapore, Singapore";
+            if (clean.toLowerCase().contains("penang")) return "Penang, Malaysia";
+            if (clean.contains(",")) return clean;
+            return clean + ", Malaysia";
+        }
+        return "Kuching, Malaysia";
     }
 
     private float calculateBearing(GeoPoint p1, GeoPoint p2) {
@@ -285,9 +310,9 @@ public class FlightMapActivity extends AppCompatActivity {
         }
 
         tvDepIata.setText(depIataCode);
-        tvDepCity.setText(depCityName != null ? depCityName : "Kuching");
+        tvDepCity.setText(resolveCityAndCountry(depIataCode, depCityName));
         tvArrIata.setText(arrIataCode);
-        tvArrCity.setText(arrCityName != null ? arrCityName : "Kuala Lumpur");
+        tvArrCity.setText(resolveCityAndCountry(arrIataCode, arrCityName));
 
         long depMillis = info.depTimeMillis > 0 ? info.depTimeMillis : System.currentTimeMillis();
         long durationMs = (110 * 60 * 1000L); // 1h 50m duration
@@ -299,23 +324,6 @@ public class FlightMapActivity extends AppCompatActivity {
 
         tvDepDate.setText(formatDateSystem(depMillis));
         tvArrDate.setText(formatDateSystem(arrMillis));
-
-        String depTerm = info.depTerminal;
-        if (depTerm == null || depTerm.trim().isEmpty() || "2".equals(depTerm.trim())) depTerm = "-";
-
-        String depGate = info.depGate;
-        if (depGate == null || depGate.trim().isEmpty() || "J10".equals(depGate.trim())) depGate = "-";
-
-        String arrTerm = info.arrTerminal;
-        if (arrTerm == null || arrTerm.trim().isEmpty() || "2".equals(arrTerm.trim())) arrTerm = "-";
-
-        String arrGate = info.arrGate;
-        if (arrGate == null || arrGate.trim().isEmpty() || "J10".equals(arrGate.trim())) arrGate = "-";
-
-        tvDepTerminal.setText(depTerm);
-        tvDepGate.setText(depGate);
-        tvArrTerminal.setText(arrTerm);
-        tvArrGate.setText(arrGate);
 
         GeoPoint depPos = AIRPORTS.get(depIataCode.toUpperCase());
         GeoPoint arrPos = AIRPORTS.get(arrIataCode.toUpperCase());
