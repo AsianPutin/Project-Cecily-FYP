@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -24,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -251,6 +253,21 @@ public class FlightMapActivity extends AppCompatActivity {
         return bitmap;
     }
 
+    private Bitmap getBitmapFromVectorDrawable(int drawableId, int width, int height) {
+        try {
+            Drawable drawable = ResourcesCompat.getDrawable(getResources(), drawableId, getTheme());
+            if (drawable == null) return null;
+
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            return bitmap;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private void updateMapAndDetails(FlightInfo info) {
         tvFlightNum.setText((info.airlineName != null ? info.airlineName + " " : "") + info.flightNumber);
 
@@ -426,8 +443,8 @@ public class FlightMapActivity extends AppCompatActivity {
         int avatarWidth = avatarPin.getWidth();
         int avatarHeight = avatarPin.getHeight();
 
-        int planeSize = 48;
-        int gap = 6; // Fixed 6-pixel gap between avatar pin tip and airplane icon!
+        int planeSize = 64;
+        int gap = 4;
 
         int totalWidth = Math.max(avatarWidth, planeSize + 20);
         int totalHeight = avatarHeight + gap + planeSize;
@@ -439,25 +456,23 @@ public class FlightMapActivity extends AppCompatActivity {
         float avatarX = (totalWidth - avatarWidth) / 2f;
         canvas.drawBitmap(avatarPin, avatarX, 0, null);
 
-        // 2. Draw Rotated Airplane Icon at bottom (fixed 6px gap below avatar pin tip!)
-        Bitmap planeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_plane);
-        if (planeIcon != null) {
-            Bitmap scaledPlane = Bitmap.createScaledBitmap(planeIcon, planeSize, planeSize, true);
-
-            Matrix matrix = new Matrix();
-            matrix.postRotate(bearingAngle, planeSize / 2f, planeSize / 2f);
-
+        // 2. Render Plane Vector Drawable into Bitmap
+        Bitmap planeBm = getBitmapFromVectorDrawable(R.drawable.ic_plane, planeSize, planeSize);
+        if (planeBm != null) {
             int accent = Color.parseColor("#FF4081");
             try { accent = Color.parseColor(partnerAccentColor); } catch (Exception ignored) {}
 
-            Paint planePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            planePaint.setColorFilter(new PorterDuffColorFilter(accent, PorterDuff.Mode.SRC_IN));
+            Matrix matrix = new Matrix();
+            matrix.postRotate(bearingAngle, planeSize / 2f, planeSize / 2f);
 
             float planeX = (totalWidth - planeSize) / 2f;
             float planeY = avatarHeight + gap;
             matrix.postTranslate(planeX, planeY);
 
-            canvas.drawBitmap(scaledPlane, matrix, planePaint);
+            Paint planePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            planePaint.setColorFilter(new PorterDuffColorFilter(accent, PorterDuff.Mode.SRC_IN));
+
+            canvas.drawBitmap(planeBm, matrix, planePaint);
         }
 
         return composite;
