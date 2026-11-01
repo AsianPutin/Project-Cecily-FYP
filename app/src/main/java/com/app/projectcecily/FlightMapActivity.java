@@ -198,7 +198,7 @@ public class FlightMapActivity extends AppCompatActivity {
     }
 
     private float calculateBearing(GeoPoint p1, GeoPoint p2) {
-        if (p1 == null || p2 == null) return 90f;
+        if (p1 == null || p2 == null || p1.equals(p2)) return 90f;
         double dLon = Math.toRadians(p2.getLongitude() - p1.getLongitude());
         double lat1 = Math.toRadians(p1.getLatitude());
         double lat2 = Math.toRadians(p2.getLatitude());
@@ -420,6 +420,13 @@ public class FlightMapActivity extends AppCompatActivity {
                 float bearing = calculateBearing(planePos, nextPos);
                 Bitmap compositeBitmap = createPlaneWithAvatarBitmap(bearing);
 
+                int avatarHeight = 130;
+                int planeSize = 64;
+                int gap = 4;
+                int totalHeight = avatarHeight + gap + planeSize;
+                float planeCenterY = avatarHeight + gap + (planeSize / 2f);
+                float anchorY = planeCenterY / totalHeight;
+
                 if (planeMarker == null) {
                     planeMarker = new Marker(map);
                     planeMarker.setTitle(info.flightNumber);
@@ -427,7 +434,7 @@ public class FlightMapActivity extends AppCompatActivity {
                 }
                 planeMarker.setPosition(planePos);
                 planeMarker.setIcon(new BitmapDrawable(getResources(), compositeBitmap));
-                planeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                planeMarker.setAnchor(Marker.ANCHOR_CENTER, anchorY);
 
                 map.invalidate();
 
