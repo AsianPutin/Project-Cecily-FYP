@@ -141,13 +141,11 @@ public class AppearanceActivity extends AppCompatActivity {
                 ThemeUtils.saveAccentColor(this, "DYNAMIC");
                 setGridEnabled(false);
                 ThemeUtils.applyAccentToActivity(this);
-                Toast.makeText(this, "Material You (Wallpaper Theme) active!", Toast.LENGTH_SHORT).show();
             } else {
                 ThemeUtils.saveAccentColor(this, "#25D366");
                 setGridEnabled(true);
                 updateSelectedAccentUI("#25D366");
                 ThemeUtils.applyAccentToActivity(this);
-                Toast.makeText(this, "Default accent colors active!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -201,6 +199,17 @@ public class AppearanceActivity extends AppCompatActivity {
         SeekBar hueSeekBar = view.findViewById(R.id.hueSeekBar);
         Button btnCancel = view.findViewById(R.id.btnCancelColor);
         Button btnSave = view.findViewById(R.id.btnSaveColor);
+
+        // Rainbow Gradient Track for Hue SeekBar
+        int[] rainbowColors = new int[]{
+            Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED
+        };
+        GradientDrawable rainbowDrawable = new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT, rainbowColors
+        );
+        rainbowDrawable.setCornerRadius(16f);
+        hueSeekBar.setProgressDrawable(rainbowDrawable);
+        hueSeekBar.setSplitTrack(false);
 
         int currentColor = ThemeUtils.getAccentColor(this);
         String currentHex = String.format("#%06X", (0xFFFFFF & currentColor));
@@ -263,7 +272,6 @@ public class AppearanceActivity extends AppCompatActivity {
         ThemeUtils.saveAccentColor(this, hexColor);
         updateSelectedAccentUI(hexColor);
         ThemeUtils.applyAccentToActivity(this);
-        Toast.makeText(this, "Accent color updated!", Toast.LENGTH_SHORT).show();
     }
 
     private void updateSelectedAccentUI(String currentHex) {
