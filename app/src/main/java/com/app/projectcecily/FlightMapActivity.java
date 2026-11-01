@@ -421,8 +421,8 @@ public class FlightMapActivity extends AppCompatActivity {
                 Bitmap compositeBitmap = createPlaneWithAvatarBitmap(bearing);
 
                 int avatarHeight = 130;
-                int planeSize = 64;
-                int gap = 4;
+                int planeSize = 80;
+                int gap = 2;
                 int totalHeight = avatarHeight + gap + planeSize;
                 float planeCenterY = avatarHeight + gap + (planeSize / 2f);
                 float anchorY = planeCenterY / totalHeight;
@@ -451,8 +451,8 @@ public class FlightMapActivity extends AppCompatActivity {
         int avatarWidth = avatarPin.getWidth();
         int avatarHeight = avatarPin.getHeight();
 
-        int planeSize = 64;
-        int gap = 4;
+        int planeSize = 80;
+        int gap = 2;
 
         int totalWidth = Math.max(avatarWidth, planeSize + 20);
         int totalHeight = avatarHeight + gap + planeSize;
@@ -471,7 +471,9 @@ public class FlightMapActivity extends AppCompatActivity {
             try { accent = Color.parseColor(partnerAccentColor); } catch (Exception ignored) {}
 
             Matrix matrix = new Matrix();
-            matrix.postRotate(bearingAngle, planeSize / 2f, planeSize / 2f);
+            // CALIBRATED ROTATION: bearing - 90f because ic_plane vector natively points RIGHT (90°)!
+            float rotationAngle = (bearingAngle - 90f + 360f) % 360f;
+            matrix.postRotate(rotationAngle, planeSize / 2f, planeSize / 2f);
 
             float planeX = (totalWidth - planeSize) / 2f;
             float planeY = avatarHeight + gap;
