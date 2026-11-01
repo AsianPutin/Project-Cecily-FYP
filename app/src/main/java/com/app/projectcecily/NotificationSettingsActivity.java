@@ -36,6 +36,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private MaterialSwitch switchPartnerPokes, switchProximityAlerts;
     private MaterialSwitch switchWishlistAlerts, switchSound, switchVibration;
 
+    private LinearLayout layoutFlightRemindersSection;
     private LinearLayout layoutMyFlightRemindersContainer;
     private LinearLayout layoutPartnerFlightRemindersContainer;
 
@@ -69,6 +70,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchSound = findViewById(R.id.switchSound);
         switchVibration = findViewById(R.id.switchVibration);
 
+        layoutFlightRemindersSection = findViewById(R.id.layoutFlightRemindersSection);
         layoutMyFlightRemindersContainer = findViewById(R.id.layoutMyFlightRemindersContainer);
         layoutPartnerFlightRemindersContainer = findViewById(R.id.layoutPartnerFlightRemindersContainer);
 
@@ -124,7 +126,12 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void loadPreferences() {
-        switchFlightReminders.setChecked(prefs.getBoolean("flight_reminders", true));
+        boolean remindersEnabled = prefs.getBoolean("flight_reminders", true);
+        switchFlightReminders.setChecked(remindersEnabled);
+        if (layoutFlightRemindersSection != null) {
+            layoutFlightRemindersSection.setVisibility(remindersEnabled ? View.VISIBLE : View.GONE);
+        }
+
         switchLandingAlerts.setChecked(prefs.getBoolean("landing_alerts", true));
         switchPartnerPokes.setChecked(prefs.getBoolean("partner_pokes", true));
         switchProximityAlerts.setChecked(prefs.getBoolean("proximity_alerts", true));
@@ -244,10 +251,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_custom_notification, null);
         TextInputEditText etCustomAmount = view.findViewById(R.id.etCustomAmount);
         RadioGroup radioGroupUnits = view.findViewById(R.id.radioGroupUnits);
-        RadioButton radioMinutes = view.findViewById(R.id.radioMinutes);
-        RadioButton radioHours = view.findViewById(R.id.radioHours);
-        RadioButton radioDays = view.findViewById(R.id.radioDays);
-        RadioButton radioWeeks = view.findViewById(R.id.radioWeeks);
 
         Button btnCancel = view.findViewById(R.id.btnCancelCustomNotif);
         Button btnSave = view.findViewById(R.id.btnSaveCustomNotif);
@@ -290,7 +293,12 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void setupSwitchListeners() {
-        switchFlightReminders.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("flight_reminders", isChecked).apply());
+        switchFlightReminders.setOnCheckedChangeListener((v, isChecked) -> {
+            prefs.edit().putBoolean("flight_reminders", isChecked).apply();
+            if (layoutFlightRemindersSection != null) {
+                layoutFlightRemindersSection.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            }
+        });
         switchLandingAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("landing_alerts", isChecked).apply());
         switchPartnerPokes.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("partner_pokes", isChecked).apply());
         switchProximityAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("proximity_alerts", isChecked).apply());
