@@ -27,6 +27,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
@@ -66,6 +67,17 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         if (clean.contains("PENANG") || clean.contains("PEN")) return "PEN";
         if (clean.length() == 3) return clean;
         return "KUL";
+    }
+
+    public static String resolveIataCityName(String iata) {
+        if (iata == null || iata.trim().isEmpty()) return "Kuala Lumpur";
+        String clean = iata.trim().toUpperCase();
+        if ("KCH".equals(clean)) return "Kuching";
+        if ("KUL".equals(clean)) return "Kuala Lumpur";
+        if ("BKI".equals(clean)) return "Kota Kinabalu";
+        if ("SIN".equals(clean)) return "Singapore";
+        if ("PEN".equals(clean)) return "Penang";
+        return clean;
     }
 
     private static class ParsedFlightData {
@@ -111,6 +123,8 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     private List<FlightInfo> flightList = new ArrayList<>();
     private DatabaseReference activeRef, historyRef;
     private String userId;
+    private String partnerId = "";
+    private String partnerName = "Partner";
     private Calendar selectedDateTime = Calendar.getInstance();
     private AviationStackHelper apiHelper = new AviationStackHelper();
     
@@ -155,10 +169,13 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         setContentView(R.layout.activity_flight);
 
         userId = UserManager.getUserId(this);
+        partnerId = UserManager.getPartnerId(this);
         String pairKey = getPairKey(this);
 
         activeRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flights").child(pairKey);
         historyRef = activeRef;
+
+        listenForPartnerName();
 
         // Auto-migrate legacy single-user flights
         DatabaseReference legacyRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history").child(userId);
@@ -207,6 +224,24 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         listenForFlights();
     }
 
+    private void listenForPartnerName() {
+        if (partnerId == null || partnerId.isEmpty()) return;
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(partnerId).child("name")
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String pName = snapshot.getValue(String.class);
+                if (pName != null && !pName.trim().isEmpty()) {
+                    partnerName = pName.trim();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
     private void checkExactAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -223,7 +258,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                 flightList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     FlightInfo info = ds.getValue(FlightInfo.class);
-                    if (info != null) flightList.add(info);
+                    if (info != null) {
+                        flightList.add(info);
+                        scheduleReminders(info);
+                    }
                 }
                 sortFlightList();
                 adapter.notifyDataSetChanged();
@@ -271,10 +309,28 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         currentEtFlight = view.findViewById(R.id.etFlightNum);
         TextInputEditText etDate = view.findViewById(R.id.etFlightDate);
 
-        final Calendar editDateTime = Calendar.getInstance();
+        MaterialButtonToggleGroup toggleFlightOwner = view.findViewById(R.id.toggleFlightOwner);
+        Button btnOwnerPartner = view.findViewById(R.id.btnOwnerPartner);
+        if (partnerName != null && !partnerName.trim().isEmpty() && !"Partner".equalsIgnoreCase(partnerName.trim())) {
+            btnOwnerPartner.setText(partnerName + "'s Flight");
+        } else {
+            btnOwnerPartner.setText("Partner's Flight");
+        }
 
         if (existingFlight != null) {
             currentEtFlight.setText(existingFlight.flightNumber);
+            if ("PARTNER".equalsIgnoreCase(existingFlight.passengerType)) {
+                toggleFlightOwner.check(R.id.btnOwnerPartner);
+            } else {
+                toggleFlightOwner.check(R.id.btnOwnerMe);
+            }
+        } else {
+            toggleFlightOwner.check(R.id.btnOwnerMe);
+        }
+
+        final Calendar editDateTime = Calendar.getInstance();
+
+        if (existingFlight != null) {
             editDateTime.setTimeInMillis(existingFlight.depTimeMillis);
             etDate.setText(android.text.format.DateFormat.format("MMM dd, HH:mm", editDateTime));
         }
@@ -329,15 +385,19 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         Button btnSave = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         btnSave.setOnClickListener(v -> {
             String fn = currentEtFlight.getText().toString().toUpperCase().replace(" ", "");
+            String selectedPassengerType = (toggleFlightOwner.getCheckedButtonId() == R.id.btnOwnerPartner) ? "PARTNER" : "ME";
+
             if (!fn.isEmpty()) {
                 if (existingFlight != null) {
                     existingFlight.flightNumber = fn;
                     existingFlight.depTimeMillis = editDateTime.getTimeInMillis();
                     existingFlight.airlineName = getAirlineNameFromCode(fn);
+                    existingFlight.passengerType = selectedPassengerType;
                     activeRef.child(existingFlight.id).setValue(existingFlight);
+                    scheduleReminders(existingFlight);
                     Toast.makeText(FlightTrackerActivity.this, "Flight updated!", Toast.LENGTH_SHORT).show();
                 } else {
-                    fetchAndSaveFlight(fn, editDateTime.getTimeInMillis());
+                    fetchAndSaveFlight(fn, editDateTime.getTimeInMillis(), selectedPassengerType);
                 }
             }
             dialog.dismiss();
@@ -554,7 +614,7 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         if (newFlights.size() == 1) {
             ParsedFlightData target = newFlights.get(0);
             if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
-            fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName, target.depIata, target.arrIata, target.depCity, target.arrCity);
+            fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName, target.depIata, target.arrIata, target.depCity, target.arrCity, "ME");
         } else {
             showMultipleFlightsDetectedDialog(newFlights);
         }
@@ -574,19 +634,19 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                 .setItems(items, (dialog, which) -> {
                     if (which == flightsData.size()) {
                         for (ParsedFlightData p : flightsData) {
-                            fetchAndSaveFlight(p.flightNumber, p.timeMillis, p.airlineName, p.depIata, p.arrIata, p.depCity, p.arrCity);
+                            fetchAndSaveFlight(p.flightNumber, p.timeMillis, p.airlineName, p.depIata, p.arrIata, p.depCity, p.arrCity, "ME");
                         }
                         Toast.makeText(this, "Adding all " + flightsData.size() + " flights...", Toast.LENGTH_SHORT).show();
                     } else {
                         ParsedFlightData target = flightsData.get(which);
                         if (currentEtFlight != null) currentEtFlight.setText(target.flightNumber);
-                        fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName, target.depIata, target.arrIata, target.depCity, target.arrCity);
+                        fetchAndSaveFlight(target.flightNumber, target.timeMillis, target.airlineName, target.depIata, target.arrIata, target.depCity, target.arrCity, "ME");
                     }
                 })
                 .show();
     }
 
-    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis) {
+    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String passengerType) {
         String depIata = "KCH";
         String arrIata = "KUL";
         String depCity = "Kuching";
@@ -597,10 +657,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             depCity = "Kuala Lumpur";
             arrCity = "Kuching";
         }
-        fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum), depIata, arrIata, depCity, arrCity);
+        fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum), depIata, arrIata, depCity, arrCity, passengerType);
     }
 
-    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String defaultAirlineName, String depIata, String arrIata, String depCity, String arrCity) {
+    private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String defaultAirlineName, String depIata, String arrIata, String depCity, String arrCity, String passengerType) {
         final long initialTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         final String knownAirline = (defaultAirlineName != null && !defaultAirlineName.equals("Airline")) ? defaultAirlineName : getAirlineNameFromCode(flightNum);
 
@@ -650,6 +710,8 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                     flight.depCity = depAirportName;
                     flight.arrCity = arrAirportName;
                     flight.status = status;
+                    flight.passengerType = passengerType;
+                    flight.creatorId = userId;
                     flight.depTerminal = depTerm;
                     flight.depGate = depGate;
                     flight.arrTerminal = arrTerm;
@@ -661,30 +723,33 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
                     Toast.makeText(FlightTrackerActivity.this, "Flight Added: " + depIataCode + " -> " + arrIataCode, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity);
+                    saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity, passengerType);
                 }
             }
 
             @Override
             public void onError(String message) {
-                saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity);
+                saveFallback(flightNum, initialTime, knownAirline, finalDepIata, finalArrIata, finalDepCity, finalArrCity, passengerType);
             }
         });
     }
 
-    private void saveFallback(String flightNum, long targetTimeMillis, String knownAirline, String depIata, String arrIata, String depCity, String arrCity) {
+    private void saveFallback(String flightNum, long targetTimeMillis, String knownAirline, String depIata, String arrIata, String depCity, String arrCity, String passengerType) {
         String id = activeRef.push().getKey();
         long depTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
         FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, depTime, userId);
         flight.airlineName = knownAirline;
         flight.depCity = depCity;
         flight.arrCity = arrCity;
+        flight.passengerType = passengerType;
+        flight.creatorId = userId;
         flight.depTerminal = "-";
         flight.depGate = "-";
         flight.arrTerminal = "-";
         flight.arrGate = "-";
         activeRef.child(id).setValue(flight);
         historyRef.child(id).setValue(flight);
+        scheduleReminders(flight);
         Toast.makeText(this, "Route info saved (" + depIata + " -> " + arrIata + ")", Toast.LENGTH_SHORT).show();
     }
 
@@ -724,9 +789,33 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
     private void scheduleReminders(FlightInfo flight) {
         long dep = flight.depTimeMillis;
-        scheduleReminder(flight.flightNumber, dep - (7L * 24 * 60 * 60 * 1000), "1 week until takeoff!", 1);
-        scheduleReminder(flight.flightNumber, dep - (3L * 24 * 60 * 60 * 1000), "3 days until takeoff!", 2);
-        scheduleReminder(flight.flightNumber, dep - (24 * 60 * 60 * 1000), "Tomorrow is the big day!", 3);
+        long arr = dep + (110 * 60 * 1000L); // Estimated arrival
+
+        String destCity = flight.arrCity;
+        if (destCity == null || destCity.trim().isEmpty() || "Arrival".equalsIgnoreCase(destCity.trim())) {
+            destCity = resolveIataCityName(flight.arrAirport);
+        }
+
+        String pName = (partnerName != null && !partnerName.trim().isEmpty() && !"Partner".equalsIgnoreCase(partnerName.trim())) ? partnerName.trim() : "Partner";
+
+        boolean isCreator = userId.equals(flight.creatorId);
+        boolean isPassengerMe = "ME".equalsIgnoreCase(flight.passengerType);
+
+        boolean isFlyingUser = (isCreator && isPassengerMe) || (!isCreator && !isPassengerMe);
+
+        if (isFlyingUser) {
+            // Notifications for Flying Passenger
+            scheduleReminder(flight.flightNumber, dep - (7L * 24 * 60 * 60 * 1000), "1 week until your flight to " + destCity + "!", 1);
+            scheduleReminder(flight.flightNumber, dep - (24 * 60 * 60 * 1000), "Tomorrow is your flight to " + destCity + "! Get your bags packed.", 2);
+            scheduleReminder(flight.flightNumber, arr, "Touchdown! Welcome to " + destCity + ".", 3);
+        } else {
+            // Notifications for Waiting Partner
+            scheduleReminder(flight.flightNumber, dep - (24 * 60 * 60 * 1000), pName + " flies to " + destCity + " tomorrow! Get ready to welcome them.", 1);
+            scheduleReminder(flight.flightNumber, arr - (5L * 60 * 60 * 1000), "5 hours until " + pName + " lands in " + destCity + "!", 2);
+            scheduleReminder(flight.flightNumber, arr - (1L * 60 * 60 * 1000), "1 hour until " + pName + " lands in " + destCity + "! Time to head to the airport.", 3);
+            scheduleReminder(flight.flightNumber, arr - (30L * 60 * 1000), "30 minutes until " + pName + " lands in " + destCity + "! Get to the arrival gate.", 4);
+            scheduleReminder(flight.flightNumber, arr, "Touchdown! " + pName + "'s flight has landed in " + destCity + ".", 5);
+        }
     }
 
     private void scheduleReminder(String fn, long time, String msg, int offset) {

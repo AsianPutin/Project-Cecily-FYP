@@ -26,6 +26,9 @@ public class FlightInfo {
     public double currentLon;
     public String ownerId;
 
+    public String passengerType = "ME"; // "ME" or "PARTNER"
+    public String creatorId = "";
+
     public FlightInfo() {} // Firebase
 
     public FlightInfo(String id, String flightNumber, String depAirport, String arrAirport, long depTimeMillis, String ownerId) {
@@ -36,6 +39,8 @@ public class FlightInfo {
         this.depTimeMillis = depTimeMillis;
         this.estimatedArrivalMillis = depTimeMillis + (2 * 60 * 60 * 1000);
         this.ownerId = ownerId;
+        this.creatorId = ownerId;
+        this.passengerType = "ME";
         this.depTerminal = "-";
         this.depGate = "-";
         this.arrTerminal = "-";

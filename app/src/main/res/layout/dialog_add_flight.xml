@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -8,10 +9,36 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter flight details or scan your ticket"
-        android:textColor="@color/text_secondary"
+        android:text="Whose flight is this?"
+        android:textColor="@color/text_primary"
         android:textSize="12sp"
-        android:layout_marginBottom="16dp"/>
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp"/>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleFlightOwner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <Button
+            android:id="@+id/btnOwnerMe"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Flight" />
+
+        <Button
+            android:id="@+id/btnOwnerPartner"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Partner's Flight" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <Button
         android:id="@+id/btnScanTicket"
@@ -53,5 +80,14 @@
         android:textColor="@color/nav_selected"
         android:textSize="11sp"
         android:textStyle="italic" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="⚠️ Please double-check flight data. Automated fetching can make mistakes."
+        android:textColor="#FF3B30"
+        android:textSize="11sp"
+        android:textStyle="bold" />
 
 </LinearLayout>
