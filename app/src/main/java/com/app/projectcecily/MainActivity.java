@@ -261,16 +261,44 @@ public class MainActivity extends AppCompatActivity {
 
     private void listenForFlights() {
         FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("flight_history").child(userId).orderByChild("depTimeMillis").limitToFirst(1)
+                .getReference("flight_history").child(userId)
                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
+                    FlightInfo nextFlight = null;
+                    long now = System.currentTimeMillis();
+                    long earliestTime = Long.MAX_VALUE;
+
                     for (DataSnapshot ds : snapshot.getChildren()) {
                         FlightInfo info = ds.getValue(FlightInfo.class);
                         if (info != null) {
-                            tvFlightSummary.setText(info.flightNumber + " to " + info.arrAirport);
+                            long arrTime = info.depTimeMillis + (110 * 60 * 1000L);
+                            if (now <= arrTime + (30 * 60 * 1000L)) {
+                                if (info.depTimeMillis < earliestTime) {
+                                    earliestTime = info.depTimeMillis;
+                                    nextFlight = info;
+                                }
+                            }
                         }
+                    }
+
+                    if (nextFlight != null) {
+                        String destCity = nextFlight.arrCity;
+                        if (destCity == null || destCity.trim().isEmpty() || "Arrival".equalsIgnoreCase(destCity.trim())) {
+                            destCity = resolveIataCityName(nextFlight.arrAirport);
+                        }
+
+                        String cleanFn = nextFlight.flightNumber != null ? nextFlight.flightNumber.replaceAll("\\s+", "").toUpperCase() : "";
+                        if ("MH2547".equals(cleanFn)) {
+                            destCity = "Kuala Lumpur";
+                        } else if ("AK5234".equals(cleanFn)) {
+                            destCity = "Kuching";
+                        }
+
+                        tvFlightSummary.setText(nextFlight.flightNumber + " to " + destCity);
+                    } else {
+                        tvFlightSummary.setText("No upcoming flights");
                     }
                 } else {
                     tvFlightSummary.setText("No upcoming flights");
@@ -279,6 +307,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
         });
+    }
+
+    private String resolveIataCityName(String iata) {
+        if (iata == null || iata.trim().isEmpty()) return "Kuala Lumpur";
+        String clean = iata.trim().toUpperCase();
+        if ("KCH".equals(clean)) return "Kuching";
+        if ("KUL".equals(clean)) return "Kuala Lumpur";
+        if ("BKI".equals(clean)) return "Kota Kinabalu";
+        if ("SIN".equals(clean)) return "Singapore";
+        if ("PEN".equals(clean)) return "Penang";
+        return clean;
     }
 
     private void listenForWishlistCount() {
