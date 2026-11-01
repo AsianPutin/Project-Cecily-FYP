@@ -115,7 +115,6 @@ public class AccountActivity extends AppCompatActivity {
         findViewById(R.id.btnChangeProfilePic).setOnClickListener(profilePicClickListener);
 
         findViewById(R.id.btnSettings).setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
-        findViewById(R.id.btnRelationshipDetails).setOnClickListener(v -> showRelationshipDetailsDialog());
         btnPairPartner.setOnClickListener(v -> showPairingDialog());
         btnUnpairPartner.setOnClickListener(v -> unpairPartner());
 

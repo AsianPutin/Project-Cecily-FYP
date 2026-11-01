@@ -79,6 +79,11 @@
             android:parentActivityName=".AccountActivity" />
 
         <activity
+            android:name=".ProfileSettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity" />
+
+        <activity
             android:name=".NotificationSettingsActivity"
             android:exported="false"
             android:parentActivityName=".SettingsActivity" />

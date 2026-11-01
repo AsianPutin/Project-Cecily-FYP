@@ -26,7 +26,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         findViewById(R.id.cardProfileSettings).setOnClickListener(v -> {
-            startActivity(new Intent(this, AccountActivity.class));
+            startActivity(new Intent(this, ProfileSettingsActivity.class));
         });
 
         findViewById(R.id.cardAppearanceSettings).setOnClickListener(v -> {

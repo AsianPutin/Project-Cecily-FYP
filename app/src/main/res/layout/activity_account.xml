@@ -135,7 +135,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Settings Options -->
+            <!-- Settings Option -->
             <Button
                 android:id="@+id/btnSettings"
                 style="@style/Widget.Material3.Button.TonalButton"
@@ -143,14 +143,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="Settings" />
-
-            <Button
-                android:id="@+id/btnRelationshipDetails"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Relationship Details &amp; Milestones" />
 
             <!-- Account Actions (Unpair & Log Out) -->
             <LinearLayout
