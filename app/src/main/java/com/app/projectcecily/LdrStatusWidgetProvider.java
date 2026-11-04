@@ -5,6 +5,8 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
@@ -13,10 +15,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class LdrStatusWidgetProvider extends AppWidgetProvider {
 
@@ -43,7 +43,7 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         if (userId.isEmpty() || partnerId.isEmpty()) {
             views.setTextViewText(R.id.tvWidgetHeader, "Status");
             views.setTextViewText(R.id.tvWidgetDistanceText, "Not Paired");
-            views.setTextViewText(R.id.tvWidgetPartnerTimeText, "Pair with partner to sync");
+            views.setTextViewText(R.id.tvWidgetPartnerTimeText, "Pair in Account Settings");
             views.setTextViewText(R.id.tvWidgetPartnerLocationText, "");
             appWidgetManager.updateAppWidget(appWidgetId, views);
             return;
@@ -51,12 +51,19 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
 
         DatabaseReference dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
-        // Fetch partner name
-        dbRef.child("profiles").child(partnerId).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+        // Fetch partner profile info (name, timeZone, accentColor)
+        dbRef.child("profiles").child(partnerId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot partnerSnapshot) {
-                String partnerName = partnerSnapshot.getValue(String.class);
-                String pName = (partnerName != null && !partnerName.isEmpty()) ? partnerName : "Partner";
+            public void onDataChange(@NonNull DataSnapshot partnerProfileSnap) {
+                String partnerName = partnerProfileSnap.child("name").getValue(String.class);
+                String pName = (partnerName != null && !partnerName.trim().isEmpty()) ? partnerName.trim() : "Partner";
+
+                String partnerTz = partnerProfileSnap.child("timeZone").getValue(String.class);
+                String partnerAccent = partnerProfileSnap.child("accentColor").getValue(String.class);
+
+                // Format Partner Time
+                CharSequence formattedTime = RelationshipManager.formatPartnerCurrentTime(context, pName, partnerTz, partnerAccent);
+                views.setTextViewText(R.id.tvWidgetPartnerTimeText, formattedTime.toString());
 
                 // Fetch User & Partner Locations
                 dbRef.child("locations").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -70,8 +77,6 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
 
                         Double pLat = pLocSnap.child("latitude").getValue(Double.class);
                         Double pLng = pLocSnap.child("longitude").getValue(Double.class);
-                        String pCity = pLocSnap.child("cityName").getValue(String.class);
-                        String pTimezone = pLocSnap.child("timezone").getValue(String.class);
 
                         if (myLat != null && myLng != null && pLat != null && pLng != null) {
                             float[] results = new float[1];
@@ -88,30 +93,30 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                                 String formattedDistance = UnitUtils.formatDistance(context, (float) km);
                                 views.setTextViewText(R.id.tvWidgetDistanceText, formattedDistance);
                             }
-                        }
 
-                        // Partner Time
-                        if (pTimezone != null && !pTimezone.isEmpty()) {
+                            // Geocode Partner Location City
                             try {
-                                TimeZone tz = TimeZone.getTimeZone(pTimezone);
-                                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                                sdf.setTimeZone(tz);
-                                String timeStr = sdf.format(new Date());
+                                Geocoder geocoder = new Geocoder(context, Locale.ENGLISH);
+                                List<Address> addresses = geocoder.getFromLocation(pLat, pLng, 1);
+                                if (addresses != null && !addresses.isEmpty()) {
+                                    Address addr = addresses.get(0);
+                                    String city = addr.getLocality();
+                                    if (city == null) city = addr.getSubAdminArea();
+                                    if (city == null) city = addr.getAdminArea();
+                                    String country = addr.getCountryName();
 
-                                String shortTz = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT, Locale.ENGLISH);
-                                views.setTextViewText(R.id.tvWidgetPartnerTimeText, pName + "'s Time: " + timeStr + " (" + shortTz + ")");
+                                    String fullCity = (city != null ? city : "") + (country != null ? ", " + country : "");
+                                    if (!fullCity.isEmpty()) {
+                                        views.setTextViewText(R.id.tvWidgetPartnerLocationText, fullCity);
+                                    } else {
+                                        views.setTextViewText(R.id.tvWidgetPartnerLocationText, "Location active");
+                                    }
+                                } else {
+                                    views.setTextViewText(R.id.tvWidgetPartnerLocationText, "Location active");
+                                }
                             } catch (Exception e) {
-                                views.setTextViewText(R.id.tvWidgetPartnerTimeText, pName + "'s Time: --:--");
+                                views.setTextViewText(R.id.tvWidgetPartnerLocationText, "Location active");
                             }
-                        } else {
-                            views.setTextViewText(R.id.tvWidgetPartnerTimeText, pName + "'s Time: --:--");
-                        }
-
-                        // Partner Location
-                        if (pCity != null && !pCity.isEmpty()) {
-                            views.setTextViewText(R.id.tvWidgetPartnerLocationText, pCity);
-                        } else {
-                            views.setTextViewText(R.id.tvWidgetPartnerLocationText, "Location active");
                         }
 
                         appWidgetManager.updateAppWidget(appWidgetId, views);
