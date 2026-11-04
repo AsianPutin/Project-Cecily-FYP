@@ -6,7 +6,7 @@
     android:background="@drawable/widget_background"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/tvWidgetHeader"
@@ -14,34 +14,34 @@
         android:layout_height="wrap_content"
         android:text="Distance Apart"
         android:textColor="#AAAAAA"
-        android:textSize="12sp" />
+        android:textSize="11sp" />
 
     <TextView
         android:id="@+id/tvWidgetDistanceText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:text="0.00 km"
         android:textColor="#25D366"
-        android:textSize="24sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvWidgetPartnerTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:text="Partner's Time: --:--"
         android:textColor="#FF4081"
-        android:textSize="13sp" />
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tvWidgetPartnerLocationText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="1dp"
         android:text="Fetching location..."
         android:textColor="#888888"
-        android:textSize="11sp" />
+        android:textSize="10sp" />
 
 </LinearLayout>
