@@ -48,7 +48,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification_settings);
 
-        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String userId = UserManager.getUserId(this);
+        String prefsName = "notification_settings_" + (userId.isEmpty() ? "local" : userId);
+        prefs = getSharedPreferences(prefsName, MODE_PRIVATE);
 
         View appBarView = findViewById(R.id.appBarLayout);
         UIUtils.applyTopInsetToAppBar(appBarView);
