@@ -35,21 +35,6 @@
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/btnToolbarSettings"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="16dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:clickable="true"
-                    android:contentDescription="Settings"
-                    android:focusable="true"
-                    android:padding="6dp"
-                    android:src="@android:drawable/ic_menu_preferences"
-                    app:tint="@color/text_primary" />
             </RelativeLayout>
         </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>

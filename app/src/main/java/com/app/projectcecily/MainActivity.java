@@ -286,11 +286,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDashboardClicks() {
-        View btnSettings = findViewById(R.id.btnToolbarSettings);
-        if (btnSettings != null) {
-            btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
-        }
-
         findViewById(R.id.cardProximity).setOnClickListener(v -> startActivity(new Intent(this, TrackingActivity.class)));
         findViewById(R.id.cardWishlist).setOnClickListener(v -> startActivity(new Intent(this, WishlistActivity.class)));
         findViewById(R.id.cardFlight).setOnClickListener(v -> startActivity(new Intent(this, FlightTrackerActivity.class)));
