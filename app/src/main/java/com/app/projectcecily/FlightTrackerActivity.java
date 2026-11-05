@@ -102,7 +102,7 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
         // Malaysia & Borneo Regional
         if (fn.startsWith("MH")) return "Malaysia Airlines";
-        if (fn.startsWith("MY")) return "MASwings";
+        if (fn.startsWith("MY")) return "AirBorneo";
         if (fn.startsWith("AK") || fn.startsWith("D7") || fn.startsWith("QZ")) return "AirAsia";
         if (fn.startsWith("OD") || fn.startsWith("SL")) return "Batik Air";
         if (fn.startsWith("FY")) return "Firefly";
