@@ -1,7 +1,10 @@
 package com.app.projectcecily;
 
 import android.app.Activity;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -77,6 +80,9 @@ public class ThemeUtils {
                 .putString(KEY_ACCENT_COLOR, hexColor)
                 .apply();
 
+        // Broadcast accent update to widgets instantly!
+        notifyWidgets(context);
+
         // Sync to Firebase for real-time partner map highlights
         String userId = UserManager.getUserId(context);
         if (userId != null && !userId.isEmpty()) {
@@ -88,6 +94,33 @@ public class ThemeUtils {
                         .setValue(hexColor);
             } catch (Exception ignored) {}
         }
+    }
+
+    public static void notifyWidgets(Context context) {
+        if (context == null) return;
+        try {
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+
+            // 1. Notify Quick Poke Widget
+            ComponentName pokeComponent = new ComponentName(context, PokeWidgetProvider.class);
+            int[] pokeIds = appWidgetManager.getAppWidgetIds(pokeComponent);
+            if (pokeIds != null && pokeIds.length > 0) {
+                Intent pokeIntent = new Intent(context, PokeWidgetProvider.class);
+                pokeIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                pokeIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, pokeIds);
+                context.sendBroadcast(pokeIntent);
+            }
+
+            // 2. Notify LDR Status Widget
+            ComponentName ldrComponent = new ComponentName(context, LdrStatusWidgetProvider.class);
+            int[] ldrIds = appWidgetManager.getAppWidgetIds(ldrComponent);
+            if (ldrIds != null && ldrIds.length > 0) {
+                Intent ldrIntent = new Intent(context, LdrStatusWidgetProvider.class);
+                ldrIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                ldrIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ldrIds);
+                context.sendBroadcast(ldrIntent);
+            }
+        } catch (Exception ignored) {}
     }
 
     public static int getContrastingTextColor(int color) {

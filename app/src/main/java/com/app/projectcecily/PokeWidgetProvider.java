@@ -24,6 +24,9 @@ public class PokeWidgetProvider extends AppWidgetProvider {
     static void updatePokeWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_poke);
 
+        int accentColor = ThemeUtils.getAccentColor(context);
+        views.setInt(R.id.ivPokeHand, "setColorFilter", accentColor);
+
         Intent intent = new Intent(context, PokeWidgetProvider.class);
         intent.setAction(ACTION_SEND_POKE);
 

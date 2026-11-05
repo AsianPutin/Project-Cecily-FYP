@@ -21,7 +21,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 public class AppearanceActivity extends AppCompatActivity {
 
-    private MaterialButtonToggleGroup themeToggleGroup, toggleColorStyle;
+    private MaterialButtonToggleGroup themeToggleGroup, toggleColorStyle, toggleDistanceUnit, toggleTemperatureUnit;
     private LinearLayout layoutAccentGrid;
 
     private MaterialCardView cardNone, cardRed, cardOrange, cardYellow, cardLime, cardGreen;
@@ -53,6 +53,8 @@ public class AppearanceActivity extends AppCompatActivity {
 
         themeToggleGroup = findViewById(R.id.themeToggleGroup);
         toggleColorStyle = findViewById(R.id.toggleColorStyle);
+        toggleDistanceUnit = findViewById(R.id.toggleDistanceUnit);
+        toggleTemperatureUnit = findViewById(R.id.toggleTemperatureUnit);
         layoutAccentGrid = findViewById(R.id.layoutAccentGrid);
 
         cardNone = findViewById(R.id.colorNone);
@@ -98,6 +100,7 @@ public class AppearanceActivity extends AppCompatActivity {
         setupThemeToggle();
         setupColorStyleToggle();
         setupColorSwatches();
+        setupUnitToggles();
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
     }
 
@@ -148,6 +151,46 @@ public class AppearanceActivity extends AppCompatActivity {
                 ThemeUtils.applyAccentToActivity(this);
             }
         });
+    }
+
+    private void setupUnitToggles() {
+        if (toggleDistanceUnit != null) {
+            String currentDistUnit = UnitUtils.getUnitSystem(this);
+            if (UnitUtils.UNIT_IMPERIAL.equals(currentDistUnit)) {
+                toggleDistanceUnit.check(R.id.btnUnitImperial);
+            } else {
+                toggleDistanceUnit.check(R.id.btnUnitMetric);
+            }
+
+            toggleDistanceUnit.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (!isChecked) return;
+                if (checkedId == R.id.btnUnitImperial) {
+                    UnitUtils.setUnitSystem(this, UnitUtils.UNIT_IMPERIAL);
+                } else {
+                    UnitUtils.setUnitSystem(this, UnitUtils.UNIT_METRIC);
+                }
+                ThemeUtils.notifyWidgets(this);
+            });
+        }
+
+        if (toggleTemperatureUnit != null) {
+            String currentTempUnit = UnitUtils.getTemperatureUnit(this);
+            if (UnitUtils.TEMP_FAHRENHEIT.equals(currentTempUnit)) {
+                toggleTemperatureUnit.check(R.id.btnTempFahrenheit);
+            } else {
+                toggleTemperatureUnit.check(R.id.btnTempCelsius);
+            }
+
+            toggleTemperatureUnit.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (!isChecked) return;
+                if (checkedId == R.id.btnTempFahrenheit) {
+                    UnitUtils.setTemperatureUnit(this, UnitUtils.TEMP_FAHRENHEIT);
+                } else {
+                    UnitUtils.setTemperatureUnit(this, UnitUtils.TEMP_CELSIUS);
+                }
+                ThemeUtils.notifyWidgets(this);
+            });
+        }
     }
 
     private void setGridEnabled(boolean enabled) {
