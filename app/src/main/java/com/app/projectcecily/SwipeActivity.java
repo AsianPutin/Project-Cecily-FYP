@@ -244,6 +244,7 @@ public class SwipeActivity extends AppCompatActivity {
 
             Glide.with(this)
                     .load(card.imageUrl)
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
                     .placeholder(R.drawable.ic_blank_user)
                     .error(R.drawable.ic_blank_user)
                     .into(ivCardPhoto);
