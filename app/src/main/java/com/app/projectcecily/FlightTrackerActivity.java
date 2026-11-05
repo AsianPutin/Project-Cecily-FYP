@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -197,6 +198,22 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flight);
+
+        View cardBannerAd = findViewById(R.id.cardBannerAd);
+        View btnDismissAd = findViewById(R.id.btnDismissAd);
+        TextView tvAdText = findViewById(R.id.tvAdBannerText);
+        View fabAddFlight = findViewById(R.id.fabAddFlight);
+
+        BannerAdHelper.setupBanner(this, cardBannerAd, btnDismissAd, tvAdText, () -> {
+            if (fabAddFlight != null) {
+                androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
+                        (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) fabAddFlight.getLayoutParams();
+                lp.bottomToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+                lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+                lp.bottomMargin = (int) (24 * getResources().getDisplayMetrics().density);
+                fabAddFlight.setLayoutParams(lp);
+            }
+        });
 
         userId = UserManager.getUserId(this);
         partnerId = UserManager.getPartnerId(this);

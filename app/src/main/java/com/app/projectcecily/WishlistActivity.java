@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -103,6 +104,21 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
 
         View fab = findViewById(R.id.fabAddWishlist);
         fab.setOnClickListener(v -> showItemDialog(null));
+
+        View cardBannerAd = findViewById(R.id.cardBannerAd);
+        View btnDismissAd = findViewById(R.id.btnDismissAd);
+        TextView tvAdText = findViewById(R.id.tvAdBannerText);
+
+        BannerAdHelper.setupBanner(this, cardBannerAd, btnDismissAd, tvAdText, () -> {
+            if (fab != null) {
+                androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
+                        (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) fab.getLayoutParams();
+                lp.bottomToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+                lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+                lp.bottomMargin = (int) (24 * getResources().getDisplayMetrics().density);
+                fab.setLayoutParams(lp);
+            }
+        });
 
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);

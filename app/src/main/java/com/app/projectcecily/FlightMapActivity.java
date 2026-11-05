@@ -126,6 +126,8 @@ public class FlightMapActivity extends AppCompatActivity {
         ivPlaneTrackIcon = findViewById(R.id.ivPlaneTrackIcon);
         vRouteLine = findViewById(R.id.vRouteLine);
 
+        BannerAdHelper.setupBanner(this, findViewById(R.id.cardBannerAd), findViewById(R.id.btnDismissAd), findViewById(R.id.tvAdBannerText), null);
+
         UIUtils.applyBottomMargin(findViewById(R.id.cardFlightBottomDetails));
 
         myPhotoBase64 = getSharedPreferences("prefs", MODE_PRIVATE).getString("profile_pic_base64", "");

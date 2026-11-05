@@ -123,6 +123,66 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Non-Intrusive Mock Banner Ad -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBannerAd"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="#212121"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="8dp"
+        app:strokeColor="#333333"
+        app:strokeWidth="1dp"
+        app:layout_constraintBottom_toTopOf="@id/cardFlightBottomDetails"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FFCC00"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:text="AD"
+                android:textColor="#000000"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAdBannerText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="Sponsored: Explore Couple Travel Deals &amp; Flights ✈️"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/btnDismissAd"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Close Ad"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#AAAAAA" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- BOTTOM FLOATING CARD: Flight Status Details -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardFlightBottomDetails"

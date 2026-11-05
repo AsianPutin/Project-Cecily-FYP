@@ -109,6 +109,8 @@ public class TrackingActivity extends AppCompatActivity {
         btnPoke = findViewById(R.id.btnPoke);
         btnOpenExternalMap = findViewById(R.id.btnOpenExternalMap);
 
+        BannerAdHelper.setupBanner(this, findViewById(R.id.cardBannerAd), findViewById(R.id.btnDismissAd), findViewById(R.id.tvAdBannerText), null);
+
         cardPartnerEdgeWidget = findViewById(R.id.cardPartnerEdgeWidget);
         ivPartnerEdgeAvatar = findViewById(R.id.ivPartnerEdgeAvatar);
 
