@@ -287,8 +287,14 @@ public class FlightMapActivity extends AppCompatActivity {
 
     private void updateMapAndDetails(FlightInfo info) {
         String currentUserId = UserManager.getUserId(this);
-        boolean isMyFlight = "ME".equalsIgnoreCase(info.passengerType) ||
-                             (info.ownerId != null && info.ownerId.equals(currentUserId));
+        boolean isOwner = (info.ownerId != null && info.ownerId.equals(currentUserId)) ||
+                          (info.creatorId != null && info.creatorId.equals(currentUserId));
+        boolean isPassengerMe = "ME".equalsIgnoreCase(info.passengerType);
+
+        // Correct 2-way couple ownership resolution:
+        // If I am the creator: "ME" means my flight, "PARTNER" means partner's flight.
+        // If partner is creator: "ME" means partner's flight, "PARTNER" means my flight.
+        boolean isMyFlight = (isOwner && isPassengerMe) || (!isOwner && !isPassengerMe);
 
         String activePhotoBase64;
         int activeAccentColor;
