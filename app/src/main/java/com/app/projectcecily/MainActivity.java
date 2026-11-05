@@ -446,20 +446,12 @@ public class MainActivity extends AppCompatActivity {
         View btnDismissAd = findViewById(R.id.btnDismissAd);
         TextView tvAdText = findViewById(R.id.tvAdBannerText);
 
-        android.content.SharedPreferences adPrefs = getSharedPreferences("ad_prefs", MODE_PRIVATE);
-        boolean adDismissed = adPrefs.getBoolean("ad_dismissed", false);
-        if (adDismissed && cardBannerAd != null) {
-            cardBannerAd.setVisibility(View.GONE);
-            return;
-        }
-
         if (btnDismissAd != null && cardBannerAd != null) {
             btnDismissAd.setOnClickListener(v -> {
                 if (adHandler != null && adRunnable != null) {
                     adHandler.removeCallbacks(adRunnable);
                 }
                 cardBannerAd.setVisibility(View.GONE);
-                adPrefs.edit().putBoolean("ad_dismissed", true).apply();
                 Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
             });
         }
