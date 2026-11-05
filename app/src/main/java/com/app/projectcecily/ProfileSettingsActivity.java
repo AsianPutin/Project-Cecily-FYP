@@ -67,12 +67,17 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         etConfirmNewPassword = findViewById(R.id.etConfirmNewPassword);
         Button btnSaveSecurity = findViewById(R.id.btnSaveSecurity);
 
-        if (btnSelectCountryCode != null && etProfilePhoneNumber != null) {
+        // Auto-detect country code as fallback
+        CountryCodeItem detected = CountryCodePickerHelper.detectUserCountry(this);
+        if (detected != null && btnSelectCountryCode != null) {
+            selectedCountryCodeStr = detected.code;
+            btnSelectCountryCode.setText(detected.flagEmoji + " " + detected.code);
+        }
+
+        if (btnSelectCountryCode != null) {
             btnSelectCountryCode.setOnClickListener(v -> CountryCodePickerHelper.showPicker(this, country -> {
                 selectedCountryCodeStr = country.code;
                 btnSelectCountryCode.setText(country.flagEmoji + " " + country.code);
-                etProfilePhoneNumber.setEnabled(true);
-                etProfilePhoneNumber.setAlpha(1.0f);
             }));
         }
 

@@ -123,8 +123,6 @@
                                 android:id="@+id/etProfilePhoneNumber"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:alpha="0.5"
-                                android:enabled="false"
                                 android:inputType="phone"
                                 android:singleLine="true" />
                         </com.google.android.material.textfield.TextInputLayout>

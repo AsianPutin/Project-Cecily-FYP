@@ -71,12 +71,17 @@ public class SignUpActivity extends AppCompatActivity {
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
         btnBackToLogin = findViewById(R.id.btnBackToLogin);
 
-        if (btnSelectCountryCode != null && etPhoneNumber != null) {
+        // Auto-detect user's country code on open
+        CountryCodeItem detected = CountryCodePickerHelper.detectUserCountry(this);
+        if (detected != null && btnSelectCountryCode != null) {
+            selectedCountryCodeStr = detected.code;
+            btnSelectCountryCode.setText(detected.flagEmoji + " " + detected.code);
+        }
+
+        if (btnSelectCountryCode != null) {
             btnSelectCountryCode.setOnClickListener(v -> CountryCodePickerHelper.showPicker(this, country -> {
                 selectedCountryCodeStr = country.code;
                 btnSelectCountryCode.setText(country.flagEmoji + " " + country.code);
-                etPhoneNumber.setEnabled(true);
-                etPhoneNumber.setAlpha(1.0f);
             }));
         }
 

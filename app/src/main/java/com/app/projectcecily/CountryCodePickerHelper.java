@@ -85,6 +85,37 @@ public class CountryCodePickerHelper {
         return list;
     }
 
+    public static CountryCodeItem detectUserCountry(Context context) {
+        String countryIso = "";
+        try {
+            android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (tm != null) {
+                countryIso = tm.getSimCountryIso();
+                if (countryIso == null || countryIso.trim().isEmpty()) {
+                    countryIso = tm.getNetworkCountryIso();
+                }
+            }
+        } catch (Exception ignored) {}
+
+        if (countryIso == null || countryIso.trim().isEmpty()) {
+            try {
+                countryIso = java.util.Locale.getDefault().getCountry();
+            } catch (Exception ignored) {}
+        }
+
+        if (countryIso != null && !countryIso.trim().isEmpty()) {
+            String iso2Upper = countryIso.trim().toUpperCase();
+            for (CountryCodeItem item : getGlobalCountryList()) {
+                if (item.iso2.equalsIgnoreCase(iso2Upper)) {
+                    return item;
+                }
+            }
+        }
+
+        // Default fallback to Malaysia (🇲🇾 +60)
+        return new CountryCodeItem("🇲🇾", "+60", "Malaysia", "MY", "MYS");
+    }
+
     public static void showPicker(Context context, OnCountrySelectedListener listener) {
         BottomSheetDialog sheet = new BottomSheetDialog(context);
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_country_code_picker, null);
