@@ -63,11 +63,13 @@ public class FlightMapActivity extends AppCompatActivity {
     private ImageView ivPlaneTrackIcon;
     private View vRouteLine;
 
+    private String myPhotoBase64 = "";
     private String partnerPhotoBase64 = "";
     private String partnerAccentColor = "#FF4081";
 
     private final Handler handler = new Handler();
     private Runnable updateRunnable;
+    private FlightInfo currentFlightInfo;
 
     private static final Map<String, GeoPoint> AIRPORTS = new HashMap<String, GeoPoint>() {{
         put("KUL", new GeoPoint(2.7456, 101.7072));
@@ -126,6 +128,8 @@ public class FlightMapActivity extends AppCompatActivity {
 
         UIUtils.applyBottomMargin(findViewById(R.id.cardFlightBottomDetails));
 
+        myPhotoBase64 = getSharedPreferences("prefs", MODE_PRIVATE).getString("profile_pic_base64", "");
+
         listenForPartnerProfile();
         listenForFlightUpdates();
     }
@@ -144,24 +148,15 @@ public class FlightMapActivity extends AppCompatActivity {
                     String color = snapshot.child("accentColor").getValue(String.class);
                     if (color != null && !color.trim().isEmpty()) partnerAccentColor = color.trim();
 
-                    applyPartnerThemeAccents();
+                    if (currentFlightInfo != null) {
+                        updateMapAndDetails(currentFlightInfo);
+                    }
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
         });
-    }
-
-    private void applyPartnerThemeAccents() {
-        try {
-            int accent = Color.parseColor(partnerAccentColor);
-            tvProgress.setTextColor(accent);
-            tvStatusText.setTextColor(accent);
-            ivPlaneTrackIcon.setColorFilter(accent);
-            pbProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));
-            if (vRouteLine != null) vRouteLine.setBackgroundColor(accent);
-        } catch (Exception ignored) {}
     }
 
     private void listenForFlightUpdates() {
@@ -171,6 +166,7 @@ public class FlightMapActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 FlightInfo info = snapshot.getValue(FlightInfo.class);
                 if (info != null) {
+                    currentFlightInfo = info;
                     updateMapAndDetails(info);
                 }
             }
@@ -254,18 +250,13 @@ public class FlightMapActivity extends AppCompatActivity {
         return points;
     }
 
-    private Bitmap createAirportDotBitmap() {
+    private Bitmap createAirportDotBitmap(int accentColor) {
         int size = 56;
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
-        int color = Color.parseColor("#FF4081");
-        try {
-            color = Color.parseColor(partnerAccentColor);
-        } catch (Exception ignored) {}
-
         Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        ringPaint.setColor(color);
+        ringPaint.setColor(accentColor);
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, ringPaint);
 
         Paint whitePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -273,7 +264,7 @@ public class FlightMapActivity extends AppCompatActivity {
         canvas.drawCircle(size / 2f, size / 2f, size / 2f - 6, whitePaint);
 
         Paint innerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        innerPaint.setColor(color);
+        innerPaint.setColor(accentColor);
         canvas.drawCircle(size / 2f, size / 2f, size / 2f - 14, innerPaint);
 
         return bitmap;
@@ -295,6 +286,34 @@ public class FlightMapActivity extends AppCompatActivity {
     }
 
     private void updateMapAndDetails(FlightInfo info) {
+        String currentUserId = UserManager.getUserId(this);
+        boolean isMyFlight = "ME".equalsIgnoreCase(info.passengerType) ||
+                             (info.ownerId != null && info.ownerId.equals(currentUserId));
+
+        String activePhotoBase64;
+        int activeAccentColor;
+
+        if (isMyFlight) {
+            activePhotoBase64 = myPhotoBase64;
+            activeAccentColor = ThemeUtils.getAccentColor(this);
+        } else {
+            activePhotoBase64 = partnerPhotoBase64;
+            int parsedColor = Color.parseColor("#FF4081");
+            try {
+                parsedColor = Color.parseColor(partnerAccentColor);
+            } catch (Exception ignored) {}
+            activeAccentColor = parsedColor;
+        }
+
+        // Apply theme accent color to UI controls
+        try {
+            tvProgress.setTextColor(activeAccentColor);
+            tvStatusText.setTextColor(activeAccentColor);
+            ivPlaneTrackIcon.setColorFilter(activeAccentColor);
+            pbProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(activeAccentColor));
+            if (vRouteLine != null) vRouteLine.setBackgroundColor(activeAccentColor);
+        } catch (Exception ignored) {}
+
         tvFlightNum.setText((info.airlineName != null ? info.airlineName + " " : "") + info.flightNumber);
 
         String depIataCode = info.depAirport;
@@ -337,18 +356,12 @@ public class FlightMapActivity extends AppCompatActivity {
 
         Polyline polyline = new Polyline(map);
         polyline.setPoints(curvePoints);
-
-        int routeColor = Color.parseColor("#FF4081");
-        try {
-            routeColor = Color.parseColor(partnerAccentColor);
-        } catch (Exception ignored) {}
-
-        polyline.getOutlinePaint().setColor(routeColor);
+        polyline.getOutlinePaint().setColor(activeAccentColor);
         polyline.getOutlinePaint().setStrokeWidth(8.0f);
         polyline.getOutlinePaint().setPathEffect(new DashPathEffect(new float[]{20, 15}, 0));
         map.getOverlays().add(polyline);
 
-        Bitmap dotBitmap = createAirportDotBitmap();
+        Bitmap dotBitmap = createAirportDotBitmap(activeAccentColor);
 
         // Departure Airport Circular Dot Marker
         Marker depMarker = new Marker(map);
@@ -369,10 +382,10 @@ public class FlightMapActivity extends AppCompatActivity {
         BoundingBox box = BoundingBox.fromGeoPoints(curvePoints);
         map.zoomToBoundingBox(box, true, 180);
 
-        startPseudoTracking(info, curvePoints);
+        startPseudoTracking(info, curvePoints, activePhotoBase64, activeAccentColor);
     }
 
-    private void startPseudoTracking(FlightInfo info, List<GeoPoint> curvePoints) {
+    private void startPseudoTracking(FlightInfo info, List<GeoPoint> curvePoints, String photoBase64, int accentColor) {
         if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
 
         updateRunnable = new Runnable() {
@@ -426,7 +439,7 @@ public class FlightMapActivity extends AppCompatActivity {
                 GeoPoint nextPos = (pointIdx < curvePoints.size() - 1) ? curvePoints.get(pointIdx + 1) : planePos;
 
                 float bearing = calculateBearing(planePos, nextPos);
-                Bitmap compositeBitmap = createPlaneWithAvatarBitmap(bearing);
+                Bitmap compositeBitmap = createPlaneWithAvatarBitmap(bearing, photoBase64, accentColor);
 
                 int avatarHeight = 130;
                 int planeSize = 80;
@@ -454,8 +467,8 @@ public class FlightMapActivity extends AppCompatActivity {
         handler.post(updateRunnable);
     }
 
-    private Bitmap createPlaneWithAvatarBitmap(float bearingAngle) {
-        Bitmap avatarPin = createPartnerAvatarPinBitmap();
+    private Bitmap createPlaneWithAvatarBitmap(float bearingAngle, String photoBase64, int accentColor) {
+        Bitmap avatarPin = createAvatarPinBitmap(photoBase64, accentColor);
         int avatarWidth = avatarPin.getWidth();
         int avatarHeight = avatarPin.getHeight();
 
@@ -468,16 +481,13 @@ public class FlightMapActivity extends AppCompatActivity {
         Bitmap composite = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(composite);
 
-        // 1. Draw Partner Avatar Pin at top (x centered, y = 0)
+        // 1. Draw Avatar Pin at top (x centered, y = 0)
         float avatarX = (totalWidth - avatarWidth) / 2f;
         canvas.drawBitmap(avatarPin, avatarX, 0, null);
 
         // 2. Render Plane Vector Drawable into Bitmap
         Bitmap planeBm = getBitmapFromVectorDrawable(R.drawable.ic_plane, planeSize, planeSize);
         if (planeBm != null) {
-            int accent = Color.parseColor("#FF4081");
-            try { accent = Color.parseColor(partnerAccentColor); } catch (Exception ignored) {}
-
             Matrix matrix = new Matrix();
             // CALIBRATED ROTATION: bearing - 90f because ic_plane vector natively points RIGHT (90°)!
             float rotationAngle = (bearingAngle - 90f + 360f) % 360f;
@@ -488,7 +498,7 @@ public class FlightMapActivity extends AppCompatActivity {
             matrix.postTranslate(planeX, planeY);
 
             Paint planePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            planePaint.setColorFilter(new PorterDuffColorFilter(accent, PorterDuff.Mode.SRC_IN));
+            planePaint.setColorFilter(new PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN));
 
             canvas.drawBitmap(planeBm, matrix, planePaint);
         }
@@ -496,24 +506,20 @@ public class FlightMapActivity extends AppCompatActivity {
         return composite;
     }
 
-    private Bitmap createPartnerAvatarPinBitmap() {
+    private Bitmap createAvatarPinBitmap(String photoBase64, int accentColor) {
         int size = 110;
         Bitmap bitmap = Bitmap.createBitmap(size, size + 20, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
         Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        try {
-            ringPaint.setColor(Color.parseColor(partnerAccentColor));
-        } catch (Exception e) {
-            ringPaint.setColor(Color.parseColor("#FF4081"));
-        }
+        ringPaint.setColor(accentColor);
 
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, ringPaint);
 
         Bitmap avatar = null;
-        if (partnerPhotoBase64 != null && !partnerPhotoBase64.isEmpty()) {
+        if (photoBase64 != null && !photoBase64.trim().isEmpty()) {
             try {
-                String clean = partnerPhotoBase64.contains(",") ? partnerPhotoBase64.split(",")[1] : partnerPhotoBase64;
+                String clean = photoBase64.contains(",") ? photoBase64.split(",")[1] : photoBase64;
                 byte[] bytes = Base64.decode(clean, Base64.DEFAULT);
                 avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             } catch (Exception ignored) {}
@@ -527,7 +533,7 @@ public class FlightMapActivity extends AppCompatActivity {
         if (avatar != null) {
             Bitmap scaled = Bitmap.createScaledBitmap(avatar, innerSize, innerSize, true);
 
-            // 100% CIRCULAR CROPPING USING BITMAP SHADER (Zero square overflow!)
+            // 100% CIRCULAR CROPPING USING BITMAP SHADER
             Bitmap circularAvatar = Bitmap.createBitmap(innerSize, innerSize, Bitmap.Config.ARGB_8888);
             Canvas avatarCanvas = new Canvas(circularAvatar);
             Paint avatarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -541,7 +547,7 @@ public class FlightMapActivity extends AppCompatActivity {
         }
 
         Paint tipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        tipPaint.setColor(ringPaint.getColor());
+        tipPaint.setColor(accentColor);
         android.graphics.Path path = new android.graphics.Path();
         path.moveTo(size / 2f - 14, size - 4);
         path.lineTo(size / 2f + 14, size - 4);
