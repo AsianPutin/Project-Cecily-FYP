@@ -15,18 +15,64 @@
 
     <string-array name="country_codes_array">
         <item>Select Country Code</item>
-        <item>+60 (Malaysia)</item>
-        <item>+1 (US / Canada)</item>
-        <item>+65 (Singapore)</item>
-        <item>+62 (Indonesia)</item>
-        <item>+44 (UK)</item>
-        <item>+61 (Australia)</item>
-        <item>+81 (Japan)</item>
-        <item>+82 (South Korea)</item>
-        <item>+86 (China)</item>
-        <item>+91 (India)</item>
-        <item>+63 (Philippines)</item>
-        <item>+66 (Thailand)</item>
-        <item>+84 (Vietnam)</item>
+        <item>🇲🇾 +60 (Malaysia)</item>
+        <item>🇸🇬 +65 (Singapore)</item>
+        <item>🇮🇩 +62 (Indonesia)</item>
+        <item>🇹🇭 +66 (Thailand)</item>
+        <item>🇻🇳 +84 (Vietnam)</item>
+        <item>🇵🇭 +63 (Philippines)</item>
+        <item>🇰🇭 +855 (Cambodia)</item>
+        <item>🇱🇦 +856 (Laos)</item>
+        <item>🇲🇲 +95 (Myanmar)</item>
+        <item>🇧🇳 +673 (Brunei)</item>
+        <item>🇹🇱 +670 (Timor-Leste)</item>
+        <item>🇨🇳 +86 (China)</item>
+        <item>🇭🇰 +852 (Hong Kong)</item>
+        <item>🇲🇴 +853 (Macau)</item>
+        <item>🇹🇼 +886 (Taiwan)</item>
+        <item>🇯🇵 +81 (Japan)</item>
+        <item>🇰🇷 +82 (South Korea)</item>
+        <item>🇮🇳 +91 (India)</item>
+        <item>🇵🇰 +92 (Pakistan)</item>
+        <item>🇧🇩 +880 (Bangladesh)</item>
+        <item>🇱🇰 +94 (Sri Lanka)</item>
+        <item>🇳🇵 +977 (Nepal)</item>
+        <item>🇸🇦 +966 (Saudi Arabia)</item>
+        <item>🇦🇪 +971 (United Arab Emirates)</item>
+        <item>🇶🇦 +974 (Qatar)</item>
+        <item>🇰🇼 +965 (Kuwait)</item>
+        <item>🇧🇭 +973 (Bahrain)</item>
+        <item>🇴🇲 +968 (Oman)</item>
+        <item>🇯🇴 +962 (Jordan)</item>
+        <item>🇱🇧 +961 (Lebanon)</item>
+        <item>🇮🇷 +98 (Iran)</item>
+        <item>🇮🇶 +964 (Iraq)</item>
+        <item>🇹🇷 +90 (Turkey)</item>
+        <item>🇺🇸 +1 (United States / Canada)</item>
+        <item>🇬🇧 +44 (United Kingdom)</item>
+        <item>🇦🇺 +61 (Australia)</item>
+        <item>🇳🇿 +64 (New Zealand)</item>
+        <item>🇩🇪 +49 (Germany)</item>
+        <item>🇫🇷 +33 (France)</item>
+        <item>🇮🇹 +39 (Italy)</item>
+        <item>🇪🇸 +34 (Spain)</item>
+        <item>🇳🇱 +31 (Netherlands)</item>
+        <item>🇨🇭 +41 (Switzerland)</item>
+        <item>🇸🇪 +46 (Sweden)</item>
+        <item>🇳🇴 +47 (Norway)</item>
+        <item>🇩🇰 +45 (Denmark)</item>
+        <item>🇫🇮 +358 (Finland)</item>
+        <item>🇷🇺 +7 (Russia)</item>
+        <item>🇺🇦 +380 (Ukraine)</item>
+        <item>🇵🇱 +48 (Poland)</item>
+        <item>🇬🇷 +30 (Greece)</item>
+        <item>🇧🇷 +55 (Brazil)</item>
+        <item>🇦🇷 +54 (Argentina)</item>
+        <item>🇲🇽 +52 (Mexico)</item>
+        <item>🇨🇱 +56 (Chile)</item>
+        <item>🇿🇦 +27 (South Africa)</item>
+        <item>🇪🇬 +20 (Egypt)</item>
+        <item>🇳🇬 +234 (Nigeria)</item>
+        <item>🇰🇪 +254 (Kenya)</item>
     </string-array>
 </resources>

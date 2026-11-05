@@ -228,8 +228,16 @@ public class SignUpActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String birthday = etBirthday.getText().toString().trim();
 
-        String selectedCountryCode = (spinnerCountryCode != null && spinnerCountryCode.getSelectedItemPosition() > 0) ?
-                spinnerCountryCode.getSelectedItem().toString().split(" ")[0] : "";
+        String selectedCountryCode = "";
+        if (spinnerCountryCode != null && spinnerCountryCode.getSelectedItemPosition() > 0) {
+            String item = spinnerCountryCode.getSelectedItem().toString();
+            for (String token : item.split(" ")) {
+                if (token.startsWith("+")) {
+                    selectedCountryCode = token;
+                    break;
+                }
+            }
+        }
         String phoneNumber = (etPhoneNumber != null && etPhoneNumber.isEnabled()) ?
                 etPhoneNumber.getText().toString().trim() : "";
 

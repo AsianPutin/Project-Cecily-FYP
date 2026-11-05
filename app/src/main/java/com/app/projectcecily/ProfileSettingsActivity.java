@@ -250,7 +250,14 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                 }
 
                 if (spinnerProfileCountryCode != null && spinnerProfileCountryCode.getSelectedItemPosition() > 0) {
-                    String code = spinnerProfileCountryCode.getSelectedItem().toString().split(" ")[0];
+                    String item = spinnerProfileCountryCode.getSelectedItem().toString();
+                    String code = "";
+                    for (String token : item.split(" ")) {
+                        if (token.startsWith("+")) {
+                            code = token;
+                            break;
+                        }
+                    }
                     String phone = etProfilePhoneNumber != null ? etProfilePhoneNumber.getText().toString().trim() : "";
                     dbRef.child("profiles").child(userId).child("countryCode").setValue(code);
                     dbRef.child("profiles").child(userId).child("phoneNumber").setValue(phone);
