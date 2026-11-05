@@ -4,44 +4,66 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:gravity="center_vertical"
+    android:gravity="center"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="12dp">
 
+    <!-- Top Text Line: [0000 km/mi] apart or We're together 💕 -->
     <TextView
-        android:id="@+id/tvWidgetHeader"
+        android:id="@+id/tvWidgetTopLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Distance Apart"
-        android:textColor="#AAAAAA"
-        android:textSize="11sp" />
-
-    <TextView
-        android:id="@+id/tvWidgetDistanceText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="0.00 km"
-        android:textColor="#25D366"
-        android:textSize="18sp"
+        android:gravity="center"
+        android:text="13120 km apart"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvWidgetPartnerTimeText"
+    <!-- Middle Row: My Avatar, Dotted Heart Line, Partner Avatar -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Partner's Time: --:--"
-        android:textColor="#FF4081"
-        android:textSize="12sp" />
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/ivWidgetMyAvatar"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:contentDescription="My Avatar"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_blank_user" />
+
+        <TextView
+            android:id="@+id/tvWidgetDottedLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:text="------- 💕 -------"
+            android:textColor="#FF4081"
+            android:textSize="11sp" />
+
+        <ImageView
+            android:id="@+id/ivWidgetPartnerAvatar"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:contentDescription="Partner Avatar"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_blank_user" />
+
+    </LinearLayout>
+
+    <!-- Bottom Text Line: [00:00 (GMT)], city, country -->
     <TextView
-        android:id="@+id/tvWidgetPartnerLocationText"
+        android:id="@+id/tvWidgetBottomLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:text="Fetching location..."
-        android:textColor="#888888"
-        android:textSize="10sp" />
+        android:gravity="center"
+        android:text="06:52 (GMT), Kuching, Malaysia"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp" />
 
 </LinearLayout>
