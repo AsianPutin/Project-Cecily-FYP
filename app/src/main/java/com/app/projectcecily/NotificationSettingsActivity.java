@@ -160,38 +160,36 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void showSoundChoiceDialog() {
-        String[] choices = {
-            "1. Default System Sound",
-            "2. System Ringtone & Sound App",
-            "3. Music / Audio File Manager App"
-        };
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_notification_sound_options, null);
+        sheet.setContentView(view);
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Select Notification Sound")
-                .setItems(choices, (dialog, which) -> {
-                    if (which == 0) {
-                        // Reset to Default System Tone
-                        saveCustomSound("", "Default System Sound");
-                    } else if (which == 1) {
-                        // Open System Ringtone Picker
-                        Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-                        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
-                        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select Notification Sound");
-                        String currentUriStr = prefs.getString(KEY_CUSTOM_SOUND_URI, "");
-                        if (!currentUriStr.isEmpty()) {
-                            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(currentUriStr));
-                        }
-                        systemRingtoneLauncher.launch(intent);
-                    } else if (which == 2) {
-                        // Open File / Music App Chooser
-                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                        intent.setType("audio/*");
-                        intent.addCategory(Intent.CATEGORY_OPENABLE);
-                        audioFileLauncher.launch(Intent.createChooser(intent, "Select Audio File / Music App"));
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        view.findViewById(R.id.optionDefaultSound).setOnClickListener(v -> {
+            sheet.dismiss();
+            saveCustomSound("", "Default System Sound");
+        });
+
+        view.findViewById(R.id.optionSystemRingtone).setOnClickListener(v -> {
+            sheet.dismiss();
+            Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select Notification Sound");
+            String currentUriStr = prefs.getString(KEY_CUSTOM_SOUND_URI, "");
+            if (!currentUriStr.isEmpty()) {
+                intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(currentUriStr));
+            }
+            systemRingtoneLauncher.launch(intent);
+        });
+
+        view.findViewById(R.id.optionAudioFile).setOnClickListener(v -> {
+            sheet.dismiss();
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("audio/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            audioFileLauncher.launch(Intent.createChooser(intent, "Select Audio File / Music App"));
+        });
+
+        sheet.show();
     }
 
     private void saveCustomSound(String uriStr, String name) {
