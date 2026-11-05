@@ -21,7 +21,6 @@ import android.text.format.DateFormat;
 import android.util.Base64;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatDelegate;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -166,14 +165,6 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private static boolean isNightMode(Context context) {
-        int savedMode = ThemeUtils.getSavedThemeMode(context);
-        if (savedMode == AppCompatDelegate.MODE_NIGHT_YES) return true;
-        if (savedMode == AppCompatDelegate.MODE_NIGHT_NO) return false;
-        int uiMode = context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-        return uiMode == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-    }
-
     private static CharSequence formatTopLineHtml(Context context, double km, boolean isTogether, int accentColor) {
         String hexColor = String.format("#%06X", (0xFFFFFF & accentColor));
         if (isTogether) {
@@ -191,10 +182,7 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
             amountStr = roundedKm + " km";
         }
 
-        boolean night = isNightMode(context);
-        String textColorHex = night ? "#FFFFFF" : "#212121";
-
-        String html = "<font color='" + hexColor + "'>" + amountStr + "</font> <font color='" + textColorHex + "'>apart</font>";
+        String html = "<font color='" + hexColor + "'>" + amountStr + "</font> <font color='#FFFFFF'>apart</font>";
         return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
     }
 
@@ -211,12 +199,9 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         String shortTz = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT, Locale.ENGLISH);
         String timePart = timeStr + " (" + shortTz + ")";
 
-        boolean night = isNightMode(context);
-        String secondaryColorHex = night ? "#CCCCCC" : "#666666";
-
         String html;
         if (partnerCity != null && !partnerCity.trim().isEmpty()) {
-            html = "<font color='" + hexColor + "'>" + timePart + "</font><font color='" + secondaryColorHex + "'>, " + partnerCity.trim() + "</font>";
+            html = "<font color='" + hexColor + "'>" + timePart + "</font><font color='#CCCCCC'>, " + partnerCity.trim() + "</font>";
         } else {
             html = "<font color='" + hexColor + "'>" + timePart + "</font>";
         }
