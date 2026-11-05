@@ -333,35 +333,59 @@ public class SwipeActivity extends AppCompatActivity {
 
     private void showPreferencesDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_date_preferences, null);
+
+        // Together Mode Checkboxes
+        MaterialCheckBox chkLocalFood = view.findViewById(R.id.chkLocalFood);
+        MaterialCheckBox chkAsianFood = view.findViewById(R.id.chkAsianFood);
+        MaterialCheckBox chkWesternFood = view.findViewById(R.id.chkWesternFood);
+        MaterialCheckBox chkMiddleEasternFood = view.findViewById(R.id.chkMiddleEasternFood);
+        MaterialCheckBox chkCafes = view.findViewById(R.id.chkCafes);
+
+        MaterialCheckBox chkOutdoorNature = view.findViewById(R.id.chkOutdoorNature);
+        MaterialCheckBox chkEntertainment = view.findViewById(R.id.chkEntertainment);
+        MaterialCheckBox chkCozyCreative = view.findViewById(R.id.chkCozyCreative);
+
+        // LDR Mode Checkboxes
         MaterialCheckBox chkCoOp = view.findViewById(R.id.chkCoOpGames);
         MaterialCheckBox chkCasual = view.findViewById(R.id.chkCasualGames);
         MaterialCheckBox chkAnime = view.findViewById(R.id.chkAnimeMovies);
         MaterialCheckBox chkHorror = view.findViewById(R.id.chkHorrorMovies);
         MaterialCheckBox chkRomance = view.findViewById(R.id.chkRomanceMovies);
-        MaterialCheckBox chkCafes = view.findViewById(R.id.chkCafes);
-        MaterialCheckBox chkDining = view.findViewById(R.id.chkDining);
-        MaterialCheckBox chkParks = view.findViewById(R.id.chkOutdoorParks);
+
+        chkLocalFood.setChecked(localPrefs.prefLocalFood);
+        chkAsianFood.setChecked(localPrefs.prefAsianFood);
+        chkWesternFood.setChecked(localPrefs.prefWesternFood);
+        chkMiddleEasternFood.setChecked(localPrefs.prefMiddleEasternFood);
+        chkCafes.setChecked(localPrefs.prefCafes);
+
+        chkOutdoorNature.setChecked(localPrefs.prefOutdoorNature);
+        chkEntertainment.setChecked(localPrefs.prefEntertainment);
+        chkCozyCreative.setChecked(localPrefs.prefCozyCreative);
 
         chkCoOp.setChecked(localPrefs.prefCoOpGames);
         chkCasual.setChecked(localPrefs.prefCasualGames);
         chkAnime.setChecked(localPrefs.prefAnimeMovies);
         chkHorror.setChecked(localPrefs.prefHorrorMovies);
         chkRomance.setChecked(localPrefs.prefRomanceMovies);
-        chkCafes.setChecked(localPrefs.prefCafes);
-        chkDining.setChecked(localPrefs.prefDining);
-        chkParks.setChecked(localPrefs.prefOutdoorParks);
 
         new MaterialAlertDialogBuilder(this)
                 .setView(view)
                 .setPositiveButton("Save Preferences", (dialog, which) -> {
+                    localPrefs.prefLocalFood = chkLocalFood.isChecked();
+                    localPrefs.prefAsianFood = chkAsianFood.isChecked();
+                    localPrefs.prefWesternFood = chkWesternFood.isChecked();
+                    localPrefs.prefMiddleEasternFood = chkMiddleEasternFood.isChecked();
+                    localPrefs.prefCafes = chkCafes.isChecked();
+
+                    localPrefs.prefOutdoorNature = chkOutdoorNature.isChecked();
+                    localPrefs.prefEntertainment = chkEntertainment.isChecked();
+                    localPrefs.prefCozyCreative = chkCozyCreative.isChecked();
+
                     localPrefs.prefCoOpGames = chkCoOp.isChecked();
                     localPrefs.prefCasualGames = chkCasual.isChecked();
                     localPrefs.prefAnimeMovies = chkAnime.isChecked();
                     localPrefs.prefHorrorMovies = chkHorror.isChecked();
                     localPrefs.prefRomanceMovies = chkRomance.isChecked();
-                    localPrefs.prefCafes = chkCafes.isChecked();
-                    localPrefs.prefDining = chkDining.isChecked();
-                    localPrefs.prefOutdoorParks = chkParks.isChecked();
 
                     dbRef.child("profiles").child(userId).child("datePreferences").setValue(localPrefs);
                     Toast.makeText(this, "Preferences saved!", Toast.LENGTH_SHORT).show();

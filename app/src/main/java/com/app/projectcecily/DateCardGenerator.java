@@ -13,7 +13,7 @@ public class DateCardGenerator {
             // TOGETHER MODE: GENERAL FOOD CUISINES & GENERAL DATE ACTIVITIES
 
             // 1. MALAYSIAN & INDIAN CUISINE
-            if (prefs == null || prefs.prefDining) {
+            if (prefs == null || prefs.prefLocalFood) {
                 deck.add(new DateCard("sc_food_nasilemak", "Nasi Lemak & Local Fare", "Malaysian Food",
                         "Classic fragrant coconut rice with spicy sambal, crispy fried chicken, boiled egg, and peanuts.",
                         "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80", false));
@@ -25,8 +25,8 @@ public class DateCardGenerator {
                         "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            // 2. JAPANESE CUISINE
-            if (prefs == null || prefs.prefDining) {
+            // 2. JAPANESE & KOREAN CUISINE
+            if (prefs == null || prefs.prefAsianFood) {
                 deck.add(new DateCard("sc_food_ramen", "Ramen & Gyoza", "Japanese Food",
                         "Rich savory broth ramen bowls served with pan-fried gyoza and soft-boiled eggs.",
                         "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80", false));
@@ -36,17 +36,13 @@ public class DateCardGenerator {
                 deck.add(new DateCard("sc_food_izakaya", "Japanese Izakaya & Yakitori", "Japanese Food",
                         "Cozy Japanese pub setting with charcoal-grilled yakitori skewers and appetizers.",
                         "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=800&q=80", false));
-            }
-
-            // 3. KOREAN CUISINE
-            if (prefs == null || prefs.prefDining) {
                 deck.add(new DateCard("sc_food_kbbq", "Korean BBQ & Fried Chicken", "Korean Food",
                         "Sizzling samgyeopsal, marinated beef, cheesy tteokbokki, and crispy Korean fried chicken.",
                         "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            // 4. WESTERN & ITALIAN CUISINE
-            if (prefs == null || prefs.prefDining) {
+            // 3. WESTERN & ITALIAN CUISINE
+            if (prefs == null || prefs.prefWesternFood) {
                 deck.add(new DateCard("sc_food_pizza", "Wood-Fired Pizza & Pasta", "Italian Food",
                         "Hand-tossed Neapolitan pizza, creamy fettuccine carbonara, and garlic bread.",
                         "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80", false));
@@ -58,14 +54,14 @@ public class DateCardGenerator {
                         "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            // 5. MIDDLE EASTERN CUISINE
-            if (prefs == null || prefs.prefDining) {
+            // 4. MIDDLE EASTERN CUISINE
+            if (prefs == null || prefs.prefMiddleEasternFood) {
                 deck.add(new DateCard("sc_food_middleeastern", "Arabian Mandi & Kebab Grill", "Middle Eastern Food",
                         "Tender lamb mandi rice, grilled shish tawook, hummus, and warm pita bread.",
                         "https://images.unsplash.com/photo-1541518763669-27fef04b14e8?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            // 6. COZY CAFES & DESSERTS
+            // 5. COZY CAFES & DESSERTS
             if (prefs == null || prefs.prefCafes) {
                 deck.add(new DateCard("sc_cafe_artisan", "Artisanal Coffee & Matcha", "Cafe & Drinks",
                         "Specialty pour-overs, Japanese Uji matcha, and cozy cafe atmosphere.",
@@ -78,8 +74,8 @@ public class DateCardGenerator {
                         "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            // GENERAL DATE LOCATIONS & ACTIVITIES
-            if (prefs == null || prefs.prefOutdoorParks) {
+            // 6. OUTDOOR & NATURE ACTIVITIES
+            if (prefs == null || prefs.prefOutdoorNature) {
                 deck.add(new DateCard("sc_act_park", "Public Park & Waterfront Walk", "Outdoor Activity",
                         "Take a relaxing stroll through the park or along the waterfront watching the sunset.",
                         "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80", false));
@@ -88,41 +84,40 @@ public class DateCardGenerator {
                         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80", false));
             }
 
-            deck.add(new DateCard("sc_act_mall", "Shopping Mall & Window Shopping", "Mall Outing",
-                    "Browse stores, grab drinks, check out pop-up shops, and walk around the mall.",
-                    "https://images.unsplash.com/photo-1567449303078-57ad995bd301?auto=format&fit=crop&w=800&q=80", false));
+            // 7. ENTERTAINMENT & OUTINGS
+            if (prefs == null || prefs.prefEntertainment) {
+                deck.add(new DateCard("sc_act_mall", "Shopping Mall & Window Shopping", "Mall Outing",
+                        "Browse stores, grab drinks, check out pop-up shops, and walk around the mall.",
+                        "https://images.unsplash.com/photo-1567449303078-57ad995bd301?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_cinema", "Cinema & Movie Night", "Entertainment",
+                        "Catch the latest movie on the big screen with popcorn and drinks.",
+                        "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_arcade", "Arcade & Claw Machines", "Games & Fun",
+                        "Play claw machines, racing simulators, air hockey, and basketball arcade games.",
+                        "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_bowling", "Bowling Alley", "Games & Fun",
+                        "Enjoy a fun bowling match together with arcade games and snacks.",
+                        "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_karaoke", "Karaoke Lounge", "Entertainment",
+                        "Sing your favorite duet songs and pop hits in a private karaoke room.",
+                        "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_escaperoom", "Escape Room", "Entertainment",
+                        "Solve puzzles, decipher codes, and escape a themed mystery room together.",
+                        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", false));
+            }
 
-            deck.add(new DateCard("sc_act_cinema", "Cinema & Movie Night", "Entertainment",
-                    "Catch the latest movie on the big screen with popcorn and drinks.",
-                    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_arcade", "Arcade & Claw Machines", "Games & Fun",
-                    "Play claw machines, racing simulators, air hockey, and basketball arcade games.",
-                    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_bowling", "Bowling Alley", "Games & Fun",
-                    "Enjoy a fun bowling match together with arcade games and snacks.",
-                    "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_karaoke", "Karaoke Lounge", "Entertainment",
-                    "Sing your favorite duet songs and pop hits in a private karaoke room.",
-                    "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_escaperoom", "Escape Room", "Entertainment",
-                    "Solve puzzles, decipher codes, and escape a themed mystery room together.",
-                    "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_boardgame", "Board Game Cafe", "Cozy Activity",
-                    "Try fun strategic board games, card games, and party games over coffee.",
-                    "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_rooftop", "Rooftop Lounge & Night View", "Nightlife",
-                    "Enjoy night city views, mocktails, and evening breeze from a rooftop spot.",
-                    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80", false));
-
-            deck.add(new DateCard("sc_act_art", "Art & Pottery Workshop", "Creative Outing",
-                    "Paint canvases or try hands-on pottery making together.",
-                    "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80", false));
+            // 8. COZY & CREATIVE OUTINGS
+            if (prefs == null || prefs.prefCozyCreative) {
+                deck.add(new DateCard("sc_act_boardgame", "Board Game Cafe", "Cozy Activity",
+                        "Try fun strategic board games, card games, and party games over coffee.",
+                        "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_rooftop", "Rooftop Lounge & Night View", "Nightlife",
+                        "Enjoy night city views, mocktails, and evening breeze from a rooftop spot.",
+                        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80", false));
+                deck.add(new DateCard("sc_act_art", "Art & Pottery Workshop", "Creative Outing",
+                        "Paint canvases or try hands-on pottery making together.",
+                        "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80", false));
+            }
 
         } else {
             // LDR MODE DATE IDEAS (Games, Movie Watch Parties, Virtual Dates)

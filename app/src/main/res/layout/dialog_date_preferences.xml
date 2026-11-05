@@ -26,12 +26,88 @@
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
-        <!-- Games Section -->
+        <!-- Together Mode Food Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Co-Op &amp; Online Games"
+            android:text="Together Mode: Cuisines &amp; Food"
+            android:textColor="@color/nav_selected"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkLocalFood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Malaysian, Street Food &amp; Indian Fare" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkAsianFood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Japanese (Ramen/Sushi) &amp; Korean BBQ" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkWesternFood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Western, Italian Pizza &amp; Steaks" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkMiddleEasternFood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Middle Eastern Mandi &amp; Kebabs" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkCafes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Cozy Cafes, Souffle Pancakes &amp; Bakery" />
+
+        <!-- Together Mode Activities Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Together Mode: Date Activities &amp; Outings"
+            android:textColor="@color/nav_selected"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkOutdoorNature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Scenic Parks, Waterfront &amp; Beach Picnics" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkEntertainment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Shopping Malls, Cinema, Arcade, Bowling &amp; Karaoke" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/chkCozyCreative"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Board Game Cafes, Rooftops &amp; Art Studios" />
+
+        <!-- LDR Games Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="LDR Mode: Co-Op Games"
             android:textColor="@color/nav_selected"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -50,12 +126,12 @@
             android:checked="true"
             android:text="Casual &amp; Sandbox (Stardew Valley, Minecraft, Roblox)" />
 
-        <!-- Movies Section -->
+        <!-- LDR Movies Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Movie &amp; Show Watch Parties"
+            android:text="LDR Mode: Movie Watch Parties"
             android:textColor="@color/nav_selected"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -80,37 +156,6 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="Romance &amp; K-Dramas" />
-
-        <!-- Food Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Same-City Food &amp; Outings"
-            android:textColor="@color/nav_selected"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/chkCafes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Cozy Cafes &amp; Desserts" />
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/chkDining"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Dining &amp; Night Markets" />
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/chkOutdoorParks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Scenic Parks &amp; Outdoor Walks" />
 
     </LinearLayout>
 </ScrollView>
