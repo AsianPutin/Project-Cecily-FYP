@@ -128,6 +128,15 @@ public class MainActivity extends AppCompatActivity {
         setupDashboardClicks();
         setupNavigation();
 
+        BottomNavigationView navView = findViewById(R.id.bottom_navigation);
+        if (navView != null) {
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(navView, (v, insets) -> {
+                int bottomInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
+                v.setPadding(0, 0, 0, bottomInset);
+                return insets;
+            });
+        }
+
         // Double-tap back press to exit
         getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
             @Override
