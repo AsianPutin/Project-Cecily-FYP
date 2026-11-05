@@ -6,10 +6,10 @@
     android:background="@drawable/widget_background"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingStart="8dp"
-    android:paddingTop="4dp"
-    android:paddingEnd="8dp"
-    android:paddingBottom="4dp">
+    android:paddingStart="6dp"
+    android:paddingTop="3dp"
+    android:paddingEnd="6dp"
+    android:paddingBottom="3dp">
 
     <!-- Top Text Line: [0000 km/mi] apart or We're together 💕 -->
     <TextView
@@ -22,29 +22,32 @@
         android:textSize="13sp"
         android:textStyle="bold" />
 
-    <!-- Middle Row: My Avatar, Dual Color Dotted Line, Partner Avatar -->
+    <!-- Middle Row: My Avatar, Spaced Dual Color Dotted Line, Partner Avatar -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:layout_marginBottom="2dp"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
 
         <ImageView
             android:id="@+id/ivWidgetMyAvatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:contentDescription="My Avatar"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_blank_user" />
 
         <TextView
             android:id="@+id/tvLeftDottedLine"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="------"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="--------"
             android:textColor="#25D366"
             android:textSize="10sp" />
 
@@ -54,23 +57,25 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp"
+            android:gravity="center"
             android:text="💕"
             android:textColor="#FF4081"
             android:textSize="10sp" />
 
         <TextView
             android:id="@+id/tvRightDottedLine"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:text="------"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="--------"
             android:textColor="#FF4081"
             android:textSize="10sp" />
 
         <ImageView
             android:id="@+id/ivWidgetPartnerAvatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:contentDescription="Partner Avatar"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_blank_user" />
