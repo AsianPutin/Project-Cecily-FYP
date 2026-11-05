@@ -13,6 +13,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
@@ -272,34 +273,74 @@ public class TrackingActivity extends AppCompatActivity {
     }
 
     private void updateSelfMarkerOnMap() {
-        if (lastSelfLat == 0 && lastSelfLon == 0) return;
-        GeoPoint selfPos = new GeoPoint(lastSelfLat, lastSelfLon);
-
-        if (myMarker == null) {
-            myMarker = new Marker(mapView);
-            myMarker.setTitle("You");
-            myMarker.setInfoWindow(null);
-            mapView.getOverlays().add(myMarker);
-        }
-        myMarker.setInfoWindow(null);
-        myMarker.setPosition(selfPos);
-        myMarker.setIcon(createAvatarMarkerDrawable(this, myAvatarBitmap, "Y", myColor));
-        mapView.invalidate();
+        updateMapMarkers();
     }
 
     private void updatePartnerMarkerOnMap() {
-        if (lastPartnerLat == 0 && lastPartnerLon == 0) return;
-        GeoPoint partnerPos = new GeoPoint(lastPartnerLat, lastPartnerLon);
+        updateMapMarkers();
+    }
+
+    private void updateMapMarkers() {
+        if (mapView == null) return;
+
+        boolean hasSelf = (lastSelfLat != 0 || lastSelfLon != 0);
+        boolean hasPartner = (lastPartnerLat != 0 || lastPartnerLon != 0);
+
+        if (!hasSelf && !hasPartner) return;
+
+        if (myMarker == null) {
+            myMarker = new Marker(mapView);
+            myMarker.setInfoWindow(null);
+            mapView.getOverlays().add(myMarker);
+        }
 
         if (partnerMarker == null) {
             partnerMarker = new Marker(mapView);
-            partnerMarker.setTitle("Partner");
             partnerMarker.setInfoWindow(null);
             mapView.getOverlays().add(partnerMarker);
         }
-        partnerMarker.setInfoWindow(null);
-        partnerMarker.setPosition(partnerPos);
-        partnerMarker.setIcon(createAvatarMarkerDrawable(this, partnerAvatarBitmap, "P", partnerColor));
+
+        if (hasSelf && hasPartner) {
+            float[] results = new float[1];
+            Location.distanceBetween(lastSelfLat, lastSelfLon, lastPartnerLat, lastPartnerLon, results);
+            boolean isTogether = results[0] < 100;
+
+            if (isTogether) {
+                GeoPoint selfPos = new GeoPoint(lastSelfLat, lastSelfLon);
+                myMarker.setTitle("We're together 💕");
+                myMarker.setInfoWindow(null);
+                myMarker.setPosition(selfPos);
+                myMarker.setIcon(createTogetherMarkerDrawable(this));
+                myMarker.setVisible(true);
+
+                partnerMarker.setVisible(false);
+                mapView.invalidate();
+                return;
+            }
+        }
+
+        if (hasSelf) {
+            GeoPoint selfPos = new GeoPoint(lastSelfLat, lastSelfLon);
+            myMarker.setTitle("You");
+            myMarker.setInfoWindow(null);
+            myMarker.setPosition(selfPos);
+            myMarker.setIcon(createAvatarMarkerDrawable(this, myAvatarBitmap, "Y", myColor));
+            myMarker.setVisible(true);
+        } else {
+            myMarker.setVisible(false);
+        }
+
+        if (hasPartner) {
+            GeoPoint partnerPos = new GeoPoint(lastPartnerLat, lastPartnerLon);
+            partnerMarker.setTitle("Partner");
+            partnerMarker.setInfoWindow(null);
+            partnerMarker.setPosition(partnerPos);
+            partnerMarker.setIcon(createAvatarMarkerDrawable(this, partnerAvatarBitmap, "P", partnerColor));
+            partnerMarker.setVisible(true);
+        } else {
+            partnerMarker.setVisible(false);
+        }
+
         mapView.invalidate();
     }
 
@@ -425,6 +466,89 @@ public class TrackingActivity extends AppCompatActivity {
         }
 
         return new BitmapDrawable(context.getResources(), markerBitmap);
+    }
+
+    private Drawable createTogetherMarkerDrawable(Context context) {
+        int avatarSize = 110;
+        int gap = 6;
+        int totalWidth = avatarSize * 2 + gap + 20;
+        int totalHeight = avatarSize + 28;
+
+        Bitmap bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        // Draw pin pointer triangle at bottom center
+        float cx = totalWidth / 2f;
+        float cy = avatarSize / 2f;
+        float radius = avatarSize / 2f - 4f;
+
+        Path pointerPath = new Path();
+        pointerPath.moveTo(cx - 18f, avatarSize - 4f);
+        pointerPath.lineTo(cx + 18f, avatarSize - 4f);
+        pointerPath.lineTo(cx, totalHeight - 2f);
+        pointerPath.close();
+
+        paint.setColor(myColor);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawPath(pointerPath, paint);
+
+        // 1. Left Avatar (MY AVATAR) with myColor ring
+        float myCx = avatarSize / 2f + 6f;
+        paint.setColor(myColor);
+        canvas.drawCircle(myCx, cy, radius, paint);
+
+        if (myAvatarBitmap != null) {
+            Bitmap scaled = Bitmap.createScaledBitmap(myAvatarBitmap, (int) (radius * 2 - 8f), (int) (radius * 2 - 8f), true);
+            Bitmap circular = Bitmap.createBitmap(scaled.getWidth(), scaled.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas cCanvas = new Canvas(circular);
+            Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            maskPaint.setColor(Color.BLACK);
+            cCanvas.drawCircle(scaled.getWidth() / 2f, scaled.getHeight() / 2f, scaled.getWidth() / 2f, maskPaint);
+            Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            circlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            cCanvas.drawBitmap(scaled, 0, 0, circlePaint);
+
+            canvas.drawBitmap(circular, myCx - circular.getWidth() / 2f, cy - circular.getHeight() / 2f, null);
+        } else {
+            paint.setColor(Color.WHITE);
+            canvas.drawCircle(myCx, cy, radius - 4f, paint);
+            paint.setColor(myColor);
+            paint.setTextSize(40f);
+            paint.setFakeBoldText(true);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText("Y", myCx, cy + 14f, paint);
+        }
+
+        // 2. Right Avatar (PARTNER AVATAR) with partnerColor ring
+        float partnerCx = totalWidth - (avatarSize / 2f) - 6f;
+        paint.setColor(partnerColor);
+        canvas.drawCircle(partnerCx, cy, radius, paint);
+
+        if (partnerAvatarBitmap != null) {
+            Bitmap scaled = Bitmap.createScaledBitmap(partnerAvatarBitmap, (int) (radius * 2 - 8f), (int) (radius * 2 - 8f), true);
+            Bitmap circular = Bitmap.createBitmap(scaled.getWidth(), scaled.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas cCanvas = new Canvas(circular);
+            Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            maskPaint.setColor(Color.BLACK);
+            cCanvas.drawCircle(scaled.getWidth() / 2f, scaled.getHeight() / 2f, scaled.getWidth() / 2f, maskPaint);
+            Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            circlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            cCanvas.drawBitmap(scaled, 0, 0, circlePaint);
+
+            canvas.drawBitmap(circular, partnerCx - circular.getWidth() / 2f, cy - circular.getHeight() / 2f, null);
+        } else {
+            paint.setColor(Color.WHITE);
+            canvas.drawCircle(partnerCx, cy, radius - 4f, paint);
+            paint.setColor(partnerColor);
+            paint.setTextSize(40f);
+            paint.setFakeBoldText(true);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText("P", partnerCx, cy + 14f, paint);
+        }
+
+        return new BitmapDrawable(context.getResources(), bitmap);
     }
 
     private Bitmap decodeBase64Bitmap(String base64Str) {
