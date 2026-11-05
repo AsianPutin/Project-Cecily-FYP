@@ -10,6 +10,5 @@
     android:initialLayout="@layout/widget_ldr_status"
     android:previewLayout="@layout/widget_ldr_status"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen"
-    android:previewImage="@mipmap/ic_launcher">
+    android:widgetCategory="home_screen">
 </appwidget-provider>
