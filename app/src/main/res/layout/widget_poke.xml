@@ -14,7 +14,8 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:contentDescription="Poke Partner"
-        android:src="@drawable/ic_poke_hand" />
+        android:src="@drawable/ic_poke_hand"
+        app:tint="#FF4081" />
 
     <TextView
         android:id="@+id/tvPokeText"
@@ -22,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:text="Poke"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/widget_text_color"
         android:textSize="11sp"
         android:textStyle="bold" />
 
