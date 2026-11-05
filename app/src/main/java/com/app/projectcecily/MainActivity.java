@@ -40,6 +40,16 @@ public class MainActivity extends AppCompatActivity {
     private String partnerTimeZoneId = "";
     private RelationshipManager.Details cachedDetails;
 
+    private android.os.Handler adHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable adRunnable;
+    private int currentAdIndex = 0;
+    private static final String[] MOCK_ADS = new String[]{
+        "Sponsored: Explore Couple Travel Deals & Flights ✈️",
+        "Sponsored: Send Secret Gifts & Flowers Overseas 💐",
+        "Sponsored: Book Long-Distance Date Night Packages 🎟️",
+        "Sponsored: Unlock Unlimited High-Speed eSIM Roaming 🌐"
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         int savedMode = getSharedPreferences("prefs", MODE_PRIVATE).getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
@@ -101,22 +111,7 @@ public class MainActivity extends AppCompatActivity {
         tvTogetherDays = findViewById(R.id.tvTogetherDays);
         tvPartnerTimeSummary = findViewById(R.id.tvPartnerTimeSummary);
 
-        View cardBannerAd = findViewById(R.id.cardBannerAd);
-        View btnDismissAd = findViewById(R.id.btnDismissAd);
-
-        SharedPreferences adPrefs = getSharedPreferences("ad_prefs", MODE_PRIVATE);
-        boolean adDismissed = adPrefs.getBoolean("ad_dismissed", false);
-        if (adDismissed && cardBannerAd != null) {
-            cardBannerAd.setVisibility(View.GONE);
-        }
-
-        if (btnDismissAd != null && cardBannerAd != null) {
-            btnDismissAd.setOnClickListener(v -> {
-                cardBannerAd.setVisibility(View.GONE);
-                adPrefs.edit().putBoolean("ad_dismissed", true).apply();
-                Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
-            });
-        }
+        setupBannerAd();
 
         RelationshipManager.listenFromFirebase(this, details -> {
             cachedDetails = details;
@@ -443,6 +438,68 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             startTracking();
+        }
+    }
+
+    private void setupBannerAd() {
+        View cardBannerAd = findViewById(R.id.cardBannerAd);
+        View btnDismissAd = findViewById(R.id.btnDismissAd);
+        TextView tvAdText = findViewById(R.id.tvAdBannerText);
+
+        android.content.SharedPreferences adPrefs = getSharedPreferences("ad_prefs", MODE_PRIVATE);
+        boolean adDismissed = adPrefs.getBoolean("ad_dismissed", false);
+        if (adDismissed && cardBannerAd != null) {
+            cardBannerAd.setVisibility(View.GONE);
+            return;
+        }
+
+        if (btnDismissAd != null && cardBannerAd != null) {
+            btnDismissAd.setOnClickListener(v -> {
+                if (adHandler != null && adRunnable != null) {
+                    adHandler.removeCallbacks(adRunnable);
+                }
+                cardBannerAd.setVisibility(View.GONE);
+                adPrefs.edit().putBoolean("ad_dismissed", true).apply();
+                Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (tvAdText != null && cardBannerAd != null && cardBannerAd.getVisibility() == View.VISIBLE) {
+            adRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    currentAdIndex = (currentAdIndex + 1) % MOCK_ADS.length;
+                    String nextAdText = MOCK_ADS[currentAdIndex];
+
+                    // Conveyor belt slide animation out to left
+                    tvAdText.animate()
+                            .translationX(-tvAdText.getWidth())
+                            .alpha(0f)
+                            .setDuration(400)
+                            .withEndAction(() -> {
+                                tvAdText.setText(nextAdText);
+                                tvAdText.setTranslationX(tvAdText.getWidth());
+                                // Conveyor belt slide animation in from right
+                                tvAdText.animate()
+                                        .translationX(0f)
+                                        .alpha(1f)
+                                        .setDuration(400)
+                                        .start();
+                            })
+                            .start();
+
+                    adHandler.postDelayed(this, 3500);
+                }
+            };
+            adHandler.postDelayed(adRunnable, 3500);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (adHandler != null && adRunnable != null) {
+            adHandler.removeCallbacks(adRunnable);
         }
     }
 }
