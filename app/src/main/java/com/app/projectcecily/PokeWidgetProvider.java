@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +29,11 @@ public class PokeWidgetProvider extends AppWidgetProvider {
 
     static void updatePokeWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_poke);
+
+        boolean isNight = isNightMode(context);
+        views.setInt(R.id.widget_poke_root, "setBackgroundResource",
+                isNight ? R.drawable.widget_background_dark : R.drawable.widget_background_light);
+        views.setTextColor(R.id.tvPokeText, isNight ? Color.WHITE : Color.parseColor("#212121"));
 
         Intent intent = new Intent(context, PokeWidgetProvider.class);
         intent.setAction(ACTION_SEND_POKE);
@@ -68,6 +74,14 @@ public class PokeWidgetProvider extends AppWidgetProvider {
                 appWidgetManager.updateAppWidget(appWidgetId, views);
             }
         });
+    }
+
+    private static boolean isNightMode(Context context) {
+        int savedMode = ThemeUtils.getSavedThemeMode(context);
+        if (savedMode == AppCompatDelegate.MODE_NIGHT_YES) return true;
+        if (savedMode == AppCompatDelegate.MODE_NIGHT_NO) return false;
+        int uiMode = context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return uiMode == android.content.res.Configuration.UI_MODE_NIGHT_YES;
     }
 
     @Override

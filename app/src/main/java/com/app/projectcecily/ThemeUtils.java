@@ -42,6 +42,7 @@ public class ThemeUtils {
                 .putInt(KEY_THEME_MODE, mode)
                 .apply();
         AppCompatDelegate.setDefaultNightMode(mode);
+        notifyWidgets(context);
     }
 
     public static int getSavedThemeMode(Context context) {
