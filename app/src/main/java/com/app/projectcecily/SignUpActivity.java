@@ -30,11 +30,12 @@ public class SignUpActivity extends AppCompatActivity {
 
     private ImageView ivProfilePic;
     private EditText etName, etUsername, etEmail, etPhoneNumber, etPassword, etBirthday;
-    private android.widget.Spinner spinnerCountryCode;
+    private Button btnSelectCountryCode;
     private MaterialButtonToggleGroup genderToggleGroup;
     private Button btnCreateAccount, btnBackToLogin;
 
     private String selectedGender = "Prefer not to say";
+    private String selectedCountryCodeStr = "";
     private String photoBase64 = null;
     private Bitmap selectedPhotoBitmap = null;
 
@@ -62,7 +63,7 @@ public class SignUpActivity extends AppCompatActivity {
         etName = findViewById(R.id.etSignUpName);
         etUsername = findViewById(R.id.etSignUpUsername);
         etEmail = findViewById(R.id.etSignUpEmail);
-        spinnerCountryCode = findViewById(R.id.spinnerSignUpCountryCode);
+        btnSelectCountryCode = findViewById(R.id.btnSelectSignUpCountryCode);
         etPhoneNumber = findViewById(R.id.etSignUpPhoneNumber);
         etPassword = findViewById(R.id.etSignUpPassword);
         etBirthday = findViewById(R.id.etSignUpBirthday);
@@ -70,27 +71,15 @@ public class SignUpActivity extends AppCompatActivity {
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
         btnBackToLogin = findViewById(R.id.btnBackToLogin);
 
-        if (spinnerCountryCode != null && etPhoneNumber != null) {
-            spinnerCountryCode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                    if (position > 0) {
-                        etPhoneNumber.setEnabled(true);
-                        etPhoneNumber.setAlpha(1.0f);
-                    } else {
-                        etPhoneNumber.setEnabled(false);
-                        etPhoneNumber.setAlpha(0.5f);
-                        etPhoneNumber.setText("");
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(android.widget.AdapterView<?> parent) {
-                    etPhoneNumber.setEnabled(false);
-                    etPhoneNumber.setAlpha(0.5f);
-                }
-            });
+        if (btnSelectCountryCode != null && etPhoneNumber != null) {
+            btnSelectCountryCode.setOnClickListener(v -> CountryCodePickerHelper.showPicker(this, country -> {
+                selectedCountryCodeStr = country.code;
+                btnSelectCountryCode.setText(country.flagEmoji + " " + country.code);
+                etPhoneNumber.setEnabled(true);
+                etPhoneNumber.setAlpha(1.0f);
+            }));
         }
+
 
         setupPhotoPickerLaunchers();
 
@@ -228,16 +217,7 @@ public class SignUpActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String birthday = etBirthday.getText().toString().trim();
 
-        String selectedCountryCode = "";
-        if (spinnerCountryCode != null && spinnerCountryCode.getSelectedItemPosition() > 0) {
-            String item = spinnerCountryCode.getSelectedItem().toString();
-            for (String token : item.split(" ")) {
-                if (token.startsWith("+")) {
-                    selectedCountryCode = token;
-                    break;
-                }
-            }
-        }
+        String selectedCountryCode = selectedCountryCodeStr;
         String phoneNumber = (etPhoneNumber != null && etPhoneNumber.isEnabled()) ?
                 etPhoneNumber.getText().toString().trim() : "";
 

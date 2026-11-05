@@ -302,14 +302,14 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <Spinner
-                            android:id="@+id/spinnerProfileCountryCode"
-                            android:layout_width="140dp"
+                        <Button
+                            android:id="@+id/btnSelectProfileCountryCode"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
                             android:layout_height="52dp"
-                            android:background="@drawable/widget_background"
-                            android:entries="@array/country_codes_array"
-                            android:paddingStart="4dp"
-                            android:paddingEnd="4dp" />
+                            android:paddingHorizontal="12dp"
+                            android:text="Select Code"
+                            android:textSize="13sp" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
