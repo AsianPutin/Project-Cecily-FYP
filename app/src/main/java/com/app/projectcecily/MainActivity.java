@@ -191,23 +191,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void updatePartnerSummaryCards() {
         if (partnerId == null || partnerId.isEmpty()) {
-            tvTogetherDays.setText("Not paired yet");
-            tvBirthdaysSummary.setText("Pair in Account Settings");
-            tvPartnerTimeSummary.setVisibility(View.GONE);
+            if (tvTogetherDays != null) tvTogetherDays.setText("Not paired yet");
+            if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText("Pair in Account Settings");
+            if (tvPartnerTimeSummary != null) tvPartnerTimeSummary.setVisibility(View.GONE);
             return;
         }
 
         if (cachedDetails != null) {
-            tvTogetherDays.setText(RelationshipManager.formatDaysTogether(cachedDetails.anniversaryTimestamp));
-            tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor));
+            if (tvTogetherDays != null) tvTogetherDays.setText(RelationshipManager.formatDaysTogether(cachedDetails.anniversaryTimestamp));
+            if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor));
         }
 
         CharSequence timeText = RelationshipManager.formatPartnerCurrentTime(this, partnerName, partnerTimeZoneId, partnerAccentColor);
-        if (timeText != null && timeText.length() > 0) {
-            tvPartnerTimeSummary.setText(timeText);
-            tvPartnerTimeSummary.setVisibility(View.VISIBLE);
-        } else {
-            tvPartnerTimeSummary.setVisibility(View.GONE);
+        if (tvPartnerTimeSummary != null) {
+            if (timeText != null && timeText.length() > 0) {
+                tvPartnerTimeSummary.setText(timeText);
+                tvPartnerTimeSummary.setVisibility(View.VISIBLE);
+            } else {
+                tvPartnerTimeSummary.setVisibility(View.GONE);
+            }
         }
     }
 
