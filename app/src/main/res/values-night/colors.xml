@@ -4,4 +4,9 @@
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#CCCCCC</color>
     <color name="card_background">#1E1E1E</color>
+
+    <!-- Widget specific colors -->
+    <color name="widget_bg_color">#212121</color>
+    <color name="widget_text_color">#FFFFFF</color>
+    <color name="widget_stroke_color">#444444</color>
 </resources>

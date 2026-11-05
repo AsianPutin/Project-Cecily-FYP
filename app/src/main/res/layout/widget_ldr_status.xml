@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="13120 km apart"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/widget_text_color"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -84,7 +84,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="06:52 (GMT), Kuching, Malaysia"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/widget_text_color"
         android:textSize="10sp" />
 
 </LinearLayout>
