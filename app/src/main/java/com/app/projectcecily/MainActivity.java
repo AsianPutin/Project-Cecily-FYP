@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         updateDynamicAccent();
         ThemeUtils.applyAccentToActivity(this);
+        setupBannerAd();
         if (lastDistanceInKm > 0 && tvDistance != null) {
             tvDistance.setText(UnitUtils.formatDistance(this, lastDistanceInKm));
         }
@@ -453,6 +454,18 @@ public class MainActivity extends AppCompatActivity {
         View cardBannerAd = findViewById(R.id.cardBannerAd);
         View btnDismissAd = findViewById(R.id.btnDismissAd);
         TextView tvAdText = findViewById(R.id.tvAdBannerText);
+
+        if (cardBannerAd == null) return;
+
+        if (SubscriptionDialogHelper.isPremiumUnlocked(this)) {
+            if (adHandler != null && adRunnable != null) {
+                adHandler.removeCallbacks(adRunnable);
+            }
+            cardBannerAd.setVisibility(View.GONE);
+            return;
+        }
+
+        cardBannerAd.setVisibility(View.VISIBLE);
 
         if (randomizedAdsList.isEmpty()) {
             randomizedAdsList.addAll(Arrays.asList(MOCK_ADS));

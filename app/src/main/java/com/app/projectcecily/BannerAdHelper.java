@@ -29,6 +29,16 @@ public class BannerAdHelper {
     public static void setupBanner(AppCompatActivity activity, View cardBannerAd, View btnDismissAd, TextView tvAdText, OnAdDismissedListener dismissListener) {
         if (activity == null || cardBannerAd == null || tvAdText == null) return;
 
+        if (SubscriptionDialogHelper.isPremiumUnlocked(activity)) {
+            cardBannerAd.setVisibility(View.GONE);
+            if (dismissListener != null) {
+                dismissListener.onDismissed();
+            }
+            return;
+        }
+
+        cardBannerAd.setVisibility(View.VISIBLE);
+
         List<String> randomizedAdsList = new ArrayList<>(Arrays.asList(MOCK_ADS));
         Collections.shuffle(randomizedAdsList);
         if (!randomizedAdsList.isEmpty()) {
