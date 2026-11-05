@@ -199,11 +199,16 @@ public class MainActivity extends AppCompatActivity {
         androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork("flight_sync", androidx.work.ExistingPeriodicWorkPolicy.KEEP, request);
     }
 
+    private float lastDistanceInKm = -1f;
+
     @Override
     protected void onResume() {
         super.onResume();
         updateDynamicAccent();
         ThemeUtils.applyAccentToActivity(this);
+        if (lastDistanceInKm > 0 && tvDistance != null) {
+            tvDistance.setText(UnitUtils.formatDistance(this, lastDistanceInKm));
+        }
         updatePartnerSummaryCards();
     }
 
@@ -400,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         tracker.startTracking();
         tracker.listenToPartner((lat, lon, distance) -> {
             if (distance > 0) {
+                lastDistanceInKm = distance;
                 tvDistance.setText(UnitUtils.formatDistance(this, distance));
             }
         });
