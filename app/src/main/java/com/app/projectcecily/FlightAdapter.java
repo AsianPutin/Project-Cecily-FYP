@@ -39,7 +39,18 @@ public class FlightAdapter extends RecyclerView.Adapter<FlightAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FlightInfo flight = flights.get(position);
-        holder.tvFlightNum.setText((flight.airlineName != null && !flight.airlineName.trim().isEmpty() ? flight.airlineName + " " : "") + flight.flightNumber);
+
+        String airlineLabel = flight.airlineName;
+        if (airlineLabel == null || "Airline".equalsIgnoreCase(airlineLabel.trim()) || "Flight".equalsIgnoreCase(airlineLabel.trim())) {
+            airlineLabel = FlightTrackerActivity.getAirlineNameFromCode(flight.flightNumber);
+        }
+
+        if (airlineLabel != null && !airlineLabel.trim().isEmpty()) {
+            holder.tvFlightNum.setText(airlineLabel.trim() + " " + flight.flightNumber);
+        } else {
+            holder.tvFlightNum.setText("Flight " + flight.flightNumber);
+        }
+
         holder.tvDep.setText(flight.depAirport);
         holder.tvArr.setText(flight.arrAirport);
         

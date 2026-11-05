@@ -97,26 +97,56 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     }
 
     public static String getAirlineNameFromCode(String flightNum) {
-        if (flightNum == null || flightNum.trim().isEmpty()) return "Airline";
+        if (flightNum == null || flightNum.trim().isEmpty()) return "";
         String fn = flightNum.replaceAll("\\s+", "").toUpperCase();
 
+        // Malaysia & Borneo Regional
         if (fn.startsWith("MH")) return "Malaysia Airlines";
+        if (fn.startsWith("MY")) return "MASwings";
         if (fn.startsWith("AK") || fn.startsWith("D7") || fn.startsWith("QZ")) return "AirAsia";
-        if (fn.startsWith("SQ")) return "Singapore Airlines";
-        if (fn.startsWith("TR")) return "Scoot";
         if (fn.startsWith("OD") || fn.startsWith("SL")) return "Batik Air";
         if (fn.startsWith("FY")) return "Firefly";
+
+        // Singapore & Regional SEA
+        if (fn.startsWith("SQ")) return "Singapore Airlines";
+        if (fn.startsWith("TR")) return "Scoot";
+        if (fn.startsWith("3K")) return "Jetstar Asia";
+        if (fn.startsWith("JQ")) return "Jetstar Airways";
+        if (fn.startsWith("FD") || fn.startsWith("XJ") || fn.startsWith("Z2")) return "AirAsia";
         if (fn.startsWith("TG")) return "Thai Airways";
-        if (fn.startsWith("AA")) return "American Airlines";
-        if (fn.startsWith("DL")) return "Delta Air Lines";
-        if (fn.startsWith("UA")) return "United Airlines";
-        if (fn.startsWith("EK")) return "Emirates";
-        if (fn.startsWith("QR")) return "Qatar Airways";
+        if (fn.startsWith("PG")) return "Bangkok Airways";
+        if (fn.startsWith("VN")) return "Vietnam Airlines";
+        if (fn.startsWith("VJ")) return "VietJet Air";
+        if (fn.startsWith("PR")) return "Philippine Airlines";
+        if (fn.startsWith("GA")) return "Garuda Indonesia";
+        if (fn.startsWith("QG")) return "Citilink";
+
+        // East Asia
         if (fn.startsWith("CX")) return "Cathay Pacific";
         if (fn.startsWith("NH")) return "ANA";
         if (fn.startsWith("JL")) return "Japan Airlines";
+        if (fn.startsWith("CI")) return "China Airlines";
+        if (fn.startsWith("BR")) return "EVA Air";
+        if (fn.startsWith("JX")) return "STARLUX Airlines";
+        if (fn.startsWith("CZ")) return "China Southern";
+        if (fn.startsWith("MU")) return "China Eastern";
+        if (fn.startsWith("CA")) return "Air China";
+        if (fn.startsWith("MF")) return "XiamenAir";
 
-        return "Airline";
+        // Middle East & International
+        if (fn.startsWith("EK")) return "Emirates";
+        if (fn.startsWith("QR")) return "Qatar Airways";
+        if (fn.startsWith("EY")) return "Etihad Airways";
+        if (fn.startsWith("AA")) return "American Airlines";
+        if (fn.startsWith("DL")) return "Delta Air Lines";
+        if (fn.startsWith("UA")) return "United Airlines";
+        if (fn.startsWith("BA")) return "British Airways";
+        if (fn.startsWith("LH")) return "Lufthansa";
+        if (fn.startsWith("AF")) return "Air France";
+        if (fn.startsWith("KL")) return "KLM";
+        if (fn.startsWith("QF")) return "Qantas";
+
+        return "";
     }
 
     private FlightAdapter adapter;
