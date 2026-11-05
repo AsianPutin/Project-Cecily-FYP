@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -98,8 +99,24 @@ public class MainActivity extends AppCompatActivity {
         tvWishlist = findViewById(R.id.tvWishlistSummary);
         tvFlightSummary = findViewById(R.id.tvFlightSummary);
         tvTogetherDays = findViewById(R.id.tvTogetherDays);
-        tvBirthdaysSummary = findViewById(R.id.tvBirthdaysSummary);
         tvPartnerTimeSummary = findViewById(R.id.tvPartnerTimeSummary);
+
+        View cardBannerAd = findViewById(R.id.cardBannerAd);
+        View btnDismissAd = findViewById(R.id.btnDismissAd);
+
+        SharedPreferences adPrefs = getSharedPreferences("ad_prefs", MODE_PRIVATE);
+        boolean adDismissed = adPrefs.getBoolean("ad_dismissed", false);
+        if (adDismissed && cardBannerAd != null) {
+            cardBannerAd.setVisibility(View.GONE);
+        }
+
+        if (btnDismissAd != null && cardBannerAd != null) {
+            btnDismissAd.setOnClickListener(v -> {
+                cardBannerAd.setVisibility(View.GONE);
+                adPrefs.edit().putBoolean("ad_dismissed", true).apply();
+                Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         RelationshipManager.listenFromFirebase(this, details -> {
             cachedDetails = details;
@@ -125,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         });
         
         UIUtils.applyBottomPadding(findViewById(R.id.bottom_navigation));
-        UIUtils.applyBottomPadding(findViewById(R.id.dashboard_scroll));
+        UIUtils.applyBottomPadding(findViewById(R.id.main_scroll));
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             startTracking();
