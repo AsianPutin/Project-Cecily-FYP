@@ -5,10 +5,15 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class PokeWidgetProvider extends AppWidgetProvider {
 
@@ -24,9 +29,6 @@ public class PokeWidgetProvider extends AppWidgetProvider {
     static void updatePokeWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_poke);
 
-        int accentColor = ThemeUtils.getAccentColor(context);
-        views.setInt(R.id.ivPokeHand, "setColorFilter", accentColor);
-
         Intent intent = new Intent(context, PokeWidgetProvider.class);
         intent.setAction(ACTION_SEND_POKE);
 
@@ -35,7 +37,37 @@ public class PokeWidgetProvider extends AppWidgetProvider {
         );
 
         views.setOnClickPendingIntent(R.id.widget_poke_root, pendingIntent);
-        appWidgetManager.updateAppWidget(appWidgetId, views);
+
+        String partnerId = UserManager.getPartnerId(context);
+        if (partnerId.isEmpty()) {
+            int defaultPartnerColor = Color.parseColor("#FF4081");
+            views.setInt(R.id.ivPokeHand, "setColorFilter", defaultPartnerColor);
+            appWidgetManager.updateAppWidget(appWidgetId, views);
+            return;
+        }
+
+        DatabaseReference dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
+        dbRef.child("profiles").child(partnerId).child("accentColor").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String partnerAccentHex = snapshot.getValue(String.class);
+                int partnerAccentColor = Color.parseColor("#FF4081");
+                if (partnerAccentHex != null && !partnerAccentHex.trim().isEmpty()) {
+                    try {
+                        partnerAccentColor = Color.parseColor(partnerAccentHex.trim());
+                    } catch (Exception ignored) {}
+                }
+                views.setInt(R.id.ivPokeHand, "setColorFilter", partnerAccentColor);
+                appWidgetManager.updateAppWidget(appWidgetId, views);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                int defaultPartnerColor = Color.parseColor("#FF4081");
+                views.setInt(R.id.ivPokeHand, "setColorFilter", defaultPartnerColor);
+                appWidgetManager.updateAppWidget(appWidgetId, views);
+            }
+        });
     }
 
     @Override
