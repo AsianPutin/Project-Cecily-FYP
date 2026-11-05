@@ -85,6 +85,17 @@ public class CountryCodePickerHelper {
         return list;
     }
 
+    public static CountryCodeItem findByCode(String code) {
+        if (code == null || code.trim().isEmpty()) return null;
+        String clean = code.trim();
+        for (CountryCodeItem item : getGlobalCountryList()) {
+            if (item.code.equalsIgnoreCase(clean)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public static CountryCodeItem detectUserCountry(Context context) {
         String countryIso = "";
         try {

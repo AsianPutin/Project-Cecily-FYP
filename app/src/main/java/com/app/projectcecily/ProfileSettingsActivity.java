@@ -128,7 +128,12 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
                     if (countryCode != null && !countryCode.isEmpty() && btnSelectCountryCode != null) {
                         selectedCountryCodeStr = countryCode;
-                        btnSelectCountryCode.setText(countryCode);
+                        CountryCodeItem item = CountryCodePickerHelper.findByCode(countryCode);
+                        if (item != null) {
+                            btnSelectCountryCode.setText(item.flagEmoji + " " + item.code);
+                        } else {
+                            btnSelectCountryCode.setText(countryCode);
+                        }
                         if (etProfilePhoneNumber != null) {
                             etProfilePhoneNumber.setEnabled(true);
                             etProfilePhoneNumber.setAlpha(1.0f);
