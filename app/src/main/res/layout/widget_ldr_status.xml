@@ -19,7 +19,7 @@
         android:textSize="15sp"
         android:textStyle="bold" />
 
-    <!-- Middle Row: My Avatar, Dotted Heart Line, Partner Avatar -->
+    <!-- Middle Row: My Avatar, Dual Color Dotted Line, Partner Avatar -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,12 +37,30 @@
             android:src="@drawable/ic_blank_user" />
 
         <TextView
-            android:id="@+id/tvWidgetDottedLine"
+            android:id="@+id/tvLeftDottedLine"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="6dp"
-            android:text="------- 💕 -------"
+            android:layout_marginStart="4dp"
+            android:text="------"
+            android:textColor="#25D366"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvCenterHearts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:text="💕"
+            android:textColor="#FF4081"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvRightDottedLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="------"
             android:textColor="#FF4081"
             android:textSize="11sp" />
 

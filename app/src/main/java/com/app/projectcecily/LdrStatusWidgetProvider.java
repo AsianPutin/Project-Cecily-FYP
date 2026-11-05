@@ -16,10 +16,8 @@ import android.graphics.Rect;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.text.Spannable;
-import android.text.SpannableString;
+import android.text.Html;
 import android.text.format.DateFormat;
-import android.text.style.ForegroundColorSpan;
 import android.util.Base64;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
@@ -63,6 +61,9 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
             return;
         }
 
+        int userAccentColor = ThemeUtils.getAccentColor(context);
+        views.setTextColor(R.id.tvLeftDottedLine, userAccentColor);
+
         DatabaseReference dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
         // Load User Profile (Photo & Accent)
@@ -76,8 +77,6 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                         views.setImageViewBitmap(R.id.ivWidgetMyAvatar, myBitmap);
                     }
                 }
-
-                int userAccentColor = ThemeUtils.getAccentColor(context);
 
                 // Load Partner Profile (Photo, TimeZone, Accent)
                 dbRef.child("profiles").child(partnerId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -101,6 +100,7 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                         }
 
                         final int finalPartnerAccentColor = partnerAccentColor;
+                        views.setTextColor(R.id.tvRightDottedLine, finalPartnerAccentColor);
 
                         // Fetch Locations
                         dbRef.child("locations").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -122,7 +122,7 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                                     double km = meters / 1000.0;
 
                                     boolean isTogether = meters < 100;
-                                    CharSequence topLineStr = formatTopLine(context, km, isTogether, userAccentColor);
+                                    CharSequence topLineStr = formatTopLineHtml(context, km, isTogether, userAccentColor);
                                     views.setTextViewText(R.id.tvWidgetTopLine, topLineStr);
 
                                     // Resolve partner city
@@ -141,7 +141,7 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                                         }
                                     } catch (Exception ignored) {}
 
-                                    CharSequence bottomLineStr = formatBottomLine(context, partnerTz, partnerCity, finalPartnerAccentColor);
+                                    CharSequence bottomLineStr = formatBottomLineHtml(context, partnerTz, partnerCity, finalPartnerAccentColor);
                                     views.setTextViewText(R.id.tvWidgetBottomLine, bottomLineStr);
                                 }
 
@@ -165,11 +165,11 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private static CharSequence formatTopLine(Context context, double km, boolean isTogether, int accentColor) {
+    private static CharSequence formatTopLineHtml(Context context, double km, boolean isTogether, int accentColor) {
+        String hexColor = String.format("#%06X", (0xFFFFFF & accentColor));
         if (isTogether) {
-            SpannableString ss = new SpannableString("We're together 💕");
-            ss.setSpan(new ForegroundColorSpan(accentColor), 0, ss.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            return ss;
+            String html = "<font color='" + hexColor + "'>We're together 💕</font>";
+            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
         }
 
         boolean isImperial = UnitUtils.UNIT_IMPERIAL.equals(UnitUtils.getUnitSystem(context));
@@ -182,14 +182,12 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
             amountStr = roundedKm + " km";
         }
 
-        String fullText = amountStr + " apart";
-        SpannableString ss = new SpannableString(fullText);
-        ss.setSpan(new ForegroundColorSpan(accentColor), 0, amountStr.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ss.setSpan(new ForegroundColorSpan(Color.WHITE), amountStr.length(), fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return ss;
+        String html = "<font color='" + hexColor + "'>" + amountStr + "</font> apart";
+        return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
     }
 
-    private static CharSequence formatBottomLine(Context context, String partnerTz, String partnerCity, int partnerAccentColor) {
+    private static CharSequence formatBottomLineHtml(Context context, String partnerTz, String partnerCity, int partnerAccentColor) {
+        String hexColor = String.format("#%06X", (0xFFFFFF & partnerAccentColor));
         String tzId = (partnerTz != null && !partnerTz.trim().isEmpty()) ? partnerTz.trim() : TimeZone.getDefault().getID();
         TimeZone tz = TimeZone.getTimeZone(tzId);
 
@@ -201,19 +199,14 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         String shortTz = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT, Locale.ENGLISH);
         String timePart = timeStr + " (" + shortTz + ")";
 
-        String fullText;
+        String html;
         if (partnerCity != null && !partnerCity.trim().isEmpty()) {
-            fullText = timePart + ", " + partnerCity.trim();
+            html = "<font color='" + hexColor + "'>" + timePart + "</font>, " + partnerCity.trim();
         } else {
-            fullText = timePart;
+            html = "<font color='" + hexColor + "'>" + timePart + "</font>";
         }
 
-        SpannableString ss = new SpannableString(fullText);
-        ss.setSpan(new ForegroundColorSpan(partnerAccentColor), 0, timePart.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        if (fullText.length() > timePart.length()) {
-            ss.setSpan(new ForegroundColorSpan(Color.parseColor("#CCCCCC")), timePart.length(), fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        return ss;
+        return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
     }
 
     private static Bitmap base64ToCircularBitmap(String base64Str) {
