@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         
-        UIUtils.applyBottomPadding(findViewById(R.id.bottom_navigation));
         UIUtils.applyBottomPadding(findViewById(R.id.main_scroll));
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
