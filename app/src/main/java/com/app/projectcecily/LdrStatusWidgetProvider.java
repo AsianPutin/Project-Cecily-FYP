@@ -19,6 +19,7 @@ import android.location.Location;
 import android.text.Html;
 import android.text.format.DateFormat;
 import android.util.Base64;
+import android.view.View;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -128,6 +129,16 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
                                     double km = meters / 1000.0;
 
                                     boolean isTogether = meters < 100;
+
+                                    // Hide dotted lines completely when together!
+                                    if (isTogether) {
+                                        views.setViewVisibility(R.id.tvLeftDottedLine, View.GONE);
+                                        views.setViewVisibility(R.id.tvRightDottedLine, View.GONE);
+                                    } else {
+                                        views.setViewVisibility(R.id.tvLeftDottedLine, View.VISIBLE);
+                                        views.setViewVisibility(R.id.tvRightDottedLine, View.VISIBLE);
+                                    }
+
                                     CharSequence topLineStr = formatTopLineHtml(context, km, isTogether, userAccentColor);
                                     views.setTextViewText(R.id.tvWidgetTopLine, topLineStr);
 
