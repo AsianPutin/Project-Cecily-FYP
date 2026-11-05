@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 public class FlightWorker extends Worker {
 
     private final AviationStackHelper apiHelper = new AviationStackHelper();
-    private final DatabaseReference dbRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("flight_history");
+    private final DatabaseReference rootRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
     public FlightWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -23,14 +23,24 @@ public class FlightWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        // Query shared couple flights node `/flights`
+        rootRef.child("flights").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot userSnap : snapshot.getChildren()) {
-                    for (DataSnapshot flightSnap : userSnap.getChildren()) {
+                for (DataSnapshot pairSnap : snapshot.getChildren()) {
+                    String pairKey = pairSnap.getKey();
+                    if (pairKey == null) continue;
+
+                    for (DataSnapshot flightSnap : pairSnap.getChildren()) {
+                        String flightId = flightSnap.getKey();
+                        if (flightId == null) continue;
+
                         FlightInfo flight = flightSnap.getValue(FlightInfo.class);
-                        if (flight != null && !"LANDED".equals(flight.status)) {
-                            updateFlightStatus(flight);
+                        Long lastCheck = flightSnap.child("lastApiCheckTs").getValue(Long.class);
+                        long lastCheckTs = (lastCheck != null) ? lastCheck : 0L;
+
+                        if (flight != null && !"LANDED".equalsIgnoreCase(flight.status)) {
+                            updateFlightStatus(rootRef.child("flights").child(pairKey).child(flightId), flight, lastCheckTs);
                         }
                     }
                 }
@@ -42,11 +52,16 @@ public class FlightWorker extends Worker {
         return Result.success();
     }
 
-    private void updateFlightStatus(FlightInfo flight) {
+    private void updateFlightStatus(DatabaseReference flightRef, FlightInfo flight, long lastCheckTs) {
         long now = System.currentTimeMillis();
         long diff = flight.depTimeMillis - now;
 
-        if (diff > -12 * 60 * 60 * 1000L && diff <= 3 * 24 * 60 * 60 * 1000L) {
+        // 12-Hour Cache Cooldown Protection: Only check if last check was >= 12 hours ago AND departing within 24 hours
+        if (now - lastCheckTs < 12 * 60 * 60 * 1000L) {
+            return; // Skip API query, cache is still fresh!
+        }
+
+        if (diff > -12 * 60 * 60 * 1000L && diff <= 24 * 60 * 60 * 1000L) {
             String dateYmd = android.text.format.DateFormat.format("yyyy-MM-dd", flight.depTimeMillis).toString();
             apiHelper.getFlightStatus(flight.flightNumber, dateYmd, new AviationStackHelper.FlightCallback() {
                 @Override
@@ -57,24 +72,24 @@ public class FlightWorker extends Worker {
                         JsonObject depObj = data.has("departure") && !data.get("departure").isJsonNull() ? data.getAsJsonObject("departure") : null;
                         JsonObject arrObj = data.has("arrival") && !data.get("arrival").isJsonNull() ? data.getAsJsonObject("arrival") : null;
 
-                        DatabaseReference userFlightRef = dbRef.child(flight.ownerId).child(flight.id);
-                        userFlightRef.child("status").setValue(status);
+                        flightRef.child("status").setValue(status);
+                        flightRef.child("lastApiCheckTs").setValue(now);
 
                         if (depObj != null) {
                             if (depObj.has("terminal") && !depObj.get("terminal").isJsonNull()) {
-                                userFlightRef.child("depTerminal").setValue(depObj.get("terminal").getAsString());
+                                flightRef.child("depTerminal").setValue(depObj.get("terminal").getAsString());
                             }
                             if (depObj.has("gate") && !depObj.get("gate").isJsonNull()) {
-                                userFlightRef.child("depGate").setValue(depObj.get("gate").getAsString());
+                                flightRef.child("depGate").setValue(depObj.get("gate").getAsString());
                             }
                         }
 
                         if (arrObj != null) {
                             if (arrObj.has("terminal") && !arrObj.get("terminal").isJsonNull()) {
-                                userFlightRef.child("arrTerminal").setValue(arrObj.get("terminal").getAsString());
+                                flightRef.child("arrTerminal").setValue(arrObj.get("terminal").getAsString());
                             }
                             if (arrObj.has("gate") && !arrObj.get("gate").isJsonNull()) {
-                                userFlightRef.child("arrGate").setValue(arrObj.get("gate").getAsString());
+                                flightRef.child("arrGate").setValue(arrObj.get("gate").getAsString());
                             }
                         }
                     } catch (Exception ignored) {}
