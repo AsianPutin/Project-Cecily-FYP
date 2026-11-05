@@ -1,7 +1,15 @@
 package com.app.projectcecily;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -9,10 +17,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -26,9 +35,10 @@ import java.util.Set;
 
 public class NotificationSettingsActivity extends AppCompatActivity {
 
-    private static final String PREFS_NAME = "notification_settings";
     private static final String KEY_MY_SCHEDULES = "my_flight_schedules";
     private static final String KEY_PARTNER_SCHEDULES = "partner_flight_schedules";
+    public static final String KEY_CUSTOM_SOUND_URI = "custom_sound_uri";
+    public static final String KEY_CUSTOM_SOUND_NAME = "custom_sound_name";
 
     private SharedPreferences prefs;
 
@@ -36,12 +46,21 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private MaterialSwitch switchPartnerPokes, switchProximityAlerts;
     private MaterialSwitch switchWishlistAlerts, switchSound, switchVibration;
 
+    private TextView tvSelectedSoundName;
+    private Button btnChangeSound;
+    private ImageView btnPreviewSound;
+
     private LinearLayout layoutFlightRemindersSection;
     private LinearLayout layoutMyFlightRemindersContainer;
     private LinearLayout layoutPartnerFlightRemindersContainer;
 
     private final List<String> myFlightSchedules = new ArrayList<>();
     private final List<String> partnerFlightSchedules = new ArrayList<>();
+
+    private ActivityResultLauncher<Intent> systemRingtoneLauncher;
+    private ActivityResultLauncher<Intent> audioFileLauncher;
+    private MediaPlayer mediaPlayer;
+    private boolean isPlayingPreview = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +91,10 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchSound = findViewById(R.id.switchSound);
         switchVibration = findViewById(R.id.switchVibration);
 
+        tvSelectedSoundName = findViewById(R.id.tvSelectedSoundName);
+        btnChangeSound = findViewById(R.id.btnChangeSound);
+        btnPreviewSound = findViewById(R.id.btnPreviewSound);
+
         layoutFlightRemindersSection = findViewById(R.id.layoutFlightRemindersSection);
         layoutMyFlightRemindersContainer = findViewById(R.id.layoutMyFlightRemindersContainer);
         layoutPartnerFlightRemindersContainer = findViewById(R.id.layoutPartnerFlightRemindersContainer);
@@ -86,10 +109,179 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             btnAddPartnerNotification.setOnClickListener(v -> showAddPresetDialog(false));
         }
 
+        if (btnChangeSound != null) {
+            btnChangeSound.setOnClickListener(v -> showSoundChoiceDialog());
+        }
+        if (btnPreviewSound != null) {
+            btnPreviewSound.setOnClickListener(v -> toggleSoundPreview());
+        }
+
+        setupLaunchers();
         loadPreferences();
         setupSwitchListeners();
         applySwitchAccentTints();
         renderFlightSchedules();
+        updateSoundUiSummary();
+    }
+
+    private void setupLaunchers() {
+        // 1. System Ringtone / Sound Picker Launcher
+        systemRingtoneLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                    if (uri != null) {
+                        Ringtone ringtone = RingtoneManager.getRingtone(this, uri);
+                        String name = (ringtone != null) ? ringtone.getTitle(this) : "System Sound";
+                        saveCustomSound(uri.toString(), name);
+                    }
+                }
+            }
+        );
+
+        // 2. Music / File Manager App Launcher (audio/*)
+        audioFileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri audioUri = result.getData().getData();
+                    if (audioUri != null) {
+                        try {
+                            getContentResolver().takePersistableUriPermission(audioUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        } catch (Exception ignored) {}
+
+                        String fileName = resolveFileNameFromUri(audioUri);
+                        saveCustomSound(audioUri.toString(), fileName);
+                    }
+                }
+            }
+        );
+    }
+
+    private void showSoundChoiceDialog() {
+        String[] choices = {
+            "1. Default System Sound",
+            "2. System Ringtone & Sound App",
+            "3. Music / Audio File Manager App"
+        };
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Select Notification Sound")
+                .setItems(choices, (dialog, which) -> {
+                    if (which == 0) {
+                        // Reset to Default System Tone
+                        saveCustomSound("", "Default System Sound");
+                    } else if (which == 1) {
+                        // Open System Ringtone Picker
+                        Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+                        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select Notification Sound");
+                        String currentUriStr = prefs.getString(KEY_CUSTOM_SOUND_URI, "");
+                        if (!currentUriStr.isEmpty()) {
+                            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(currentUriStr));
+                        }
+                        systemRingtoneLauncher.launch(intent);
+                    } else if (which == 2) {
+                        // Open File / Music App Chooser
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("audio/*");
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        audioFileLauncher.launch(Intent.createChooser(intent, "Select Audio File / Music App"));
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveCustomSound(String uriStr, String name) {
+        prefs.edit()
+                .putString(KEY_CUSTOM_SOUND_URI, uriStr)
+                .putString(KEY_CUSTOM_SOUND_NAME, name)
+                .apply();
+
+        updateSoundUiSummary();
+        stopPreviewPlayer();
+        Toast.makeText(this, "Notification tone updated: " + name, Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateSoundUiSummary() {
+        String name = prefs.getString(KEY_CUSTOM_SOUND_NAME, "Default System Sound");
+        if (tvSelectedSoundName != null) {
+            tvSelectedSoundName.setText(name);
+        }
+    }
+
+    private void toggleSoundPreview() {
+        if (isPlayingPreview) {
+            stopPreviewPlayer();
+            return;
+        }
+
+        String uriStr = prefs.getString(KEY_CUSTOM_SOUND_URI, "");
+        Uri soundUri;
+        if (uriStr.isEmpty()) {
+            soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        } else {
+            soundUri = Uri.parse(uriStr);
+        }
+
+        try {
+            stopPreviewPlayer();
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(this, soundUri);
+            mediaPlayer.prepare();
+            mediaPlayer.setOnCompletionListener(mp -> stopPreviewPlayer());
+            mediaPlayer.start();
+
+            isPlayingPreview = true;
+            if (btnPreviewSound != null) {
+                btnPreviewSound.setImageResource(android.R.drawable.ic_media_pause);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Unable to play audio preview", Toast.LENGTH_SHORT).show();
+            stopPreviewPlayer();
+        }
+    }
+
+    private void stopPreviewPlayer() {
+        if (mediaPlayer != null) {
+            try {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+                mediaPlayer.release();
+            } catch (Exception ignored) {}
+            mediaPlayer = null;
+        }
+        isPlayingPreview = false;
+        if (btnPreviewSound != null) {
+            btnPreviewSound.setImageResource(android.R.drawable.ic_media_play);
+        }
+    }
+
+    private String resolveFileNameFromUri(Uri uri) {
+        String result = null;
+        if ("content".equals(uri.getScheme())) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index >= 0) {
+                        result = cursor.getString(index);
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        if (result == null) {
+            result = uri.getPath();
+            if (result != null) {
+                int cut = result.lastIndexOf('/');
+                if (cut != -1) {
+                    result = result.substring(cut + 1);
+                }
+            }
+        }
+        return result != null ? result : "Custom Audio File";
     }
 
     private void applySwitchAccentTints() {
@@ -310,6 +502,12 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchWishlistAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("wishlist_alerts", isChecked).apply());
         switchSound.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("sound_enabled", isChecked).apply());
         switchVibration.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("vibration_enabled", isChecked).apply());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopPreviewPlayer();
     }
 
     @Override

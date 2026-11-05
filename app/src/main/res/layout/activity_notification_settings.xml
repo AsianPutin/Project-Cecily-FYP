@@ -211,7 +211,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section 3: Wishlist & Feedback -->
+            <!-- Section 3: Alert Preferences & Sound Chooser -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -249,7 +249,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:checked="true"
-                        android:text="Notification Sound"
+                        android:text="Notification Sound Enabled"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
 
@@ -262,6 +262,66 @@
                         android:text="Vibration Feedback"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="#22FFFFFF" />
+
+                    <!-- Custom Notification Sound Selector Row -->
+                    <LinearLayout
+                        android:id="@+id/layoutSelectNotificationSound"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Notification Tone"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvSelectedSoundName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Default System Sound"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/btnPreviewSound"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Play preview"
+                            android:padding="6dp"
+                            android:src="@android:drawable/ic_media_play"
+                            app:tint="@color/text_primary" />
+
+                        <Button
+                            android:id="@+id/btnChangeSound"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Choose"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

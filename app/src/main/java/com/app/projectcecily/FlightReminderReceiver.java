@@ -20,12 +20,23 @@ public class FlightReminderReceiver extends BroadcastReceiver {
 
         createNotificationChannel(context);
 
+        String userId = UserManager.getUserId(context);
+        String prefsName = "notification_settings_" + (userId.isEmpty() ? "local" : userId);
+        android.content.SharedPreferences prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        String soundUriStr = prefs.getString(NotificationSettingsActivity.KEY_CUSTOM_SOUND_URI, "");
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("Flight Reminder: " + flightNum)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
+
+        if (soundUriStr != null && !soundUriStr.isEmpty()) {
+            builder.setSound(android.net.Uri.parse(soundUriStr));
+        } else {
+            builder.setSound(android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION));
+        }
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {

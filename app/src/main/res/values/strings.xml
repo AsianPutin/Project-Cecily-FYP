@@ -12,4 +12,21 @@
     <string name="match_details_template">You both want to go for:\n%1$s</string>
     <string name="no_more_options">No More Options!</string>
     <string name="check_back_later">Check back with your partner later.</string>
+
+    <string-array name="country_codes_array">
+        <item>Select Country Code</item>
+        <item>+60 (Malaysia)</item>
+        <item>+1 (US / Canada)</item>
+        <item>+65 (Singapore)</item>
+        <item>+62 (Indonesia)</item>
+        <item>+44 (UK)</item>
+        <item>+61 (Australia)</item>
+        <item>+81 (Japan)</item>
+        <item>+82 (South Korea)</item>
+        <item>+86 (China)</item>
+        <item>+91 (India)</item>
+        <item>+63 (Philippines)</item>
+        <item>+66 (Thailand)</item>
+        <item>+84 (Vietnam)</item>
+    </string-array>
 </resources>

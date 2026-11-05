@@ -19,7 +19,8 @@ import java.util.Calendar;
 
 public class ProfileSettingsActivity extends AppCompatActivity {
 
-    private TextInputEditText etUsername, etEmail;
+    private TextInputEditText etUsername, etEmail, etProfilePhoneNumber;
+    private android.widget.Spinner spinnerProfileCountryCode;
     private TextInputEditText etOldPassword, etNewPassword, etConfirmNewPassword;
 
     private TextInputEditText etMyName, etMyBirthday;
@@ -58,10 +59,33 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
         etUsername = findViewById(R.id.etUsername);
         etEmail = findViewById(R.id.etEmail);
+        spinnerProfileCountryCode = findViewById(R.id.spinnerProfileCountryCode);
+        etProfilePhoneNumber = findViewById(R.id.etProfilePhoneNumber);
         etOldPassword = findViewById(R.id.etOldPassword);
         etNewPassword = findViewById(R.id.etNewPassword);
         etConfirmNewPassword = findViewById(R.id.etConfirmNewPassword);
         Button btnSaveSecurity = findViewById(R.id.btnSaveSecurity);
+
+        if (spinnerProfileCountryCode != null && etProfilePhoneNumber != null) {
+            spinnerProfileCountryCode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    if (position > 0) {
+                        etProfilePhoneNumber.setEnabled(true);
+                        etProfilePhoneNumber.setAlpha(1.0f);
+                    } else {
+                        etProfilePhoneNumber.setEnabled(false);
+                        etProfilePhoneNumber.setAlpha(0.5f);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                    etProfilePhoneNumber.setEnabled(false);
+                    etProfilePhoneNumber.setAlpha(0.5f);
+                }
+            });
+        }
 
         etMyName = findViewById(R.id.etMyName);
         toggleMyGender = findViewById(R.id.toggleMyGender);
@@ -78,6 +102,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         btnSaveSecurity.setOnClickListener(v -> updateSecurityCredentials());
         btnSaveProfileDetails.setOnClickListener(v -> saveProfileDetails());
     }
+
 
     private void setupDatePickers() {
         etMyBirthday.setOnClickListener(v -> new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
@@ -99,10 +124,26 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                     String username = snapshot.child("username").getValue(String.class);
                     String email = snapshot.child("email").getValue(String.class);
                     String name = snapshot.child("name").getValue(String.class);
+                    String countryCode = snapshot.child("countryCode").getValue(String.class);
+                    String phoneNumber = snapshot.child("phoneNumber").getValue(String.class);
 
                     if (username != null) etUsername.setText(username);
                     if (email != null) etEmail.setText(email);
                     if (name != null) etMyName.setText(name);
+
+                    if (countryCode != null && !countryCode.isEmpty() && spinnerProfileCountryCode != null) {
+                        String[] array = getResources().getStringArray(R.array.country_codes_array);
+                        for (int i = 0; i < array.length; i++) {
+                            if (array[i].startsWith(countryCode)) {
+                                spinnerProfileCountryCode.setSelection(i);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (phoneNumber != null && etProfilePhoneNumber != null) {
+                        etProfilePhoneNumber.setText(phoneNumber);
+                    }
                 }
             }
             @Override
@@ -206,6 +247,13 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
                 if (!newEmail.isEmpty()) {
                     dbRef.child("profiles").child(userId).child("email").setValue(newEmail.toLowerCase());
+                }
+
+                if (spinnerProfileCountryCode != null && spinnerProfileCountryCode.getSelectedItemPosition() > 0) {
+                    String code = spinnerProfileCountryCode.getSelectedItem().toString().split(" ")[0];
+                    String phone = etProfilePhoneNumber != null ? etProfilePhoneNumber.getText().toString().trim() : "";
+                    dbRef.child("profiles").child(userId).child("countryCode").setValue(code);
+                    dbRef.child("profiles").child(userId).child("phoneNumber").setValue(phone);
                 }
 
                 Toast.makeText(ProfileSettingsActivity.this, "Security credentials updated!", Toast.LENGTH_SHORT).show();

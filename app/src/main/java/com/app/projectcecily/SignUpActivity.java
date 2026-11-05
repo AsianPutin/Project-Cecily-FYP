@@ -29,7 +29,8 @@ import java.util.Locale;
 public class SignUpActivity extends AppCompatActivity {
 
     private ImageView ivProfilePic;
-    private EditText etName, etUsername, etEmail, etPassword, etBirthday;
+    private EditText etName, etUsername, etEmail, etPhoneNumber, etPassword, etBirthday;
+    private android.widget.Spinner spinnerCountryCode;
     private MaterialButtonToggleGroup genderToggleGroup;
     private Button btnCreateAccount, btnBackToLogin;
 
@@ -61,11 +62,35 @@ public class SignUpActivity extends AppCompatActivity {
         etName = findViewById(R.id.etSignUpName);
         etUsername = findViewById(R.id.etSignUpUsername);
         etEmail = findViewById(R.id.etSignUpEmail);
+        spinnerCountryCode = findViewById(R.id.spinnerSignUpCountryCode);
+        etPhoneNumber = findViewById(R.id.etSignUpPhoneNumber);
         etPassword = findViewById(R.id.etSignUpPassword);
         etBirthday = findViewById(R.id.etSignUpBirthday);
         genderToggleGroup = findViewById(R.id.genderToggleGroup);
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
         btnBackToLogin = findViewById(R.id.btnBackToLogin);
+
+        if (spinnerCountryCode != null && etPhoneNumber != null) {
+            spinnerCountryCode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    if (position > 0) {
+                        etPhoneNumber.setEnabled(true);
+                        etPhoneNumber.setAlpha(1.0f);
+                    } else {
+                        etPhoneNumber.setEnabled(false);
+                        etPhoneNumber.setAlpha(0.5f);
+                        etPhoneNumber.setText("");
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                    etPhoneNumber.setEnabled(false);
+                    etPhoneNumber.setAlpha(0.5f);
+                }
+            });
+        }
 
         setupPhotoPickerLaunchers();
 
@@ -86,6 +111,7 @@ public class SignUpActivity extends AppCompatActivity {
         btnCreateAccount.setOnClickListener(v -> handleSignUp());
         btnBackToLogin.setOnClickListener(v -> finish());
     }
+
 
     @Override
     protected void onResume() {
@@ -202,6 +228,11 @@ public class SignUpActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         String birthday = etBirthday.getText().toString().trim();
 
+        String selectedCountryCode = (spinnerCountryCode != null && spinnerCountryCode.getSelectedItemPosition() > 0) ?
+                spinnerCountryCode.getSelectedItem().toString().split(" ")[0] : "";
+        String phoneNumber = (etPhoneNumber != null && etPhoneNumber.isEnabled()) ?
+                etPhoneNumber.getText().toString().trim() : "";
+
         if (name.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill in Name, Username, Email, and Password.", Toast.LENGTH_SHORT).show();
             return;
@@ -210,7 +241,7 @@ public class SignUpActivity extends AppCompatActivity {
         btnCreateAccount.setEnabled(false);
         btnCreateAccount.setText("Creating Account...");
 
-        UserManager.signUp(this, name, username, email, password, selectedGender, birthday, photoBase64, new UserManager.AuthCallback() {
+        UserManager.signUp(this, name, username, email, selectedCountryCode, phoneNumber, password, selectedGender, birthday, photoBase64, new UserManager.AuthCallback() {
             @Override
             public void onSuccess(String message) {
                 Toast.makeText(SignUpActivity.this, message, Toast.LENGTH_SHORT).show();

@@ -73,13 +73,13 @@ public class UserManager {
                 .edit().putString(KEY_USER_NAME, name).apply();
     }
 
-    public static void login(Context context, String usernameOrEmail, String password, AuthCallback callback) {
-        if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            callback.onError("Please enter both username/email and password.");
+    public static void login(Context context, String usernameOrEmailOrPhone, String password, AuthCallback callback) {
+        if (usernameOrEmailOrPhone == null || usernameOrEmailOrPhone.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            callback.onError("Please enter your username, email, or phone number and password.");
             return;
         }
 
-        String input = usernameOrEmail.trim().toLowerCase();
+        String input = usernameOrEmailOrPhone.trim().toLowerCase();
         DatabaseReference db = FirebaseDatabase.getInstance(FIREBASE_URL).getReference("profiles");
 
         db.get().addOnSuccessListener(snapshot -> {
@@ -89,11 +89,16 @@ public class UserManager {
                     String dbEmail = ds.child("email").getValue(String.class);
                     String dbUsername = ds.child("username").getValue(String.class);
                     String dbPassword = ds.child("password").getValue(String.class);
+                    String dbPhone = ds.child("phoneNumber").getValue(String.class);
+                    String dbCountryCode = ds.child("countryCode").getValue(String.class);
+                    String dbFullPhone = (dbCountryCode != null ? dbCountryCode : "") + (dbPhone != null ? dbPhone : "");
 
                     boolean emailMatch = dbEmail != null && dbEmail.trim().toLowerCase().equals(input);
                     boolean usernameMatch = dbUsername != null && dbUsername.trim().toLowerCase().equals(input);
+                    boolean phoneMatch = (dbPhone != null && dbPhone.trim().equalsIgnoreCase(input)) ||
+                                         (dbFullPhone != null && dbFullPhone.trim().equalsIgnoreCase(input));
 
-                    if ((emailMatch || usernameMatch) && password.equals(dbPassword)) {
+                    if ((emailMatch || usernameMatch || phoneMatch) && password.equals(dbPassword)) {
                         found = true;
                         String uId = ds.getKey();
                         String name = ds.child("name").getValue(String.class);
@@ -118,12 +123,12 @@ public class UserManager {
                 }
             }
             if (!found) {
-                callback.onError("Invalid username/email or password.");
+                callback.onError("Invalid username/email/phone or password.");
             }
         }).addOnFailureListener(e -> callback.onError("Login failed: " + e.getMessage()));
     }
 
-    public static void signUp(Context context, String name, String username, String email, String password, String gender, String birthday, String photoBase64, AuthCallback callback) {
+    public static void signUp(Context context, String name, String username, String email, String countryCode, String phoneNumber, String password, String gender, String birthday, String photoBase64, AuthCallback callback) {
         if (name == null || name.trim().isEmpty() ||
             username == null || username.trim().isEmpty() ||
             email == null || email.trim().isEmpty() ||
@@ -158,6 +163,8 @@ public class UserManager {
             userMap.put("name", name.trim());
             userMap.put("username", cleanUsername);
             userMap.put("email", cleanEmail);
+            userMap.put("countryCode", countryCode != null ? countryCode : "");
+            userMap.put("phoneNumber", phoneNumber != null ? phoneNumber.trim() : "");
             userMap.put("password", password);
             userMap.put("gender", gender != null ? gender : "Prefer not to say");
             userMap.put("birthday", birthday != null ? birthday : "");
@@ -188,6 +195,7 @@ public class UserManager {
 
         }).addOnFailureListener(e -> callback.onError("Sign up failed: " + e.getMessage()));
     }
+
 
     public static void logout(Context context) {
         SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
