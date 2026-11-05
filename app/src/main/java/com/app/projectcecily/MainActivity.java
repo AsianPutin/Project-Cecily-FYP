@@ -8,9 +8,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -43,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private android.os.Handler adHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable adRunnable;
     private int currentAdIndex = 0;
+    private final List<String> randomizedAdsList = new ArrayList<>();
+    private GestureDetector adGestureDetector;
     private static final String[] MOCK_ADS = new String[]{
         "Sponsored: Explore Couple Travel Deals & Flights ✈️",
         "Sponsored: Send Secret Gifts & Flowers Overseas 💐",
@@ -446,6 +454,15 @@ public class MainActivity extends AppCompatActivity {
         View btnDismissAd = findViewById(R.id.btnDismissAd);
         TextView tvAdText = findViewById(R.id.tvAdBannerText);
 
+        if (randomizedAdsList.isEmpty()) {
+            randomizedAdsList.addAll(Arrays.asList(MOCK_ADS));
+            Collections.shuffle(randomizedAdsList);
+        }
+
+        if (tvAdText != null && !randomizedAdsList.isEmpty()) {
+            tvAdText.setText(randomizedAdsList.get(0));
+        }
+
         if (btnDismissAd != null && cardBannerAd != null) {
             btnDismissAd.setOnClickListener(v -> {
                 if (adHandler != null && adRunnable != null) {
@@ -457,34 +474,87 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (tvAdText != null && cardBannerAd != null && cardBannerAd.getVisibility() == View.VISIBLE) {
-            adRunnable = new Runnable() {
+            adGestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+                private static final int SWIPE_THRESHOLD = 50;
+                private static final int SWIPE_VELOCITY_THRESHOLD = 50;
+
                 @Override
-                public void run() {
-                    currentAdIndex = (currentAdIndex + 1) % MOCK_ADS.length;
-                    String nextAdText = MOCK_ADS[currentAdIndex];
-
-                    // Conveyor belt slide animation out to left
-                    tvAdText.animate()
-                            .translationX(-tvAdText.getWidth())
-                            .alpha(0f)
-                            .setDuration(400)
-                            .withEndAction(() -> {
-                                tvAdText.setText(nextAdText);
-                                tvAdText.setTranslationX(tvAdText.getWidth());
-                                // Conveyor belt slide animation in from right
-                                tvAdText.animate()
-                                        .translationX(0f)
-                                        .alpha(1f)
-                                        .setDuration(400)
-                                        .start();
-                            })
-                            .start();
-
-                    adHandler.postDelayed(this, 3500);
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    if (e1 == null || e2 == null) return false;
+                    float diffX = e2.getX() - e1.getX();
+                    float diffY = e2.getY() - e1.getY();
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            showNextAd(tvAdText, true);
+                        } else {
+                            showPreviousAd(tvAdText);
+                        }
+                        resetAdTimer(tvAdText);
+                        return true;
+                    }
+                    return false;
                 }
-            };
-            adHandler.postDelayed(adRunnable, 3500);
+            });
+
+            cardBannerAd.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    v.performClick();
+                }
+                if (adGestureDetector != null) {
+                    adGestureDetector.onTouchEvent(event);
+                }
+                return true;
+            });
+
+            resetAdTimer(tvAdText);
         }
+    }
+
+    private void resetAdTimer(TextView tvAdText) {
+        if (adHandler != null) {
+            if (adRunnable != null) {
+                adHandler.removeCallbacks(adRunnable);
+            }
+            adRunnable = () -> {
+                showNextAd(tvAdText, true);
+                resetAdTimer(tvAdText);
+            };
+            adHandler.postDelayed(adRunnable, 5000);
+        }
+    }
+
+    private void showNextAd(TextView tvAdText, boolean animateLeft) {
+        if (randomizedAdsList.isEmpty()) return;
+        currentAdIndex = (currentAdIndex + 1) % randomizedAdsList.size();
+        String nextText = randomizedAdsList.get(currentAdIndex);
+        animateAdTextChange(tvAdText, nextText, animateLeft);
+    }
+
+    private void showPreviousAd(TextView tvAdText) {
+        if (randomizedAdsList.isEmpty()) return;
+        currentAdIndex = (currentAdIndex - 1 + randomizedAdsList.size()) % randomizedAdsList.size();
+        String prevText = randomizedAdsList.get(currentAdIndex);
+        animateAdTextChange(tvAdText, prevText, false);
+    }
+
+    private void animateAdTextChange(TextView tvAdText, String newText, boolean animateLeft) {
+        float exitX = animateLeft ? -tvAdText.getWidth() : tvAdText.getWidth();
+        float enterX = animateLeft ? tvAdText.getWidth() : -tvAdText.getWidth();
+
+        tvAdText.animate()
+                .translationX(exitX)
+                .alpha(0f)
+                .setDuration(350)
+                .withEndAction(() -> {
+                    tvAdText.setText(newText);
+                    tvAdText.setTranslationX(enterX);
+                    tvAdText.animate()
+                            .translationX(0f)
+                            .alpha(1f)
+                            .setDuration(350)
+                            .start();
+                })
+                .start();
     }
 
     @Override
