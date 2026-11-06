@@ -1,5 +1,7 @@
 package com.app.projectcecily;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,17 +32,31 @@ public class ContributeActivity extends AppCompatActivity {
         View btnLifetime = findViewById(R.id.btnSubLifetime);
 
         if (btnKofi != null) {
-            btnKofi.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
-                this, 300, "Developer Ko-fi Support ($3.00 USD)", new StripePaymentHelper.StripePaymentCallback() {
-                    @Override
-                    public void onSuccess(String paymentIntentId, long amountCents) {
-                        Toast.makeText(ContributeActivity.this, "☕ Thank you for supporting the developer!", Toast.LENGTH_LONG).show();
-                    }
+            btnKofi.setOnClickListener(v -> {
+                String[] options = {"Open Official Ko-fi Page ☕", "Test $3.00 Stripe Payment 💳"};
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setTitle("Support on Ko-fi")
+                        .setItems(options, (dialog, which) -> {
+                            if (which == 0) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://ko-fi.com/O8O02A5TXU"));
+                                startActivity(browserIntent);
+                            } else {
+                                StripePaymentHelper.processMockPayment(
+                                        this, 300, "Developer Ko-fi Support ($3.00 USD)", new StripePaymentHelper.StripePaymentCallback() {
+                                            @Override
+                                            public void onSuccess(String paymentIntentId, long amountCents) {
+                                                Toast.makeText(ContributeActivity.this, "☕ Thank you for supporting the developer!", Toast.LENGTH_LONG).show();
+                                            }
 
-                    @Override
-                    public void onFailure(String errorMessage) {}
-                }
-            ));
+                                            @Override
+                                            public void onFailure(String errorMessage) {}
+                                        }
+                                );
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
         }
 
         if (btnMonthly != null) {
