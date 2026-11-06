@@ -211,6 +211,13 @@ public class AccountActivity extends AppCompatActivity {
 
         view.findViewById(R.id.btnCloseFullImage).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            );
+        }
     }
 
     private void showCropEditorDialog(Bitmap rawBitmap) {
