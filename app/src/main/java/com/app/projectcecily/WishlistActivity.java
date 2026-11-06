@@ -123,7 +123,51 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
 
+        setupSwipeGesture();
         listenForWishlist();
+    }
+
+    private void setupSwipeGesture() {
+        android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 80;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 80;
+
+            @Override
+            public boolean onFling(android.view.MotionEvent e1, android.view.MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        MaterialButtonToggleGroup tabToggle = findViewById(R.id.wishlistTabToggle);
+                        if (diffX < 0) {
+                            if (showingMyWishlist && tabToggle != null) {
+                                tabToggle.check(R.id.btnPartnerWishlistTab);
+                                return true;
+                            }
+                        } else {
+                            if (!showingMyWishlist && tabToggle != null) {
+                                tabToggle.check(R.id.btnMyWishlistTab);
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
+        RecyclerView rv = findViewById(R.id.rvWishlist);
+        if (rv != null) {
+            rv.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+                @Override
+                public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull android.view.MotionEvent e) {
+                    gestureDetector.onTouchEvent(e);
+                    return false;
+                }
+            });
+        }
     }
 
     private void listenForWishlist() {
