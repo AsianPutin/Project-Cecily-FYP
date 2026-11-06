@@ -425,9 +425,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private void loadPreferences() {
         boolean remindersEnabled = prefs.getBoolean("flight_reminders", true);
         switchFlightReminders.setChecked(remindersEnabled);
-        if (layoutFlightRemindersSection != null) {
-            layoutFlightRemindersSection.setVisibility(remindersEnabled ? View.VISIBLE : View.GONE);
-        }
+        updateFlightRemindersState(remindersEnabled);
 
         switchLandingAlerts.setChecked(prefs.getBoolean("landing_alerts", true));
         switchPartnerPokes.setChecked(prefs.getBoolean("partner_pokes", true));
@@ -453,6 +451,24 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         Set<String> savedPartner = prefs.getStringSet(KEY_PARTNER_SCHEDULES, defaultPartner);
         partnerFlightSchedules.clear();
         partnerFlightSchedules.addAll(savedPartner);
+    }
+
+    private void updateFlightRemindersState(boolean enabled) {
+        if (layoutFlightRemindersSection != null) {
+            layoutFlightRemindersSection.setVisibility(View.VISIBLE);
+            layoutFlightRemindersSection.setEnabled(enabled);
+            layoutFlightRemindersSection.setAlpha(enabled ? 1.0f : 0.4f);
+        }
+        View btnAddMy = findViewById(R.id.btnAddMyNotification);
+        View btnAddPartner = findViewById(R.id.btnAddPartnerNotification);
+        if (btnAddMy != null) {
+            btnAddMy.setEnabled(enabled);
+            btnAddMy.setAlpha(enabled ? 1.0f : 0.4f);
+        }
+        if (btnAddPartner != null) {
+            btnAddPartner.setEnabled(enabled);
+            btnAddPartner.setAlpha(enabled ? 1.0f : 0.4f);
+        }
     }
 
     private void updateSoundEnabledState(boolean soundEnabled) {
@@ -539,6 +555,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
             final int index = i;
             ivDelete.setOnClickListener(v -> {
+                if (switchFlightReminders != null && !switchFlightReminders.isChecked()) return;
                 schedules.remove(index);
                 saveSchedules(isMy);
             });
@@ -552,6 +569,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void showAddPresetDialog(boolean isMy) {
+        if (switchFlightReminders != null && !switchFlightReminders.isChecked()) return;
         String[] options = {
             "10 minutes before",
             "15 minutes before",
@@ -627,9 +645,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private void setupSwitchListeners() {
         switchFlightReminders.setOnCheckedChangeListener((v, isChecked) -> {
             prefs.edit().putBoolean("flight_reminders", isChecked).apply();
-            if (layoutFlightRemindersSection != null) {
-                layoutFlightRemindersSection.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            }
+            updateFlightRemindersState(isChecked);
         });
         switchLandingAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("landing_alerts", isChecked).apply());
         switchPartnerPokes.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("partner_pokes", isChecked).apply());
