@@ -329,6 +329,19 @@
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
+                        <TextView
+                            android:id="@+id/btnTestMyFlightNotification"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="8dp"
+                            android:text="Test Notification"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
@@ -338,6 +351,7 @@
 
                         <!-- Partner's Flight Reminders Schedule -->
                         <TextView
+                            android:id="@+id/tvPartnerFlightRemindersHeader"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Partner's Flight Reminders"
@@ -361,6 +375,19 @@
                             android:focusable="true"
                             android:padding="8dp"
                             android:text="Add notification"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnTestPartnerFlightNotification"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="8dp"
+                            android:text="Test Notification"
                             android:textColor="@color/text_secondary"
                             android:textSize="13sp"
                             android:textStyle="bold" />

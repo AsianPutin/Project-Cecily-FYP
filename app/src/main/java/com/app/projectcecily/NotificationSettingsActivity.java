@@ -127,12 +127,21 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         TextView btnAddMyNotification = findViewById(R.id.btnAddMyNotification);
         TextView btnAddPartnerNotification = findViewById(R.id.btnAddPartnerNotification);
+        TextView btnTestMyNotif = findViewById(R.id.btnTestMyFlightNotification);
+        TextView btnTestPartnerNotif = findViewById(R.id.btnTestPartnerFlightNotification);
 
         if (btnAddMyNotification != null) {
             btnAddMyNotification.setOnClickListener(v -> showAddPresetDialog(true));
         }
         if (btnAddPartnerNotification != null) {
             btnAddPartnerNotification.setOnClickListener(v -> showAddPresetDialog(false));
+        }
+
+        if (btnTestMyNotif != null) {
+            btnTestMyNotif.setOnClickListener(v -> sendTestFlightNotification(true));
+        }
+        if (btnTestPartnerNotif != null) {
+            btnTestPartnerNotif.setOnClickListener(v -> sendTestFlightNotification(false));
         }
 
         if (btnChangeSound != null) {
@@ -152,6 +161,159 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         renderFlightSchedules();
         updateSoundUiSummary();
         updateVibrationUiSummary();
+        fetchPartnerNameAndHeader();
+    }
+
+    private String cachedPartnerName = "Partner";
+
+    private void fetchPartnerNameAndHeader() {
+        String partnerId = UserManager.getPartnerId(this);
+        if (!partnerId.isEmpty()) {
+            com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .getReference("profiles").child(partnerId).child("name").get().addOnSuccessListener(snapshot -> {
+                String pName = snapshot.getValue(String.class);
+                if (pName != null && !pName.isEmpty()) {
+                    cachedPartnerName = pName;
+                    TextView tvHeader = findViewById(R.id.tvPartnerFlightRemindersHeader);
+                    if (tvHeader != null) {
+                        tvHeader.setText(pName + "'s Flight Reminders");
+                    }
+                }
+            });
+        }
+    }
+
+    private void sendTestFlightNotification(boolean isMy) {
+        String userId = UserManager.getUserId(this);
+        String partnerId = UserManager.getPartnerId(this);
+        String pairKey = partnerId.isEmpty() ? userId : (userId.compareTo(partnerId) < 0 ? userId + "_" + partnerId : partnerId + "_" + userId);
+
+        com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("flights").child(pairKey).get().addOnSuccessListener(snapshot -> {
+            FlightInfo selectedFlight = null;
+            long now = System.currentTimeMillis();
+
+            for (com.google.firebase.database.DataSnapshot ds : snapshot.getChildren()) {
+                FlightInfo f = ds.getValue(FlightInfo.class);
+                if (f != null && f.depTimeMillis > now) {
+                    boolean isOwner = f.creatorId != null && f.creatorId.equals(userId);
+                    if (isMy && isOwner) {
+                        if (selectedFlight == null || f.depTimeMillis < selectedFlight.depTimeMillis) {
+                            selectedFlight = f;
+                        }
+                    } else if (!isMy && !isOwner) {
+                        if (selectedFlight == null || f.depTimeMillis < selectedFlight.depTimeMillis) {
+                            selectedFlight = f;
+                        }
+                    }
+                }
+            }
+
+            String title;
+            String message;
+            String subtext;
+
+            if (selectedFlight != null) {
+                String fn = selectedFlight.flightNumber != null ? selectedFlight.flightNumber : "MH2522";
+                String arrCity = selectedFlight.arrCity != null ? selectedFlight.arrCity : "Kuching";
+                long diffMs = selectedFlight.depTimeMillis - now;
+                String timeFormatted = formatDurationHuman(diffMs);
+                String timeOfDay = android.text.format.DateFormat.format("HH:mm", selectedFlight.depTimeMillis).toString();
+
+                if (isMy) {
+                    title = "Flight " + fn + " Reminder ✈️";
+                    message = "Flight " + fn + " to " + arrCity + " departs in " + timeFormatted + " (" + timeOfDay + " MYT).";
+                    subtext = "(This is a test notification)";
+                } else {
+                    title = cachedPartnerName + "'s Flight " + fn + " Reminder ✈️";
+                    message = cachedPartnerName + "'s flight " + fn + " to " + arrCity + " departs in " + timeFormatted + " (" + timeOfDay + " MYT).";
+                    subtext = "(" + cachedPartnerName + " will not receive this notification • This is a test notification)";
+                }
+            } else {
+                if (isMy) {
+                    title = "My Flight Reminder Test ✈️";
+                    message = "No upcoming flights found. Test flight MH2522 departs in 2 hours.";
+                    subtext = "(This is a test notification)";
+                } else {
+                    title = cachedPartnerName + "'s Flight Reminder Test ✈️";
+                    message = cachedPartnerName + " has no upcoming flights. Test flight MH2522 departs in 2 hours.";
+                    subtext = "(" + cachedPartnerName + " will not receive this notification • This is a test notification)";
+                }
+            }
+
+            postTestNotification(title, message, subtext);
+        }).addOnFailureListener(e -> {
+            String title = isMy ? "My Flight Reminder Test ✈️" : cachedPartnerName + "'s Flight Reminder Test ✈️";
+            String message = isMy ? "No upcoming flights found. Test flight MH2522 departs in 2 hours." : cachedPartnerName + " has no upcoming flights. Test flight MH2522 departs in 2 hours.";
+            String subtext = isMy ? "(This is a test notification)" : "(" + cachedPartnerName + " will not receive this notification • This is a test notification)";
+            postTestNotification(title, message, subtext);
+        });
+    }
+
+    private String formatDurationHuman(long diffMs) {
+        long minutes = diffMs / (60 * 1000L);
+        long hours = diffMs / (60 * 60 * 1000L);
+        long days = diffMs / (24 * 60 * 60 * 1000L);
+
+        if (days >= 1) {
+            return days + (days == 1 ? " day" : " days");
+        } else if (hours >= 1) {
+            return hours + (hours == 1 ? " hour" : " hours");
+        } else {
+            return Math.max(1, minutes) + (minutes == 1 ? " minute" : " minutes");
+        }
+    }
+
+    private void postTestNotification(String title, String message, String subtext) {
+        String channelId = "flight_alerts_test_channel";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    channelId,
+                    "Flight Alerts",
+                    android.app.NotificationManager.IMPORTANCE_HIGH
+            );
+            android.app.NotificationManager nm = getSystemService(android.app.NotificationManager.class);
+            if (nm != null) nm.createNotificationChannel(channel);
+        }
+
+        boolean soundEnabled = prefs.getBoolean("sound_enabled", true);
+        boolean vibrationEnabled = prefs.getBoolean("vibration_enabled", true);
+        int vibrationIndex = prefs.getInt(KEY_VIBRATION_PATTERN_INDEX, 0);
+
+        androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setSubText(subtext)
+                .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle().bigText(message + "\n" + subtext))
+                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        if (soundEnabled) {
+            String soundUriStr = prefs.getString(KEY_CUSTOM_SOUND_URI, "");
+            if (soundUriStr != null && !soundUriStr.isEmpty()) {
+                builder.setSound(Uri.parse(soundUriStr));
+            } else {
+                builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+            }
+        } else {
+            builder.setSound(null);
+        }
+
+        if (vibrationEnabled) {
+            if (vibrationIndex >= 0 && vibrationIndex < VIBRATION_PATTERNS.length) {
+                builder.setVibrate(VIBRATION_PATTERNS[vibrationIndex]);
+            }
+        } else {
+            builder.setVibrate(new long[]{0L});
+        }
+
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                nm.notify((int) System.currentTimeMillis(), builder.build());
+            }
+        } catch (Exception ignored) {}
     }
 
     private void setupLaunchers() {
@@ -461,6 +623,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         }
         View btnAddMy = findViewById(R.id.btnAddMyNotification);
         View btnAddPartner = findViewById(R.id.btnAddPartnerNotification);
+        View btnTestMy = findViewById(R.id.btnTestMyFlightNotification);
+        View btnTestPartner = findViewById(R.id.btnTestPartnerFlightNotification);
+
         if (btnAddMy != null) {
             btnAddMy.setEnabled(enabled);
             btnAddMy.setAlpha(enabled ? 1.0f : 0.4f);
@@ -468,6 +633,14 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         if (btnAddPartner != null) {
             btnAddPartner.setEnabled(enabled);
             btnAddPartner.setAlpha(enabled ? 1.0f : 0.4f);
+        }
+        if (btnTestMy != null) {
+            btnTestMy.setEnabled(enabled);
+            btnTestMy.setAlpha(enabled ? 1.0f : 0.4f);
+        }
+        if (btnTestPartner != null) {
+            btnTestPartner.setEnabled(enabled);
+            btnTestPartner.setAlpha(enabled ? 1.0f : 0.4f);
         }
     }
 
