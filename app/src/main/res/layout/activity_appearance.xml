@@ -149,6 +149,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textSize="12sp"
                             android:text="Default" />
 
                         <Button
@@ -157,7 +158,17 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textSize="12sp"
                             android:text="Material You" />
+
+                        <Button
+                            android:id="@+id/btnStyleProfilePic"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="12sp"
+                            android:text="Profile Picture" />
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 </LinearLayout>

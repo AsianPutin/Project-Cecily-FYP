@@ -80,11 +80,72 @@ public class ThemeUtils {
             return Color.parseColor(DEFAULT_ACCENT);
         }
 
+        if ("PROFILE_PIC".equalsIgnoreCase(hex) || "AVATAR".equalsIgnoreCase(hex)) {
+            try {
+                SharedPreferences globalPrefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                String base64Str = globalPrefs.getString("profile_pic_base64", null);
+                if (base64Str != null && !base64Str.isEmpty()) {
+                    String clean = base64Str.contains(",") ? base64Str.split(",")[1] : base64Str;
+                    byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (bmp != null) {
+                        return extractDominantColorFromBitmap(bmp);
+                    }
+                }
+            } catch (Exception ignored) {}
+            return Color.parseColor(DEFAULT_ACCENT);
+        }
+
         try {
             return Color.parseColor(hex);
         } catch (Exception e) {
             return Color.parseColor(DEFAULT_ACCENT);
         }
+    }
+
+    public static int extractDominantColorFromBitmap(android.graphics.Bitmap bitmap) {
+        if (bitmap == null) return Color.parseColor(DEFAULT_ACCENT);
+        try {
+            android.graphics.Bitmap scaled = android.graphics.Bitmap.createScaledBitmap(bitmap, 64, 64, false);
+            int width = scaled.getWidth();
+            int height = scaled.getHeight();
+
+            int redSum = 0, greenSum = 0, blueSum = 0, count = 0;
+            float maxSat = -1f;
+            int vibrantColor = Color.parseColor(DEFAULT_ACCENT);
+
+            for (int x = 0; x < width; x += 2) {
+                for (int y = 0; y < height; y += 2) {
+                    int pixel = scaled.getPixel(x, y);
+                    int alpha = Color.alpha(pixel);
+                    if (alpha < 128) continue;
+
+                    float[] hsv = new float[3];
+                    Color.colorToHSV(pixel, hsv);
+
+                    if (hsv[1] > 0.25f && hsv[2] > 0.3f && hsv[2] < 0.95f) {
+                        if (hsv[1] > maxSat) {
+                            maxSat = hsv[1];
+                            vibrantColor = pixel;
+                        }
+                    }
+
+                    redSum += Color.red(pixel);
+                    greenSum += Color.green(pixel);
+                    blueSum += Color.blue(pixel);
+                    count++;
+                }
+            }
+
+            if (maxSat > 0.25f) {
+                return vibrantColor;
+            }
+
+            if (count > 0) {
+                return Color.rgb(redSum / count, greenSum / count, blueSum / count);
+            }
+        } catch (Exception ignored) {}
+        return Color.parseColor(DEFAULT_ACCENT);
     }
 
     public static String getAccentColorHex(Context context) {

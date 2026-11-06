@@ -130,9 +130,13 @@ public class AppearanceActivity extends AppCompatActivity {
     private void setupColorStyleToggle() {
         String currentHex = ThemeUtils.getAccentColorHex(this);
         boolean isDynamic = "DYNAMIC".equalsIgnoreCase(currentHex);
+        boolean isProfilePic = "PROFILE_PIC".equalsIgnoreCase(currentHex) || "AVATAR".equalsIgnoreCase(currentHex);
 
         if (isDynamic) {
             toggleColorStyle.check(R.id.btnStyleMaterialYou);
+            setGridEnabled(false);
+        } else if (isProfilePic) {
+            toggleColorStyle.check(R.id.btnStyleProfilePic);
             setGridEnabled(false);
         } else {
             toggleColorStyle.check(R.id.btnStyleDefault);
@@ -144,6 +148,12 @@ public class AppearanceActivity extends AppCompatActivity {
             if (checkedId == R.id.btnStyleMaterialYou) {
                 ThemeUtils.saveAccentColor(this, "DYNAMIC");
                 setGridEnabled(false);
+                clearAllCheckmarks();
+                ThemeUtils.applyAccentToActivity(this);
+            } else if (checkedId == R.id.btnStyleProfilePic) {
+                ThemeUtils.saveAccentColor(this, "PROFILE_PIC");
+                setGridEnabled(false);
+                clearAllCheckmarks();
                 ThemeUtils.applyAccentToActivity(this);
             } else {
                 ThemeUtils.saveAccentColor(this, "#25D366");
@@ -326,7 +336,8 @@ public class AppearanceActivity extends AppCompatActivity {
 
     private void updateSelectedAccentUI(String currentHex) {
         boolean isDynamic = "DYNAMIC".equalsIgnoreCase(currentHex);
-        if (isDynamic) {
+        boolean isProfilePic = "PROFILE_PIC".equalsIgnoreCase(currentHex) || "AVATAR".equalsIgnoreCase(currentHex);
+        if (isDynamic || isProfilePic) {
             clearAllCheckmarks();
             return;
         }
