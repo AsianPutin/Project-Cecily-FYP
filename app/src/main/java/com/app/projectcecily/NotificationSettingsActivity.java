@@ -127,8 +127,8 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         TextView btnAddMyNotification = findViewById(R.id.btnAddMyNotification);
         TextView btnAddPartnerNotification = findViewById(R.id.btnAddPartnerNotification);
-        TextView btnTestMyNotif = findViewById(R.id.btnTestMyFlightNotification);
-        TextView btnTestPartnerNotif = findViewById(R.id.btnTestPartnerFlightNotification);
+        Button btnTestMyNotif = findViewById(R.id.btnTestMyFlightNotification);
+        Button btnTestPartnerNotif = findViewById(R.id.btnTestPartnerFlightNotification);
 
         if (btnAddMyNotification != null) {
             btnAddMyNotification.setOnClickListener(v -> showAddPresetDialog(true));
