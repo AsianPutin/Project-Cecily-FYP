@@ -38,7 +38,6 @@ public class StripePaymentHelper {
                 RequestBody formBody = new FormBody.Builder()
                         .add("amount", String.valueOf(amountCents))
                         .add("currency", "usd")
-                        .add("payment_method_types[]", "card")
                         .add("payment_method", "pm_card_visa")
                         .add("confirm", "true")
                         .add("description", description)
