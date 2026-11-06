@@ -247,8 +247,9 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.bottom_navigation);
         if (navView != null) {
             navView.setItemActiveIndicatorEnabled(false);
-            int accentColor = ThemeUtils.getAccentColor(this);
-            android.content.res.ColorStateList colorList = android.content.res.ColorStateList.valueOf(accentColor);
+            boolean isNightMode = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+            int itemColor = isNightMode ? android.graphics.Color.parseColor("#FFFFFF") : android.graphics.Color.parseColor("#212121");
+            android.content.res.ColorStateList colorList = android.content.res.ColorStateList.valueOf(itemColor);
             navView.setItemIconTintList(colorList);
             navView.setItemTextColor(colorList);
         }
