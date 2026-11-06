@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 public class StripePaymentHelper {
 
+    private static final String STRIPE_PUBLISHABLE_KEY = "pk_test_51UXwug9S7cbyBifayZTY0exOJdqCgklHMfbMBmk2flTLBd9WMA5T2SEhOBzCGHLkxZDO1belUfIRCDrL1FY17pI700XEMDz094";
     private static final String STRIPE_SECRET_KEY = "sk_test_51UXwug9S7cbyBifa9KKsToYrQIvCv5Sg60n9b8P4e7CWVJVsMaCU5SqkEj1uIj6vhnlTyFOGRW9dhuOmRzVTTuB9004pk8UFoN";
     private static final String PAYMENT_INTENTS_URL = "https://api.stripe.com/v1/payment_intents";
     private static final OkHttpClient client = new OkHttpClient();
