@@ -160,7 +160,7 @@
                 android:layout_marginTop="10dp"
                 android:text="Notification Settings" />
 
-            <!-- Account Actions (Unpair & Log Out) -->
+            <!-- Account Actions (Contribute, Unpair & Log Out) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -169,10 +169,19 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/btnUnpairPartner"
+                    android:id="@+id/btnContribute"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:text="Contribute" />
+
+                <Button
+                    android:id="@+id/btnUnpairPartner"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_marginHorizontal="6dp"
                     android:layout_weight="1"
                     android:backgroundTint="#FF3B30"
                     android:text="Unpair Partner"

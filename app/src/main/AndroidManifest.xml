@@ -80,6 +80,11 @@
             android:parentActivityName=".AccountActivity" />
 
         <activity
+            android:name=".ContributeActivity"
+            android:exported="false"
+            android:parentActivityName=".AccountActivity" />
+
+        <activity
             android:name=".ProfileSettingsActivity"
             android:exported="false"
             android:parentActivityName=".SettingsActivity" />
