@@ -190,29 +190,46 @@ public class AccountActivity extends AppCompatActivity {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_view_full_image, null);
         ImageView ivBlurBg = view.findViewById(R.id.ivBlurBg);
         ImageView ivFull = view.findViewById(R.id.ivFullImage);
+        View cardHolder = view.findViewById(R.id.cardImageHolder);
 
-        Bitmap srcBitmap = currentProfileBitmap;
-        if (srcBitmap == null) {
-            srcBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
-        }
-
-        if (srcBitmap != null) {
-            ivFull.setImageBitmap(srcBitmap);
-            Bitmap blurred = createBlurredBitmap(srcBitmap, 25);
-            if (blurred != null && ivBlurBg != null) {
-                ivBlurBg.setImageBitmap(blurred);
+        Bitmap blurSrc = null;
+        try {
+            View rootView = getWindow().getDecorView().getRootView();
+            rootView.setDrawingCacheEnabled(true);
+            Bitmap cache = rootView.getDrawingCache();
+            if (cache != null) {
+                blurSrc = Bitmap.createBitmap(cache);
             }
+            rootView.setDrawingCacheEnabled(false);
+        } catch (Exception ignored) {}
+
+        if (blurSrc == null) {
+            blurSrc = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
         }
 
-        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+        Bitmap blurred = createBlurredBitmap(blurSrc, 25);
+        if (blurred != null && ivBlurBg != null) {
+            ivBlurBg.setImageBitmap(blurred);
+        }
+
+        Bitmap crispPic = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
+        if (crispPic != null && ivFull != null) {
+            ivFull.setImageBitmap(crispPic);
+        }
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
                 .setView(view)
-                .setBackground(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
                 .create();
 
-        view.findViewById(R.id.btnCloseFullImage).setOnClickListener(v -> dialog.dismiss());
+        view.setOnClickListener(v -> dialog.dismiss());
+        if (cardHolder != null) {
+            cardHolder.setOnClickListener(v -> {}); // Consume click on image card
+        }
+
         dialog.show();
 
         if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
             dialog.getWindow().setLayout(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT

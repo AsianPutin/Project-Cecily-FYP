@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutBlurRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true">
 
-    <!-- Layer 1: Fullscreen Soft Blurred Profile Picture Background Fill -->
+    <!-- Layer 1: Fullscreen Soft Blurred Screen Background Fill -->
     <ImageView
         android:id="@+id/ivBlurBg"
         android:layout_width="match_parent"
@@ -12,17 +15,20 @@
         android:contentDescription="Blurred Background"
         android:scaleType="centerCrop" />
 
-    <!-- Layer 2: Semi-Transparent Dark Overlay -->
+    <!-- Layer 2: Soft Dark Tint Overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#44000000" />
+        android:background="#33000000" />
 
     <!-- Layer 3: Center Crisp Profile Picture Card with Rounded Corners -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardImageHolder"
         android:layout_width="280dp"
         android:layout_height="280dp"
         android:layout_gravity="center"
+        android:clickable="true"
+        android:focusable="true"
         app:cardCornerRadius="28dp"
         app:cardElevation="16dp"
         app:strokeWidth="0dp">
@@ -35,18 +41,5 @@
             android:scaleType="centerCrop" />
 
     </com.google.android.material.card.MaterialCardView>
-
-    <!-- Layer 4: Floating Close X Button in Top Right -->
-    <ImageButton
-        android:id="@+id/btnCloseFullImage"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="20dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Close"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        app:tint="#FFFFFF" />
 
 </FrameLayout>
