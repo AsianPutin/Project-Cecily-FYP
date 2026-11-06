@@ -72,18 +72,7 @@
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
 
-                    <!-- Row 2: Wishlist Additions & Updates -->
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchWishlistAlerts"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:checked="true"
-                        android:text="Wishlist Additions &amp; Updates"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
-                    <!-- Row 3: Custom Notification Sound Selector Row -->
+                    <!-- Row 2: Custom Notification Sound Selector Row -->
                     <LinearLayout
                         android:id="@+id/layoutSelectNotificationSound"
                         android:layout_width="match_parent"
@@ -144,7 +133,7 @@
                         android:layout_marginBottom="12dp"
                         android:background="#22FFFFFF" />
 
-                    <!-- Row 4 & 5 (BOTTOM): Vibration Feedback Switch & Vibration Pattern Selector -->
+                    <!-- Row 3 & 4 (BOTTOM): Vibration Feedback Switch & Vibration Pattern Selector -->
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switchVibration"
                         android:layout_width="match_parent"
@@ -199,11 +188,66 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section 2 (MIDDLE): Flight Alerts -->
+            <!-- Section 2 (MIDDLE): Partner Activity -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Partner Activity"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchPartnerPokes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:checked="true"
+                        android:text="Partner Pokes &amp; Nudges"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchProximityAlerts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:checked="true"
+                        android:text="Proximity &amp; Location Updates"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchWishlistAlerts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:checked="true"
+                        android:text="Wishlist Additions &amp; Updates"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section 3 (BOTTOM): Flight Alerts -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="16dp"
                 app:strokeWidth="0dp">
@@ -322,51 +366,6 @@
                             android:textStyle="bold" />
 
                     </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Section 3 (BOTTOM): Partner Activity -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Partner Activity"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchPartnerPokes"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:checked="true"
-                        android:text="Partner Pokes &amp; Nudges"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchProximityAlerts"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:checked="true"
-                        android:text="Proximity &amp; Location Updates"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

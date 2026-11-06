@@ -456,10 +456,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void updateSoundEnabledState(boolean soundEnabled) {
-        if (switchWishlistAlerts != null) {
-            switchWishlistAlerts.setEnabled(soundEnabled);
-            switchWishlistAlerts.setAlpha(soundEnabled ? 1.0f : 0.4f);
-        }
         if (layoutSelectNotificationSound != null) {
             layoutSelectNotificationSound.setEnabled(soundEnabled);
             layoutSelectNotificationSound.setAlpha(soundEnabled ? 1.0f : 0.4f);
@@ -472,7 +468,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             btnChangeSound.setEnabled(soundEnabled);
             btnChangeSound.setAlpha(soundEnabled ? 1.0f : 0.4f);
         }
-        // Note: switchVibration and layoutVibrationPattern remain fully active as the exception
     }
 
     private void updateVibrationState(boolean vibrationEnabled) {
