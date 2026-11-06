@@ -54,12 +54,10 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvWishlist"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vpWishlist"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@id/cardBannerAd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
@@ -38,12 +40,12 @@ import java.util.List;
 
 public class WishlistActivity extends AppCompatActivity implements WishlistAdapter.OnItemActionListener {
 
-    private WishlistAdapter adapter;
-    private List<WishlistItem> itemList = new ArrayList<>();
+    private ViewPager2 vpWishlist;
+    private WishlistPagerAdapter pageAdapter;
     private List<WishlistItem> allRawItems = new ArrayList<>();
     private DatabaseReference dbRef;
     private String userId;
-    private boolean showingMyWishlist = true;
+    private boolean isUserTabClicking = true;
 
     private String[] selectedBase64Images = {"", "", ""};
     private ImageView[] slotImageViews = new ImageView[3];
@@ -87,20 +89,33 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
             }
         }
 
+        vpWishlist = findViewById(R.id.vpWishlist);
+        pageAdapter = new WishlistPagerAdapter();
+        vpWishlist.setAdapter(pageAdapter);
+
         MaterialButtonToggleGroup tabToggle = findViewById(R.id.wishlistTabToggle);
         if (tabToggle != null) {
             tabToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-                if (isChecked) {
-                    showingMyWishlist = (checkedId == R.id.btnMyWishlistTab);
-                    filterAndDisplayItems();
+                if (isChecked && isUserTabClicking) {
+                    int targetPage = (checkedId == R.id.btnMyWishlistTab) ? 0 : 1;
+                    if (vpWishlist != null && vpWishlist.getCurrentItem() != targetPage) {
+                        vpWishlist.setCurrentItem(targetPage, true);
+                    }
                 }
             });
         }
 
-        RecyclerView rv = findViewById(R.id.rvWishlist);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new WishlistAdapter(itemList, userId, this);
-        rv.setAdapter(adapter);
+        vpWishlist.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                if (tabToggle != null) {
+                    isUserTabClicking = false;
+                    tabToggle.check(position == 0 ? R.id.btnMyWishlistTab : R.id.btnPartnerWishlistTab);
+                    isUserTabClicking = true;
+                }
+            }
+        });
 
         View fab = findViewById(R.id.fabAddWishlist);
         fab.setOnClickListener(v -> showItemDialog(null));
@@ -121,53 +136,7 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         });
 
         UIUtils.applyBottomMargin(fab);
-        UIUtils.applyBottomPadding(rv);
-
-        setupSwipeGesture();
         listenForWishlist();
-    }
-
-    private void setupSwipeGesture() {
-        android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
-            private static final int SWIPE_THRESHOLD = 80;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 80;
-
-            @Override
-            public boolean onFling(android.view.MotionEvent e1, android.view.MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 == null || e2 == null) return false;
-                float diffX = e2.getX() - e1.getX();
-                float diffY = e2.getY() - e1.getY();
-
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        MaterialButtonToggleGroup tabToggle = findViewById(R.id.wishlistTabToggle);
-                        if (diffX < 0) {
-                            if (showingMyWishlist && tabToggle != null) {
-                                tabToggle.check(R.id.btnPartnerWishlistTab);
-                                return true;
-                            }
-                        } else {
-                            if (!showingMyWishlist && tabToggle != null) {
-                                tabToggle.check(R.id.btnMyWishlistTab);
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-        });
-
-        RecyclerView rv = findViewById(R.id.rvWishlist);
-        if (rv != null) {
-            rv.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
-                @Override
-                public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull android.view.MotionEvent e) {
-                    gestureDetector.onTouchEvent(e);
-                    return false;
-                }
-            });
-        }
     }
 
     private void listenForWishlist() {
@@ -179,7 +148,9 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
                     WishlistItem item = ds.getValue(WishlistItem.class);
                     if (item != null) allRawItems.add(item);
                 }
-                filterAndDisplayItems();
+                if (pageAdapter != null) {
+                    pageAdapter.updateItems(allRawItems);
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {}
@@ -200,18 +171,70 @@ public class WishlistActivity extends AppCompatActivity implements WishlistAdapt
         }
     }
 
-    private void filterAndDisplayItems() {
-        itemList.clear();
-        for (WishlistItem item : allRawItems) {
-            boolean isOwner = item.ownerId != null && item.ownerId.equals(userId);
-            if (showingMyWishlist) {
-                if (isOwner) itemList.add(item);
+    private class WishlistPagerAdapter extends RecyclerView.Adapter<WishlistPagerAdapter.PageViewHolder> {
+        private final List<WishlistItem> myItems = new ArrayList<>();
+        private final List<WishlistItem> partnerItems = new ArrayList<>();
+        private final WishlistAdapter myAdapter;
+        private final WishlistAdapter partnerAdapter;
+
+        public WishlistPagerAdapter() {
+            myAdapter = new WishlistAdapter(myItems, userId, WishlistActivity.this);
+            partnerAdapter = new WishlistAdapter(partnerItems, userId, WishlistActivity.this);
+        }
+
+        public void updateItems(List<WishlistItem> allItems) {
+            myItems.clear();
+            partnerItems.clear();
+            for (WishlistItem item : allItems) {
+                boolean isOwner = item.ownerId != null && item.ownerId.equals(userId);
+                if (isOwner) {
+                    myItems.add(item);
+                } else {
+                    partnerItems.add(item);
+                }
+            }
+            Collections.sort(myItems, (a, b) -> Boolean.compare(a.isBought || a.isReceived, b.isBought || b.isReceived));
+            Collections.sort(partnerItems, (a, b) -> Boolean.compare(a.isBought || a.isReceived, b.isBought || b.isReceived));
+
+            myAdapter.notifyDataSetChanged();
+            partnerAdapter.notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public PageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            RecyclerView rv = new RecyclerView(parent.getContext());
+            rv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            rv.setClipToPadding(false);
+            int padding = (int) (8 * parent.getContext().getResources().getDisplayMetrics().density);
+            rv.setPadding(padding, padding, padding, padding);
+            rv.setLayoutManager(new LinearLayoutManager(parent.getContext()));
+            UIUtils.applyBottomPadding(rv);
+            return new PageViewHolder(rv);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull PageViewHolder holder, int position) {
+            if (position == 0) {
+                holder.rvPage.setAdapter(myAdapter);
             } else {
-                if (!isOwner) itemList.add(item);
+                holder.rvPage.setAdapter(partnerAdapter);
             }
         }
-        Collections.sort(itemList, (a, b) -> Boolean.compare(a.isBought || a.isReceived, b.isBought || b.isReceived));
-        adapter.notifyDataSetChanged();
+
+        @Override
+        public int getItemCount() {
+            return 2;
+        }
+
+        class PageViewHolder extends RecyclerView.ViewHolder {
+            RecyclerView rvPage;
+
+            public PageViewHolder(@NonNull View itemView) {
+                super(itemView);
+                rvPage = (RecyclerView) itemView;
+            }
+        }
     }
 
     private void showItemDialog(WishlistItem existingItem) {
