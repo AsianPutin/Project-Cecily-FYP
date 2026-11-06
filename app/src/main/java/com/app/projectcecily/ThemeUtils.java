@@ -218,8 +218,9 @@ public class ThemeUtils {
                 int id = v.getId();
                 if (id == R.id.btnUnpairPartner || id == R.id.btnLogout ||
                     id == R.id.btnMarkBought || id == R.id.btnMarkReceived ||
-                    id == R.id.btnDelete || id == R.id.btnDeleteFlight) {
-                    continue; // Exclude Mark Bought, Received, and Delete from accent overrides!
+                    id == R.id.btnDelete || id == R.id.btnDeleteFlight ||
+                    id == R.id.btnEndSubscription) {
+                    continue; // Exclude Red Buttons from theme accent overrides!
                 }
                 MaterialButton mb = (MaterialButton) v;
                 if (mb.getParent() instanceof com.google.android.material.button.MaterialButtonToggleGroup) {

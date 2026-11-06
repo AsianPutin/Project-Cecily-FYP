@@ -61,6 +61,8 @@ public class DeveloperActivity extends AppCompatActivity {
         Button btnEndSub = findViewById(R.id.btnEndSubscription);
 
         setupSubscriptionSwitches();
+        setupMonthlyDatePicker();
+        applySwitchAccentTints();
 
         if (btnEndSub != null) {
             btnEndSub.setOnClickListener(v -> {
@@ -70,7 +72,40 @@ public class DeveloperActivity extends AppCompatActivity {
                 isProgrammaticSwitching = false;
 
                 SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
+                updateMonthlyExpiryUi();
             });
+        }
+    }
+
+    private void applySwitchAccentTints() {
+        int accent = ThemeUtils.getAccentColor(this);
+        int uncheckedTrack = android.graphics.Color.parseColor("#444444");
+
+        int[][] states = new int[][]{
+            new int[]{android.R.attr.state_checked},
+            new int[]{-android.R.attr.state_checked}
+        };
+
+        int[] thumbColors = new int[]{
+            android.graphics.Color.WHITE,
+            android.graphics.Color.parseColor("#AAAAAA")
+        };
+
+        int[] trackColors = new int[]{
+            accent,
+            uncheckedTrack
+        };
+
+        android.content.res.ColorStateList thumbTintList = new android.content.res.ColorStateList(states, thumbColors);
+        android.content.res.ColorStateList trackTintList = new android.content.res.ColorStateList(states, trackColors);
+
+        if (switchMonthlyDemo != null) {
+            switchMonthlyDemo.setThumbTintList(thumbTintList);
+            switchMonthlyDemo.setTrackTintList(trackTintList);
+        }
+        if (switchLifetimeDemo != null) {
+            switchLifetimeDemo.setThumbTintList(thumbTintList);
+            switchLifetimeDemo.setTrackTintList(trackTintList);
         }
     }
 
@@ -81,6 +116,8 @@ public class DeveloperActivity extends AppCompatActivity {
         if (switchMonthlyDemo != null) switchMonthlyDemo.setChecked(mode == SubscriptionDialogHelper.MODE_MONTHLY);
         if (switchLifetimeDemo != null) switchLifetimeDemo.setChecked(mode == SubscriptionDialogHelper.MODE_LIFETIME);
         isProgrammaticSwitching = false;
+
+        updateMonthlyExpiryUi();
 
         if (switchMonthlyDemo != null) {
             switchMonthlyDemo.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -95,6 +132,7 @@ public class DeveloperActivity extends AppCompatActivity {
                         SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
                     }
                 }
+                updateMonthlyExpiryUi();
             });
         }
 
@@ -111,7 +149,83 @@ public class DeveloperActivity extends AppCompatActivity {
                         SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
                     }
                 }
+                updateMonthlyExpiryUi();
             });
+        }
+    }
+
+    private void setupMonthlyDatePicker() {
+        View btnSetExpiry = findViewById(R.id.btnSetMonthlyExpiry);
+        View layoutExpiry = findViewById(R.id.layoutMonthlyExpiryDate);
+
+        View.OnClickListener pickerListener = v -> {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            long currentExpiry = SubscriptionDialogHelper.getMonthlyExpiryMillis(this);
+            if (currentExpiry > 0) cal.setTimeInMillis(currentExpiry);
+
+            android.app.DatePickerDialog datePicker = new android.app.DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    java.util.Calendar selectedCal = java.util.Calendar.getInstance();
+                    selectedCal.set(year, month, dayOfMonth, 23, 59, 59);
+                    long selectedMs = selectedCal.getTimeInMillis();
+
+                    isProgrammaticSwitching = true;
+                    if (switchLifetimeDemo != null) switchLifetimeDemo.setChecked(false);
+                    if (switchMonthlyDemo != null) switchMonthlyDemo.setChecked(true);
+                    isProgrammaticSwitching = false;
+
+                    SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+                    prefs.edit()
+                            .putInt("premium_subscription_mode", SubscriptionDialogHelper.MODE_MONTHLY)
+                            .putBoolean("is_premium_unlocked", true)
+                            .putLong("monthly_expiry_millis", selectedMs)
+                            .apply();
+
+                    String userId = UserManager.getUserId(this);
+                    if (!userId.isEmpty()) {
+                        com.google.firebase.database.DatabaseReference userRef = com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                                .getReference("profiles").child(userId);
+                        userRef.child("isPremium").setValue(true);
+                        userRef.child("subscriptionMode").setValue(SubscriptionDialogHelper.MODE_MONTHLY);
+                        userRef.child("monthlyExpiryMillis").setValue(selectedMs);
+                    }
+
+                    updateMonthlyExpiryUi();
+                },
+                cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH),
+                cal.get(java.util.Calendar.DAY_OF_MONTH)
+            );
+            datePicker.show();
+        };
+
+        if (btnSetExpiry != null) btnSetExpiry.setOnClickListener(pickerListener);
+        if (layoutExpiry != null) layoutExpiry.setOnClickListener(pickerListener);
+    }
+
+    private void updateMonthlyExpiryUi() {
+        android.widget.TextView tvExpiry = findViewById(R.id.tvMonthlyExpiryDate);
+        View layoutExpiry = findViewById(R.id.layoutMonthlyExpiryDate);
+        View btnSetExpiry = findViewById(R.id.btnSetMonthlyExpiry);
+
+        boolean isMonthly = switchMonthlyDemo != null && switchMonthlyDemo.isChecked();
+        if (layoutExpiry != null) {
+            layoutExpiry.setEnabled(isMonthly);
+            layoutExpiry.setAlpha(isMonthly ? 1.0f : 0.4f);
+        }
+        if (btnSetExpiry != null) {
+            btnSetExpiry.setEnabled(isMonthly);
+            btnSetExpiry.setAlpha(isMonthly ? 1.0f : 0.4f);
+        }
+
+        if (tvExpiry != null) {
+            if (isMonthly) {
+                String expiryStr = SubscriptionDialogHelper.getFormattedMonthlyExpiryDate(this);
+                tvExpiry.setText(expiryStr.isEmpty() ? "Not set (30 days default)" : "Expires " + expiryStr);
+            } else {
+                tvExpiry.setText("Disabled (Monthly inactive)");
+            }
         }
     }
 
@@ -200,6 +314,8 @@ public class DeveloperActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
+        applySwitchAccentTints();
+        updateMonthlyExpiryUi();
     }
 
     @Override
