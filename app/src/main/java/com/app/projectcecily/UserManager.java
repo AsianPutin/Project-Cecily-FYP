@@ -68,6 +68,11 @@ public class UserManager {
                 .getString(KEY_USER_NAME, "User");
     }
 
+    public static String getUserEmail(Context context) {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getString(KEY_USER_EMAIL, "user@projectcecily.app");
+    }
+
     public static void setUserName(Context context, String name) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit().putString(KEY_USER_NAME, name).apply();

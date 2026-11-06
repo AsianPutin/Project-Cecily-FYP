@@ -149,22 +149,61 @@ public class StripePaymentHelper {
         progressDialog.setCancelable(false);
         progressDialog.show();
 
+        String userName = UserManager.getUserName(activity);
+        String userEmail = UserManager.getUserEmail(activity);
+        if (userName == null || userName.trim().isEmpty() || userName.equalsIgnoreCase("User")) {
+            userName = "Alister Goh";
+        }
+        if (userEmail == null || userEmail.trim().isEmpty()) {
+            userEmail = "alister@example.com";
+        }
+
+        final String finalUserName = userName;
+        final String finalUserEmail = userEmail;
+
         new Thread(() -> {
             try {
-                RequestBody formBody = new FormBody.Builder()
+                String customerId = "";
+                try {
+                    RequestBody custBody = new FormBody.Builder()
+                            .add("name", finalUserName)
+                            .add("email", finalUserEmail)
+                            .build();
+
+                    Request custReq = new Request.Builder()
+                            .url("https://api.stripe.com/v1/customers")
+                            .addHeader("Authorization", "Bearer " + STRIPE_SECRET_KEY)
+                            .post(custBody)
+                            .build();
+
+                    try (Response custRes = client.newCall(custReq).execute()) {
+                        if (custRes.isSuccessful() && custRes.body() != null) {
+                            JSONObject custJson = new JSONObject(custRes.body().string());
+                            if (custJson.has("id")) {
+                                customerId = custJson.getString("id");
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+
+                FormBody.Builder formBuilder = new FormBody.Builder()
                         .add("amount", String.valueOf(amountCents))
                         .add("currency", "usd")
                         .add("payment_method", "pm_card_visa")
                         .add("confirm", "true")
                         .add("description", description)
+                        .add("receipt_email", finalUserEmail)
                         .add("automatic_payment_methods[enabled]", "true")
-                        .add("automatic_payment_methods[allow_redirects]", "never")
-                        .build();
+                        .add("automatic_payment_methods[allow_redirects]", "never");
+
+                if (!customerId.isEmpty()) {
+                    formBuilder.add("customer", customerId);
+                }
 
                 Request request = new Request.Builder()
                         .url(PAYMENT_INTENTS_URL)
                         .addHeader("Authorization", "Bearer " + STRIPE_SECRET_KEY)
-                        .post(formBody)
+                        .post(formBuilder.build())
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {
