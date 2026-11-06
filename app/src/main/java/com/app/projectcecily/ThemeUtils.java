@@ -134,7 +134,6 @@ public class ThemeUtils {
                     }
                     if (cloudTheme != null) {
                         editor.putInt(KEY_THEME_MODE, cloudTheme.intValue());
-                        AppCompatDelegate.setDefaultNightMode(cloudTheme.intValue());
                     }
                     editor.apply();
                 }
