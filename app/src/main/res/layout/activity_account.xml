@@ -93,7 +93,7 @@
                 android:textColor="#FF4081"
                 android:textSize="14sp" />
 
-            <!-- Partner Pairing Card (Multi-tap Developer Options Trigger) -->
+            <!-- Partner Pairing Card (Static Non-Reactive Developer Options Trigger) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardPartnerPairing"
                 android:layout_width="match_parent"
@@ -101,9 +101,10 @@
                 android:layout_marginTop="24dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:rippleColor="@android:color/transparent"
                 app:strokeWidth="0dp">
 
                 <LinearLayout

@@ -1,6 +1,7 @@
 package com.app.projectcecily;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -552,25 +553,56 @@ public class AccountActivity extends AppCompatActivity {
 
     private void setupDeveloperModeTapListener() {
         View cardPairing = findViewById(R.id.cardPartnerPairing);
-        if (cardPairing != null) {
-            cardPairing.setOnClickListener(v -> {
-                long now = System.currentTimeMillis();
-                if (now - lastDevTapTime > 2000) {
-                    devTapCount = 0;
-                }
-                lastDevTapTime = now;
-                devTapCount++;
+        if (cardPairing == null) return;
 
-                int remaining = 7 - devTapCount;
+        cardPairing.setOnClickListener(v -> {
+            long now = System.currentTimeMillis();
+            long timeDiff = now - lastDevTapTime;
+            lastDevTapTime = now;
+
+            String userId = UserManager.getUserId(this);
+            String prefsName = "prefs_" + (userId.isEmpty() ? "local" : userId);
+            SharedPreferences prefs = getSharedPreferences(prefsName, MODE_PRIVATE);
+            String devKey = "dev_mode_unlocked";
+            boolean isDevUnlocked = prefs.getBoolean(devKey, false);
+
+            if (isDevUnlocked) {
+                // If unlocked: Simple DOUBLE TAP to launch DeveloperActivity!
+                if (timeDiff < 600) {
+                    devTapCount = 0;
+                    startActivity(new Intent(this, DeveloperActivity.class));
+                }
+                return;
+            }
+
+            // If locked:
+            if (timeDiff > 1200) {
+                devTapCount = 0;
+            }
+
+            if (devTapCount == 0) {
+                devTapCount = 1;
+            } else if (devTapCount == 1) {
+                if (timeDiff < 600) {
+                    // Quick double tap to start unlock sequence!
+                    devTapCount = 2;
+                } else {
+                    devTapCount = 1;
+                }
+            } else {
+                devTapCount++;
+                int stepsLeft = 7 - devTapCount;
+
                 if (devTapCount >= 7) {
                     devTapCount = 0;
+                    prefs.edit().putBoolean(devKey, true).apply();
                     Toast.makeText(this, "🎉 Developer Options Unlocked!", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, DeveloperActivity.class));
                 } else if (devTapCount >= 3) {
-                    Toast.makeText(this, "You are now " + remaining + " steps away from Developer Debug Menu.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "You are now " + stepsLeft + " step" + (stepsLeft > 1 ? "s" : "") + " away from Developer Options.", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+            }
+        });
     }
 
     private void unpairPartner() {
