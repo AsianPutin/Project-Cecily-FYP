@@ -166,6 +166,25 @@ public class ThemeUtils {
         int actionBarBgColor = getActionBarColor(accentColor, isNightMode);
         int actionBarTextColor = getContrastingTextColor(actionBarBgColor);
 
+        View navView = activity.findViewById(R.id.bottom_navigation);
+        if (navView instanceof com.google.android.material.bottomnavigation.BottomNavigationView) {
+            com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = (com.google.android.material.bottomnavigation.BottomNavigationView) navView;
+            bottomNav.setItemActiveIndicatorEnabled(false);
+
+            int unselectedColor = isNightMode ? Color.parseColor("#888888") : Color.parseColor("#666666");
+            int[][] states = new int[][] {
+                new int[] { android.R.attr.state_checked },
+                new int[] { -android.R.attr.state_checked }
+            };
+            int[] colors = new int[] {
+                accentColor,
+                unselectedColor
+            };
+            ColorStateList csl = new ColorStateList(states, colors);
+            bottomNav.setItemIconTintList(csl);
+            bottomNav.setItemTextColor(csl);
+        }
+
         View toolbarView = activity.findViewById(R.id.toolbar);
         if (toolbarView instanceof com.google.android.material.appbar.MaterialToolbar) {
             com.google.android.material.appbar.MaterialToolbar toolbar = (com.google.android.material.appbar.MaterialToolbar) toolbarView;

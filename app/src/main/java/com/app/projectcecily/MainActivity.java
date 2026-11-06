@@ -246,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateDynamicAccent() {
         BottomNavigationView navView = findViewById(R.id.bottom_navigation);
         if (navView != null) {
+            navView.setItemActiveIndicatorEnabled(false);
             int accentColor = ThemeUtils.getAccentColor(this);
             int unselectedColor = android.graphics.Color.parseColor("#888888");
 
