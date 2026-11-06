@@ -3,9 +3,15 @@ package com.app.projectcecily;
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -28,6 +34,39 @@ public class StripePaymentHelper {
     public static void processMockPayment(AppCompatActivity activity, long amountCents, String description, StripePaymentCallback callback) {
         if (activity == null || activity.isFinishing()) return;
 
+        BottomSheetDialog sheet = new BottomSheetDialog(activity);
+        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_stripe_card_checkout, null);
+        sheet.setContentView(view);
+
+        TextView tvDesc = view.findViewById(R.id.tvCheckoutDescription);
+        TextInputEditText etCardNumber = view.findViewById(R.id.etCardNumber);
+        TextInputEditText etCardExpiry = view.findViewById(R.id.etCardExpiry);
+        TextInputEditText etCardCvc = view.findViewById(R.id.etCardCvc);
+
+        Button btnPayNow = view.findViewById(R.id.btnStripePayNow);
+        Button btnCancel = view.findViewById(R.id.btnStripeCancel);
+
+        String formattedAmount = String.format(java.util.Locale.US, "$%.2f USD", amountCents / 100.0);
+        if (tvDesc != null) {
+            tvDesc.setText(description + " • " + formattedAmount);
+        }
+
+        if (btnPayNow != null) {
+            btnPayNow.setText("Pay " + formattedAmount + " 🔒");
+            btnPayNow.setOnClickListener(v -> {
+                sheet.dismiss();
+                executeStripeApiCharge(activity, amountCents, description, callback);
+            });
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> sheet.dismiss());
+        }
+
+        sheet.show();
+    }
+
+    private static void executeStripeApiCharge(AppCompatActivity activity, long amountCents, String description, StripePaymentCallback callback) {
         ProgressDialog progressDialog = new ProgressDialog(activity);
         progressDialog.setMessage("Authorizing with Stripe API (Test Mode)...");
         progressDialog.setCancelable(false);
