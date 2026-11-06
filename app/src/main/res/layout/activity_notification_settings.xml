@@ -233,48 +233,34 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchWishlistAlerts"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:checked="true"
-                        android:text="Wishlist Additions &amp; Updates"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
+                    <!-- Row 1 (TOP): Notification Sound Enabled -->
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switchSound"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
                         android:checked="true"
                         android:text="Notification Sound Enabled"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
 
+                    <!-- Row 2: Wishlist Additions & Updates -->
                     <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchVibration"
+                        android:id="@+id/switchWishlistAlerts"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:checked="true"
-                        android:text="Vibration Feedback"
+                        android:text="Wishlist Additions &amp; Updates"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="#22FFFFFF" />
-
-                    <!-- Custom Notification Sound Selector Row -->
+                    <!-- Row 3: Custom Notification Sound Selector Row -->
                     <LinearLayout
                         android:id="@+id/layoutSelectNotificationSound"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingVertical="4dp">
@@ -320,6 +306,65 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Choose"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="#22FFFFFF" />
+
+                    <!-- Row 4 & 5 (BOTTOM): Vibration Feedback Switch & Vibration Pattern Selector -->
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchVibration"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Vibration Feedback"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutVibrationPattern"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Vibration Pattern"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvSelectedVibrationName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Default Pulse 📳"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btnChangeVibration"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Choose Pattern"
                             android:textSize="12sp" />
                     </LinearLayout>
 

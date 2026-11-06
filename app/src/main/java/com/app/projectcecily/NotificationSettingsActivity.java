@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.view.Gravity;
@@ -39,6 +40,24 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private static final String KEY_PARTNER_SCHEDULES = "partner_flight_schedules";
     public static final String KEY_CUSTOM_SOUND_URI = "custom_sound_uri";
     public static final String KEY_CUSTOM_SOUND_NAME = "custom_sound_name";
+    public static final String KEY_VIBRATION_PATTERN_NAME = "vibration_pattern_name";
+    public static final String KEY_VIBRATION_PATTERN_INDEX = "vibration_pattern_index";
+
+    private static final String[] VIBRATION_PATTERN_NAMES = new String[]{
+        "Default Pulse 📳",
+        "Heartbeat 💓",
+        "Double Tap ⚡",
+        "Long Buzz 📳",
+        "Tick-Tock ⏰"
+    };
+
+    private static final long[][] VIBRATION_PATTERNS = new long[][]{
+        {0, 250, 150, 250},                      // Default Pulse
+        {0, 100, 100, 100, 300, 100, 100, 100},  // Heartbeat
+        {0, 100, 80, 100},                       // Double Tap
+        {0, 600},                                // Long Buzz
+        {0, 50, 200, 50}                         // Tick-Tock
+    };
 
     private SharedPreferences prefs;
 
@@ -46,9 +65,10 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     private MaterialSwitch switchPartnerPokes, switchProximityAlerts;
     private MaterialSwitch switchWishlistAlerts, switchSound, switchVibration;
 
-    private TextView tvSelectedSoundName;
-    private Button btnChangeSound;
+    private TextView tvSelectedSoundName, tvSelectedVibrationName;
+    private Button btnChangeSound, btnChangeVibration;
     private ImageView btnPreviewSound;
+    private View layoutSelectNotificationSound, layoutVibrationPattern;
 
     private LinearLayout layoutFlightRemindersSection;
     private LinearLayout layoutMyFlightRemindersContainer;
@@ -92,8 +112,14 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchVibration = findViewById(R.id.switchVibration);
 
         tvSelectedSoundName = findViewById(R.id.tvSelectedSoundName);
+        tvSelectedVibrationName = findViewById(R.id.tvSelectedVibrationName);
+
         btnChangeSound = findViewById(R.id.btnChangeSound);
+        btnChangeVibration = findViewById(R.id.btnChangeVibration);
         btnPreviewSound = findViewById(R.id.btnPreviewSound);
+
+        layoutSelectNotificationSound = findViewById(R.id.layoutSelectNotificationSound);
+        layoutVibrationPattern = findViewById(R.id.layoutVibrationPattern);
 
         layoutFlightRemindersSection = findViewById(R.id.layoutFlightRemindersSection);
         layoutMyFlightRemindersContainer = findViewById(R.id.layoutMyFlightRemindersContainer);
@@ -115,6 +141,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         if (btnPreviewSound != null) {
             btnPreviewSound.setOnClickListener(v -> toggleSoundPreview());
         }
+        if (btnChangeVibration != null) {
+            btnChangeVibration.setOnClickListener(v -> showVibrationPatternDialog());
+        }
 
         setupLaunchers();
         loadPreferences();
@@ -122,6 +151,7 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         applySwitchAccentTints();
         renderFlightSchedules();
         updateSoundUiSummary();
+        updateVibrationUiSummary();
     }
 
     private void setupLaunchers() {
@@ -208,6 +238,55 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         if (tvSelectedSoundName != null) {
             tvSelectedSoundName.setText(name);
         }
+    }
+
+    private void updateVibrationUiSummary() {
+        String name = prefs.getString(KEY_VIBRATION_PATTERN_NAME, "Default Pulse 📳");
+        if (tvSelectedVibrationName != null) {
+            tvSelectedVibrationName.setText(name);
+        }
+    }
+
+    private void showVibrationPatternDialog() {
+        int currentIndex = prefs.getInt(KEY_VIBRATION_PATTERN_INDEX, 0);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Select Vibration Pattern")
+                .setSingleChoiceItems(VIBRATION_PATTERN_NAMES, currentIndex, (dialog, which) -> {
+                    dialog.dismiss();
+                    saveVibrationPattern(which);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveVibrationPattern(int index) {
+        if (index < 0 || index >= VIBRATION_PATTERN_NAMES.length) index = 0;
+        String name = VIBRATION_PATTERN_NAMES[index];
+        prefs.edit()
+                .putInt(KEY_VIBRATION_PATTERN_INDEX, index)
+                .putString(KEY_VIBRATION_PATTERN_NAME, name)
+                .apply();
+
+        updateVibrationUiSummary();
+        vibrateDevicePattern(VIBRATION_PATTERNS[index]);
+        Toast.makeText(this, "Vibration pattern set: " + name, Toast.LENGTH_SHORT).show();
+    }
+
+    private void vibrateDevicePattern(long[] pattern) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                android.os.VibratorManager vm = (android.os.VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+                if (vm != null) {
+                    vm.getDefaultVibrator().vibrate(android.os.VibrationEffect.createWaveform(pattern, -1));
+                }
+            } else {
+                android.os.Vibrator v = (android.os.Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v != null) {
+                    v.vibrate(pattern, -1);
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     private void toggleSoundPreview() {
@@ -328,8 +407,14 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchPartnerPokes.setChecked(prefs.getBoolean("partner_pokes", true));
         switchProximityAlerts.setChecked(prefs.getBoolean("proximity_alerts", true));
         switchWishlistAlerts.setChecked(prefs.getBoolean("wishlist_alerts", true));
-        switchSound.setChecked(prefs.getBoolean("sound_enabled", true));
-        switchVibration.setChecked(prefs.getBoolean("vibration_enabled", true));
+
+        boolean soundOn = prefs.getBoolean("sound_enabled", true);
+        switchSound.setChecked(soundOn);
+        updateSoundEnabledState(soundOn);
+
+        boolean vibrationOn = prefs.getBoolean("vibration_enabled", true);
+        switchVibration.setChecked(vibrationOn);
+        updateVibrationState(vibrationOn);
 
         // Load My Flight Schedules
         Set<String> defaultMy = new HashSet<>(Arrays.asList("1 day before", "5 hours before", "1 hour before", "30 minutes before"));
@@ -342,6 +427,37 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         Set<String> savedPartner = prefs.getStringSet(KEY_PARTNER_SCHEDULES, defaultPartner);
         partnerFlightSchedules.clear();
         partnerFlightSchedules.addAll(savedPartner);
+    }
+
+    private void updateSoundEnabledState(boolean soundEnabled) {
+        if (switchWishlistAlerts != null) {
+            switchWishlistAlerts.setEnabled(soundEnabled);
+            switchWishlistAlerts.setAlpha(soundEnabled ? 1.0f : 0.4f);
+        }
+        if (layoutSelectNotificationSound != null) {
+            layoutSelectNotificationSound.setEnabled(soundEnabled);
+            layoutSelectNotificationSound.setAlpha(soundEnabled ? 1.0f : 0.4f);
+        }
+        if (btnPreviewSound != null) {
+            btnPreviewSound.setEnabled(soundEnabled);
+            btnPreviewSound.setAlpha(soundEnabled ? 1.0f : 0.4f);
+        }
+        if (btnChangeSound != null) {
+            btnChangeSound.setEnabled(soundEnabled);
+            btnChangeSound.setAlpha(soundEnabled ? 1.0f : 0.4f);
+        }
+        // Note: switchVibration and layoutVibrationPattern remain fully active as the exception
+    }
+
+    private void updateVibrationState(boolean vibrationEnabled) {
+        if (layoutVibrationPattern != null) {
+            layoutVibrationPattern.setEnabled(vibrationEnabled);
+            layoutVibrationPattern.setAlpha(vibrationEnabled ? 1.0f : 0.4f);
+        }
+        if (btnChangeVibration != null) {
+            btnChangeVibration.setEnabled(vibrationEnabled);
+            btnChangeVibration.setAlpha(vibrationEnabled ? 1.0f : 0.4f);
+        }
     }
 
     private void saveSchedules(boolean isMy) {
@@ -498,8 +614,16 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         switchPartnerPokes.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("partner_pokes", isChecked).apply());
         switchProximityAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("proximity_alerts", isChecked).apply());
         switchWishlistAlerts.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("wishlist_alerts", isChecked).apply());
-        switchSound.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("sound_enabled", isChecked).apply());
-        switchVibration.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("vibration_enabled", isChecked).apply());
+        
+        switchSound.setOnCheckedChangeListener((v, isChecked) -> {
+            prefs.edit().putBoolean("sound_enabled", isChecked).apply();
+            updateSoundEnabledState(isChecked);
+        });
+
+        switchVibration.setOnCheckedChangeListener((v, isChecked) -> {
+            prefs.edit().putBoolean("vibration_enabled", isChecked).apply();
+            updateVibrationState(isChecked);
+        });
     }
 
     @Override
