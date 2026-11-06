@@ -41,6 +41,8 @@ public class StripePaymentHelper {
                         .add("payment_method", "pm_card_visa")
                         .add("confirm", "true")
                         .add("description", description)
+                        .add("automatic_payment_methods[enabled]", "true")
+                        .add("automatic_payment_methods[allow_redirects]", "never")
                         .build();
 
                 Request request = new Request.Builder()
