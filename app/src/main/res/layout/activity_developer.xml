@@ -169,7 +169,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🌟 Demo &amp; Premium Reset"
+                        android:text="🌟 Subscription Controls &amp; Demo Tools"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -178,19 +178,41 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Toggle Ad-Free Premium status to re-enable ad carousels for live presentation demonstrations."
+                        android:text="Test monthly/lifetime tier states and reset active subscriptions for presentation demonstrations."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
-                    <Button
-                        android:id="@+id/btnTogglePremiumDemo"
-                        style="@style/Widget.Material3.Button"
+                    <!-- Toggle 1: Monthly Pass Active -->
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchMonthlyDemo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
+                        android:text="Monthly Pass Active"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                    <!-- Toggle 2: Lifetime Access Active -->
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchLifetimeDemo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Lifetime Access Active"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
+
+                    <!-- End Subscription Button -->
+                    <Button
+                        android:id="@+id/btnEndSubscription"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:backgroundTint="#FF3B30"
-                        android:text="Reset Premium Status (Show Ads)"
-                        android:textColor="#FFFFFF" />
+                        android:text="End Subscription"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

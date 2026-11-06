@@ -12,6 +12,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
+import com.google.android.material.materialswitch.MaterialSwitch;
+
 public class DeveloperActivity extends AppCompatActivity {
 
     private static final String CHANNEL_ID = "developer_debug_channel";
@@ -22,6 +24,10 @@ public class DeveloperActivity extends AppCompatActivity {
         {0, 600},                                // Long Buzz
         {0, 50, 200, 50}                         // Tick-Tock
     };
+
+    private MaterialSwitch switchMonthlyDemo;
+    private MaterialSwitch switchLifetimeDemo;
+    private boolean isProgrammaticSwitching = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,16 +56,61 @@ public class DeveloperActivity extends AppCompatActivity {
 
         findViewById(R.id.btnTestVibration).setOnClickListener(v -> triggerCurrentVibration());
 
-        Button btnTogglePremium = findViewById(R.id.btnTogglePremiumDemo);
-        if (btnTogglePremium != null) {
-            boolean isUnlocked = SubscriptionDialogHelper.isPremiumUnlocked(this);
-            btnTogglePremium.setText(isUnlocked ? "Reset Premium Status (Show Ads)" : "Unlock Ad-Free Premium (Hide Ads)");
+        switchMonthlyDemo = findViewById(R.id.switchMonthlyDemo);
+        switchLifetimeDemo = findViewById(R.id.switchLifetimeDemo);
+        Button btnEndSub = findViewById(R.id.btnEndSubscription);
 
-            btnTogglePremium.setOnClickListener(v -> {
-                boolean current = SubscriptionDialogHelper.isPremiumUnlocked(this);
-                SubscriptionDialogHelper.setPremiumUnlocked(this, !current);
-                boolean updated = SubscriptionDialogHelper.isPremiumUnlocked(this);
-                btnTogglePremium.setText(updated ? "Reset Premium Status (Show Ads)" : "Unlock Ad-Free Premium (Hide Ads)");
+        setupSubscriptionSwitches();
+
+        if (btnEndSub != null) {
+            btnEndSub.setOnClickListener(v -> {
+                isProgrammaticSwitching = true;
+                if (switchMonthlyDemo != null) switchMonthlyDemo.setChecked(false);
+                if (switchLifetimeDemo != null) switchLifetimeDemo.setChecked(false);
+                isProgrammaticSwitching = false;
+
+                SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
+            });
+        }
+    }
+
+    private void setupSubscriptionSwitches() {
+        int mode = SubscriptionDialogHelper.getSubscriptionMode(this);
+
+        isProgrammaticSwitching = true;
+        if (switchMonthlyDemo != null) switchMonthlyDemo.setChecked(mode == SubscriptionDialogHelper.MODE_MONTHLY);
+        if (switchLifetimeDemo != null) switchLifetimeDemo.setChecked(mode == SubscriptionDialogHelper.MODE_LIFETIME);
+        isProgrammaticSwitching = false;
+
+        if (switchMonthlyDemo != null) {
+            switchMonthlyDemo.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticSwitching) return;
+                if (isChecked) {
+                    isProgrammaticSwitching = true;
+                    if (switchLifetimeDemo != null) switchLifetimeDemo.setChecked(false);
+                    isProgrammaticSwitching = false;
+                    SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_MONTHLY);
+                } else {
+                    if (switchLifetimeDemo != null && !switchLifetimeDemo.isChecked()) {
+                        SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
+                    }
+                }
+            });
+        }
+
+        if (switchLifetimeDemo != null) {
+            switchLifetimeDemo.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticSwitching) return;
+                if (isChecked) {
+                    isProgrammaticSwitching = true;
+                    if (switchMonthlyDemo != null) switchMonthlyDemo.setChecked(false);
+                    isProgrammaticSwitching = false;
+                    SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_LIFETIME);
+                } else {
+                    if (switchMonthlyDemo != null && !switchMonthlyDemo.isChecked()) {
+                        SubscriptionDialogHelper.setSubscriptionMode(this, SubscriptionDialogHelper.MODE_FREE);
+                    }
+                }
             });
         }
     }

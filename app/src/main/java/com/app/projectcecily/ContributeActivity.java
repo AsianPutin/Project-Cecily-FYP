@@ -55,8 +55,9 @@ public class ContributeActivity extends AppCompatActivity {
                 this, 99, "Monthly Ad-Free Pass ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
                     @Override
                     public void onSuccess(String paymentIntentId, long amountCents) {
-                        SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
+                        SubscriptionDialogHelper.setSubscriptionMode(ContributeActivity.this, SubscriptionDialogHelper.MODE_MONTHLY);
                         Toast.makeText(ContributeActivity.this, "🎉 Monthly Ad-Free Pass Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                        updateSubscriptionUi();
                     }
 
                     @Override
@@ -70,8 +71,9 @@ public class ContributeActivity extends AppCompatActivity {
                 this, 999, "Lifetime Ad-Free Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
                     @Override
                     public void onSuccess(String paymentIntentId, long amountCents) {
-                        SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
+                        SubscriptionDialogHelper.setSubscriptionMode(ContributeActivity.this, SubscriptionDialogHelper.MODE_LIFETIME);
                         Toast.makeText(ContributeActivity.this, "🎉 Lifetime Ad-Free Access Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                        updateSubscriptionUi();
                     }
 
                     @Override
@@ -81,10 +83,66 @@ public class ContributeActivity extends AppCompatActivity {
         }
     }
 
+    private void updateSubscriptionUi() {
+        int mode = SubscriptionDialogHelper.getSubscriptionMode(this);
+        View btnMonthly = findViewById(R.id.btnSubMonthly);
+        View btnLifetime = findViewById(R.id.btnSubLifetime);
+        View cardSub = findViewById(R.id.cardContributeSubscriptions);
+        View tvThankYou = findViewById(R.id.tvThankYouMessage);
+
+        if (mode == SubscriptionDialogHelper.MODE_MONTHLY) {
+            if (btnMonthly != null) {
+                btnMonthly.setEnabled(false);
+                btnMonthly.setAlpha(0.4f);
+            }
+            if (btnLifetime != null) {
+                btnLifetime.setEnabled(true);
+                btnLifetime.setAlpha(1.0f);
+            }
+            if (cardSub != null) {
+                cardSub.setAlpha(1.0f);
+            }
+            if (tvThankYou != null) {
+                tvThankYou.setVisibility(View.GONE);
+            }
+        } else if (mode == SubscriptionDialogHelper.MODE_LIFETIME) {
+            if (btnMonthly != null) {
+                btnMonthly.setEnabled(false);
+                btnMonthly.setAlpha(0.4f);
+            }
+            if (btnLifetime != null) {
+                btnLifetime.setEnabled(false);
+                btnLifetime.setAlpha(0.4f);
+            }
+            if (cardSub != null) {
+                cardSub.setAlpha(0.4f);
+            }
+            if (tvThankYou != null) {
+                tvThankYou.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (btnMonthly != null) {
+                btnMonthly.setEnabled(true);
+                btnMonthly.setAlpha(1.0f);
+            }
+            if (btnLifetime != null) {
+                btnLifetime.setEnabled(true);
+                btnLifetime.setAlpha(1.0f);
+            }
+            if (cardSub != null) {
+                cardSub.setAlpha(1.0f);
+            }
+            if (tvThankYou != null) {
+                tvThankYou.setVisibility(View.GONE);
+            }
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
+        updateSubscriptionUi();
     }
 
     @Override

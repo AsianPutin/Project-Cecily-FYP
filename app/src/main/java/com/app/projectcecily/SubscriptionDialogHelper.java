@@ -13,26 +13,41 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class SubscriptionDialogHelper {
 
+    public static final int MODE_FREE = 0;
+    public static final int MODE_MONTHLY = 1;
+    public static final int MODE_LIFETIME = 2;
+
     public interface OnSubscriptionStatusChangedListener {
         void onStatusChanged(boolean isUnlocked);
     }
 
-    public static boolean isPremiumUnlocked(Context context) {
-        if (context == null) return false;
+    public static int getSubscriptionMode(Context context) {
+        if (context == null) return MODE_FREE;
         SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        return prefs.getBoolean("is_premium_unlocked", false);
+        return prefs.getInt("premium_subscription_mode", MODE_FREE);
     }
 
-    public static void setPremiumUnlocked(Context context, boolean unlocked) {
+    public static void setSubscriptionMode(Context context, int mode) {
         if (context == null) return;
         SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        prefs.edit().putBoolean("is_premium_unlocked", unlocked).apply();
+        prefs.edit()
+                .putInt("premium_subscription_mode", mode)
+                .putBoolean("is_premium_unlocked", mode != MODE_FREE)
+                .apply();
 
         String userId = UserManager.getUserId(context);
         if (userId != null && !userId.isEmpty()) {
             FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                    .getReference("profiles").child(userId).child("isPremium").setValue(unlocked);
+                    .getReference("profiles").child(userId).child("isPremium").setValue(mode != MODE_FREE);
         }
+    }
+
+    public static boolean isPremiumUnlocked(Context context) {
+        return getSubscriptionMode(context) != MODE_FREE;
+    }
+
+    public static void setPremiumUnlocked(Context context, boolean unlocked) {
+        setSubscriptionMode(context, unlocked ? MODE_LIFETIME : MODE_FREE);
     }
 
     public static void showSubscriptionDialog(AppCompatActivity activity, OnSubscriptionStatusChangedListener listener) {
@@ -47,12 +62,35 @@ public class SubscriptionDialogHelper {
         View cardMonthly = view.findViewById(R.id.cardMonthlySub);
         View cardLifetime = view.findViewById(R.id.cardLifetimeSub);
 
+        int mode = getSubscriptionMode(activity);
+        if (mode == MODE_MONTHLY) {
+            if (cardMonthly != null) {
+                cardMonthly.setAlpha(0.4f);
+                cardMonthly.setEnabled(false);
+            }
+            if (btnMonthly != null) {
+                btnMonthly.setEnabled(false);
+            }
+        } else if (mode == MODE_LIFETIME) {
+            if (cardMonthly != null) {
+                cardMonthly.setAlpha(0.4f);
+                cardMonthly.setEnabled(false);
+            }
+            if (btnMonthly != null) btnMonthly.setEnabled(false);
+
+            if (cardLifetime != null) {
+                cardLifetime.setAlpha(0.4f);
+                cardLifetime.setEnabled(false);
+            }
+            if (btnLifetime != null) btnLifetime.setEnabled(false);
+        }
+
         View.OnClickListener monthlyListener = v -> {
             sheet.dismiss();
             StripePaymentHelper.processMockPayment(activity, 99, "Monthly Ad-Free Pass ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
                 @Override
                 public void onSuccess(String paymentIntentId, long amountCents) {
-                    setPremiumUnlocked(activity, true);
+                    setSubscriptionMode(activity, MODE_MONTHLY);
                     Toast.makeText(activity, "🎉 Monthly Ad-Free Pass Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     if (listener != null) listener.onStatusChanged(true);
                 }
@@ -67,7 +105,7 @@ public class SubscriptionDialogHelper {
             StripePaymentHelper.processMockPayment(activity, 999, "Lifetime Ad-Free Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
                 @Override
                 public void onSuccess(String paymentIntentId, long amountCents) {
-                    setPremiumUnlocked(activity, true);
+                    setSubscriptionMode(activity, MODE_LIFETIME);
                     Toast.makeText(activity, "🎉 Lifetime Ad-Free Access Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     if (listener != null) listener.onStatusChanged(true);
                 }
@@ -77,10 +115,14 @@ public class SubscriptionDialogHelper {
             });
         };
 
-        if (btnMonthly != null) btnMonthly.setOnClickListener(monthlyListener);
-        if (cardMonthly != null) cardMonthly.setOnClickListener(monthlyListener);
-        if (btnLifetime != null) btnLifetime.setOnClickListener(lifetimeListener);
-        if (cardLifetime != null) cardLifetime.setOnClickListener(lifetimeListener);
+        if (mode != MODE_MONTHLY && mode != MODE_LIFETIME) {
+            if (btnMonthly != null) btnMonthly.setOnClickListener(monthlyListener);
+            if (cardMonthly != null) cardMonthly.setOnClickListener(monthlyListener);
+        }
+        if (mode != MODE_LIFETIME) {
+            if (btnLifetime != null) btnLifetime.setOnClickListener(lifetimeListener);
+            if (cardLifetime != null) cardLifetime.setOnClickListener(lifetimeListener);
+        }
 
         sheet.show();
     }
