@@ -53,13 +53,13 @@ public class DeveloperActivity extends AppCompatActivity {
         Button btnTogglePremium = findViewById(R.id.btnTogglePremiumDemo);
         if (btnTogglePremium != null) {
             boolean isUnlocked = SubscriptionDialogHelper.isPremiumUnlocked(this);
-            btnTogglePremium.setText(isUnlocked ? "Reset Freedom Pass (Show Ads)" : "Unlock Freedom Pass (Ad-Free)");
+            btnTogglePremium.setText(isUnlocked ? "Reset Premium Status (Show Ads)" : "Unlock Ad-Free Premium (Hide Ads)");
 
             btnTogglePremium.setOnClickListener(v -> {
                 boolean current = SubscriptionDialogHelper.isPremiumUnlocked(this);
                 SubscriptionDialogHelper.setPremiumUnlocked(this, !current);
                 boolean updated = SubscriptionDialogHelper.isPremiumUnlocked(this);
-                btnTogglePremium.setText(updated ? "Reset Freedom Pass (Show Ads)" : "Unlock Freedom Pass (Ad-Free)");
+                btnTogglePremium.setText(updated ? "Reset Premium Status (Show Ads)" : "Unlock Ad-Free Premium (Hide Ads)");
             });
         }
     }

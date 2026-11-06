@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="🌟 Freedom Pass &amp; Premium"
+        android:text="🌟 Ad-Free Premium Subscriptions"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -20,11 +20,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Unlock a 100% ad-free experience across all screens and support Project Cecily!"
+        android:text="Enjoy a clean, 100% ad-free experience across all screens and support Project Cecily!"
         android:textColor="@color/text_secondary"
         android:textSize="13sp" />
 
-    <!-- Tier 1: Impulse Monthly Subscription -->
+    <!-- Tier 1: Monthly Ad-Free Pass -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardMonthlySub"
         android:layout_width="match_parent"
@@ -53,7 +53,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Impulse Monthly Subscription"
+                    android:text="Monthly Ad-Free Pass"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -79,7 +79,7 @@
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Tier 2: One-Time Lifetime Freedom Purchase -->
+    <!-- Tier 2: Lifetime Ad-Free Access -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardLifetimeSub"
         android:layout_width="match_parent"
@@ -108,7 +108,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="One-Time Freedom Purchase"
+                    android:text="Lifetime Ad-Free Access"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />

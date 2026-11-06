@@ -52,11 +52,11 @@ public class ContributeActivity extends AppCompatActivity {
 
         if (btnMonthly != null) {
             btnMonthly.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
-                this, 99, "Freedom Pass - Monthly Impulse ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
+                this, 99, "Monthly Ad-Free Pass ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
                     @Override
                     public void onSuccess(String paymentIntentId, long amountCents) {
                         SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
-                        Toast.makeText(ContributeActivity.this, "🎉 Freedom Pass Monthly Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(ContributeActivity.this, "🎉 Monthly Ad-Free Pass Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -67,11 +67,11 @@ public class ContributeActivity extends AppCompatActivity {
 
         if (btnLifetime != null) {
             btnLifetime.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
-                this, 999, "Freedom Pass - Lifetime Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
+                this, 999, "Lifetime Ad-Free Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
                     @Override
                     public void onSuccess(String paymentIntentId, long amountCents) {
                         SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
-                        Toast.makeText(ContributeActivity.this, "🎉 Freedom Pass Lifetime Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(ContributeActivity.this, "🎉 Lifetime Ad-Free Access Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     }
 
                     @Override

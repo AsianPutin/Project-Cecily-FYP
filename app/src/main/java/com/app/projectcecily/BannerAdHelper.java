@@ -90,7 +90,7 @@ public class BannerAdHelper {
                     handler.removeCallbacks(runnableWrapper[0]);
                 }
                 cardBannerAd.setVisibility(View.GONE);
-                Toast.makeText(activity, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Ad dismissed! Unlock permanent Ad-Free Premium in Settings.", Toast.LENGTH_SHORT).show();
                 if (dismissListener != null) {
                     dismissListener.onDismissed();
                 }

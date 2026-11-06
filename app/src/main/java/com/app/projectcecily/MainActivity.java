@@ -472,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
                     adHandler.removeCallbacks(adRunnable);
                 }
                 cardBannerAd.setVisibility(View.GONE);
-                Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Freedom Pass in Settings.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Ad dismissed! Unlock permanent Ad-Free Premium in Settings.", Toast.LENGTH_SHORT).show();
             });
         }
 

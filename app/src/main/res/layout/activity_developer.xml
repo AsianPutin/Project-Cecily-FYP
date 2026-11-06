@@ -178,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Toggle Freedom Pass status to re-enable ad carousels for live presentation demonstrations."
+                        android:text="Toggle Ad-Free Premium status to re-enable ad carousels for live presentation demonstrations."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -189,7 +189,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:backgroundTint="#FF3B30"
-                        android:text="Reset Freedom Pass (Show Ads)"
+                        android:text="Reset Premium Status (Show Ads)"
                         android:textColor="#FFFFFF" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

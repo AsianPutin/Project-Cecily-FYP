@@ -49,11 +49,11 @@ public class SubscriptionDialogHelper {
 
         View.OnClickListener monthlyListener = v -> {
             sheet.dismiss();
-            StripePaymentHelper.processMockPayment(activity, 99, "Freedom Pass - Monthly Impulse ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
+            StripePaymentHelper.processMockPayment(activity, 99, "Monthly Ad-Free Pass ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
                 @Override
                 public void onSuccess(String paymentIntentId, long amountCents) {
                     setPremiumUnlocked(activity, true);
-                    Toast.makeText(activity, "🎉 Freedom Pass Monthly Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, "🎉 Monthly Ad-Free Pass Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     if (listener != null) listener.onStatusChanged(true);
                 }
 
@@ -64,11 +64,11 @@ public class SubscriptionDialogHelper {
 
         View.OnClickListener lifetimeListener = v -> {
             sheet.dismiss();
-            StripePaymentHelper.processMockPayment(activity, 999, "Freedom Pass - Lifetime Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
+            StripePaymentHelper.processMockPayment(activity, 999, "Lifetime Ad-Free Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
                 @Override
                 public void onSuccess(String paymentIntentId, long amountCents) {
                     setPremiumUnlocked(activity, true);
-                    Toast.makeText(activity, "🎉 Freedom Pass Lifetime Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, "🎉 Lifetime Ad-Free Access Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
                     if (listener != null) listener.onStatusChanged(true);
                 }
 

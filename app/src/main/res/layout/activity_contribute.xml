@@ -97,7 +97,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🌟 Freedom Pass Subscriptions"
+                        android:text="🌟 Ad-Free Premium Subscriptions"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -106,7 +106,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Unlock a 100% ad-free experience across all screens and support Project Cecily!"
+                        android:text="Enjoy a clean, 100% ad-free experience across all screens and support Project Cecily!"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -117,9 +117,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Impulse Monthly Pass ($0.99 / mo)" />
+                        android:text="Monthly Ad-Free Pass ($0.99 / mo)" />
 
-                    <!-- Lifetime Freedom Pass Option -->
+                    <!-- Lifetime Ad-Free Option -->
                     <Button
                         android:id="@+id/btnSubLifetime"
                         style="@style/Widget.Material3.Button"
@@ -127,7 +127,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFCC00"
-                        android:text="One-Time Freedom Purchase ($9.99 Once)"
+                        android:text="Lifetime Ad-Free Access ($9.99 Lifetime)"
                         android:textColor="#000000"
                         android:textStyle="bold" />
                 </LinearLayout>

@@ -66,10 +66,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         boolean unlocked = SubscriptionDialogHelper.isPremiumUnlocked(this);
         if (tvBadge != null) {
-            tvBadge.setText(unlocked ? "🌟 Freedom Pass Active" : "Free Tier");
+            tvBadge.setText(unlocked ? "🌟 Ad-Free Premium Active" : "Free Tier");
         }
         if (tvSubtext != null) {
-            tvSubtext.setText(unlocked ? "Your Freedom Pass is active! Banner ads are permanently hidden app-wide." : "Unlock a 100% permanent ad-free experience across all screens.");
+            tvSubtext.setText(unlocked ? "Your Ad-Free Premium status is active! Banner ads are permanently hidden app-wide." : "Unlock a clean, 100% ad-free experience across all screens.");
         }
         if (btnUpgrade != null) {
             btnUpgrade.setVisibility(unlocked ? View.GONE : View.VISIBLE);

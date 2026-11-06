@@ -66,7 +66,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🌟 Freedom Pass &amp; Premium"
+                            android:text="🌟 Ad-Free Premium Subscriptions"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
