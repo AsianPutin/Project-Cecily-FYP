@@ -248,19 +248,7 @@ public class MainActivity extends AppCompatActivity {
         if (navView != null) {
             navView.setItemActiveIndicatorEnabled(false);
             int accentColor = ThemeUtils.getAccentColor(this);
-            int unselectedColor = android.graphics.Color.parseColor("#888888");
-
-            int[][] states = new int[][]{
-                new int[]{android.R.attr.state_checked},
-                new int[]{-android.R.attr.state_checked}
-            };
-
-            int[] colors = new int[]{
-                accentColor,
-                unselectedColor
-            };
-
-            android.content.res.ColorStateList colorList = new android.content.res.ColorStateList(states, colors);
+            android.content.res.ColorStateList colorList = android.content.res.ColorStateList.valueOf(accentColor);
             navView.setItemIconTintList(colorList);
             navView.setItemTextColor(colorList);
         }

@@ -171,16 +171,7 @@ public class ThemeUtils {
             com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = (com.google.android.material.bottomnavigation.BottomNavigationView) navView;
             bottomNav.setItemActiveIndicatorEnabled(false);
 
-            int unselectedColor = isNightMode ? Color.parseColor("#888888") : Color.parseColor("#666666");
-            int[][] states = new int[][] {
-                new int[] { android.R.attr.state_checked },
-                new int[] { -android.R.attr.state_checked }
-            };
-            int[] colors = new int[] {
-                accentColor,
-                unselectedColor
-            };
-            ColorStateList csl = new ColorStateList(states, colors);
+            ColorStateList csl = ColorStateList.valueOf(accentColor);
             bottomNav.setItemIconTintList(csl);
             bottomNav.setItemTextColor(csl);
         }
