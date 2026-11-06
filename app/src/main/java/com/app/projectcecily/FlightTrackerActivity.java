@@ -6,6 +6,10 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import android.graphics.Bitmap;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
@@ -268,7 +272,17 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         UIUtils.applyBottomPadding(rv);
         UIUtils.applyTopInsetPadding(rv);
 
+        checkNotificationPermissions();
+        checkExactAlarmPermission();
         listenForFlights();
+    }
+
+    private void checkNotificationPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.app.ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1003);
+            }
+        }
     }
 
     private void listenForPartnerName() {
@@ -834,7 +848,28 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         } catch (Exception ignored) {}
     }
 
+    private long parseScheduleToMillis(String scheduleStr) {
+        if (scheduleStr == null || scheduleStr.trim().isEmpty()) return 0L;
+        String s = scheduleStr.toLowerCase().trim();
+        try {
+            String[] parts = s.split(" ");
+            long amount = Long.parseLong(parts[0]);
+            String unit = parts[1];
+            if (unit.startsWith("minute")) {
+                return amount * 60 * 1000L;
+            } else if (unit.startsWith("hour")) {
+                return amount * 60 * 60 * 1000L;
+            } else if (unit.startsWith("day")) {
+                return amount * 24 * 60 * 60 * 1000L;
+            } else if (unit.startsWith("week")) {
+                return amount * 7 * 24 * 60 * 60 * 1000L;
+            }
+        } catch (Exception ignored) {}
+        return 0L;
+    }
+
     private void scheduleReminders(FlightInfo flight) {
+        if (flight == null || flight.id == null) return;
         long dep = flight.depTimeMillis;
         long arr = dep + (110 * 60 * 1000L); // Estimated arrival
 
@@ -847,32 +882,73 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
         boolean isCreator = userId.equals(flight.creatorId);
         boolean isPassengerMe = "ME".equalsIgnoreCase(flight.passengerType);
-
         boolean isFlyingUser = (isCreator && isPassengerMe) || (!isCreator && !isPassengerMe);
 
+        String prefsName = "notification_settings_" + (userId.isEmpty() ? "local" : userId);
+        SharedPreferences prefs = getSharedPreferences(prefsName, MODE_PRIVATE);
+
+        Set<String> defaultSchedules = new HashSet<>(Arrays.asList("1 day before", "5 hours before", "1 hour before", "30 minutes before"));
+        Set<String> schedulesToUse;
+
         if (isFlyingUser) {
-            // Notifications for Flying Passenger
-            scheduleReminder(flight.flightNumber, dep - (7L * 24 * 60 * 60 * 1000), "1 week until your flight to " + destCity + "!", 1);
-            scheduleReminder(flight.flightNumber, dep - (24 * 60 * 60 * 1000), "Tomorrow is your flight to " + destCity + "! Get your bags packed.", 2);
-            scheduleReminder(flight.flightNumber, arr, "Touchdown! Welcome to " + destCity + ".", 3);
+            schedulesToUse = prefs.getStringSet(NotificationSettingsActivity.KEY_MY_SCHEDULES, defaultSchedules);
         } else {
-            // Notifications for Waiting Partner
-            scheduleReminder(flight.flightNumber, dep - (24 * 60 * 60 * 1000), pName + " flies to " + destCity + " tomorrow! Get ready to welcome them.", 1);
-            scheduleReminder(flight.flightNumber, arr - (5L * 60 * 60 * 1000), "5 hours until " + pName + " lands in " + destCity + "!", 2);
-            scheduleReminder(flight.flightNumber, arr - (1L * 60 * 60 * 1000), "1 hour until " + pName + " lands in " + destCity + "! Time to head to the airport.", 3);
-            scheduleReminder(flight.flightNumber, arr - (30L * 60 * 1000), "30 minutes until " + pName + " lands in " + destCity + "! Get to the arrival gate.", 4);
-            scheduleReminder(flight.flightNumber, arr, "Touchdown! " + pName + "'s flight has landed in " + destCity + ".", 5);
+            schedulesToUse = prefs.getStringSet(NotificationSettingsActivity.KEY_PARTNER_SCHEDULES, defaultSchedules);
         }
+
+        int offsetIndex = 1;
+        if (schedulesToUse != null) {
+            for (String schedStr : schedulesToUse) {
+                long offsetMillis = parseScheduleToMillis(schedStr);
+                if (offsetMillis > 0) {
+                    long triggerTime = dep - offsetMillis;
+                    String msg = isFlyingUser
+                            ? (schedStr + " your flight " + flight.flightNumber + " to " + destCity + "!")
+                            : (schedStr + " " + pName + "'s flight " + flight.flightNumber + " to " + destCity + "!");
+                    scheduleReminder(flight.id, flight.flightNumber, triggerTime, msg, offsetIndex++, false);
+                }
+            }
+        }
+
+        // Landing / Touchdown Alert at arrival time
+        String landingMsg = isFlyingUser
+                ? ("Touchdown! Welcome to " + destCity + ".")
+                : ("Touchdown! " + pName + "'s flight " + flight.flightNumber + " has landed in " + destCity + ".");
+        scheduleReminder(flight.id, flight.flightNumber, arr, landingMsg, 999, true);
     }
 
-    private void scheduleReminder(String fn, long time, String msg, int offset) {
+    private void scheduleReminder(String flightId, String fn, long time, String msg, int offset, boolean isLanding) {
         if (time < System.currentTimeMillis()) return;
         AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
         Intent intent = new Intent(this, FlightReminderReceiver.class);
         intent.putExtra("flight_num", fn);
         intent.putExtra("message", msg);
-        PendingIntent pi = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis() + offset, intent, PendingIntent.FLAG_IMMUTABLE);
-        if (am != null) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+        intent.putExtra("is_landing", isLanding);
+
+        int requestCode = Math.abs((flightId + "_" + offset).hashCode());
+        intent.putExtra("id", requestCode);
+
+        PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (am.canScheduleExactAlarms()) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+                } else {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pi);
+            } else {
+                am.setExact(AlarmManager.RTC_WAKEUP, time, pi);
+            }
+        } catch (Exception e) {
+            try {
+                am.set(AlarmManager.RTC_WAKEUP, time, pi);
+            } catch (Exception ignored) {}
+        }
     }
 
     @Override

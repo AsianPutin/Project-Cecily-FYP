@@ -36,8 +36,8 @@ import java.util.Set;
 
 public class NotificationSettingsActivity extends AppCompatActivity {
 
-    private static final String KEY_MY_SCHEDULES = "my_flight_schedules";
-    private static final String KEY_PARTNER_SCHEDULES = "partner_flight_schedules";
+    public static final String KEY_MY_SCHEDULES = "my_flight_schedules";
+    public static final String KEY_PARTNER_SCHEDULES = "partner_flight_schedules";
     public static final String KEY_CUSTOM_SOUND_URI = "custom_sound_uri";
     public static final String KEY_CUSTOM_SOUND_NAME = "custom_sound_name";
     public static final String KEY_VIBRATION_PATTERN_NAME = "vibration_pattern_name";
