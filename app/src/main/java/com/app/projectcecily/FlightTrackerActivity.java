@@ -312,6 +312,54 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         }
     }
 
+    public void sanitizeFlightRoute(FlightInfo info) {
+        if (info == null || info.flightNumber == null) return;
+        String cleanFn = info.flightNumber.replaceAll("\\s+", "").toUpperCase();
+
+        boolean needsFix = false;
+
+        if ("MH2522".equals(cleanFn) || "MY5004".equals(cleanFn) || "AK5234".equals(cleanFn)) {
+            // Even return flights -> KUL to KCH
+            if (!"KUL".equalsIgnoreCase(info.depAirport) || !"KCH".equalsIgnoreCase(info.arrAirport)) {
+                info.depAirport = "KUL";
+                info.arrAirport = "KCH";
+                info.depCity = "Kuala Lumpur";
+                info.arrCity = "Kuching";
+                needsFix = true;
+            }
+        } else if ("MY5003".equals(cleanFn) || "MH2547".equals(cleanFn)) {
+            // Odd outbound flights -> KCH to KUL
+            if (!"KCH".equalsIgnoreCase(info.depAirport) || !"KUL".equalsIgnoreCase(info.arrAirport)) {
+                info.depAirport = "KCH";
+                info.arrAirport = "KUL";
+                info.depCity = "Kuching";
+                info.arrCity = "Kuala Lumpur";
+                needsFix = true;
+            }
+        } else {
+            try {
+                String digits = cleanFn.replaceAll("\\D+", "");
+                if (!digits.isEmpty()) {
+                    long num = Long.parseLong(digits);
+                    if (num % 2 == 0) {
+                        // Even number -> KUL to KCH
+                        if (!"KUL".equalsIgnoreCase(info.depAirport) || !"KCH".equalsIgnoreCase(info.arrAirport)) {
+                            info.depAirport = "KUL";
+                            info.arrAirport = "KCH";
+                            info.depCity = "Kuala Lumpur";
+                            info.arrCity = "Kuching";
+                            needsFix = true;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (needsFix && info.id != null && activeRef != null) {
+            activeRef.child(info.id).setValue(info);
+        }
+    }
+
     private void listenForFlights() {
         activeRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -320,6 +368,7 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     FlightInfo info = ds.getValue(FlightInfo.class);
                     if (info != null) {
+                        sanitizeFlightRoute(info);
                         flightList.add(info);
                         scheduleReminders(info);
                     }
@@ -708,15 +757,30 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     }
 
     private void fetchAndSaveFlight(String flightNum, long targetTimeMillis, String passengerType) {
+        String cleanFn = flightNum != null ? flightNum.replaceAll("\\s+", "").toUpperCase() : "";
         String depIata = "KCH";
         String arrIata = "KUL";
         String depCity = "Kuching";
         String arrCity = "Kuala Lumpur";
-        if (flightNum.startsWith("AK") || flightNum.startsWith("D7")) {
+
+        if ("MH2522".equals(cleanFn) || "MY5004".equals(cleanFn) || "AK5234".equals(cleanFn)) {
             depIata = "KUL";
             arrIata = "KCH";
             depCity = "Kuala Lumpur";
             arrCity = "Kuching";
+        } else {
+            try {
+                String digits = cleanFn.replaceAll("\\D+", "");
+                if (!digits.isEmpty()) {
+                    long num = Long.parseLong(digits);
+                    if (num % 2 == 0) {
+                        depIata = "KUL";
+                        arrIata = "KCH";
+                        depCity = "Kuala Lumpur";
+                        arrCity = "Kuching";
+                    }
+                }
+            } catch (Exception ignored) {}
         }
         fetchAndSaveFlight(flightNum, targetTimeMillis, getAirlineNameFromCode(flightNum), depIata, arrIata, depCity, arrCity, passengerType);
     }
