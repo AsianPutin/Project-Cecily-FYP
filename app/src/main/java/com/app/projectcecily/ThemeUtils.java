@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -24,35 +25,51 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class ThemeUtils {
 
-    private static final String PREFS = "prefs";
     private static final String KEY_THEME_MODE = "theme_mode";
     private static final String KEY_ACCENT_COLOR = "accent_color";
 
     public static final String DEFAULT_ACCENT = "#25D366"; // Green
 
+    private static SharedPreferences getPrefs(Context context) {
+        if (context == null) return null;
+        String userId = UserManager.getUserId(context);
+        String name = "prefs_" + (userId.isEmpty() ? "guest" : userId);
+        return context.getSharedPreferences(name, Context.MODE_PRIVATE);
+    }
+
     public static void applySavedThemeMode(Context context) {
-        int savedMode = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        int savedMode = getSavedThemeMode(context);
         AppCompatDelegate.setDefaultNightMode(savedMode);
     }
 
     public static void saveThemeMode(Context context, int mode) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .edit()
-                .putInt(KEY_THEME_MODE, mode)
-                .apply();
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) {
+            prefs.edit().putInt(KEY_THEME_MODE, mode).apply();
+        }
         AppCompatDelegate.setDefaultNightMode(mode);
         notifyWidgets(context);
+
+        String userId = UserManager.getUserId(context);
+        if (userId != null && !userId.isEmpty()) {
+            try {
+                FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                        .getReference("profiles")
+                        .child(userId)
+                        .child("themeMode")
+                        .setValue(mode);
+            } catch (Exception ignored) {}
+        }
     }
 
     public static int getSavedThemeMode(Context context) {
-        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs == null) return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        return prefs.getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
     }
 
     public static int getAccentColor(Context context) {
-        String hex = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getString(KEY_ACCENT_COLOR, DEFAULT_ACCENT);
+        String hex = getAccentColorHex(context);
 
         if ("DYNAMIC".equalsIgnoreCase(hex)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -71,15 +88,16 @@ public class ThemeUtils {
     }
 
     public static String getAccentColorHex(Context context) {
-        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getString(KEY_ACCENT_COLOR, DEFAULT_ACCENT);
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs == null) return "DYNAMIC";
+        return prefs.getString(KEY_ACCENT_COLOR, "DYNAMIC");
     }
 
     public static void saveAccentColor(Context context, String hexColor) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .edit()
-                .putString(KEY_ACCENT_COLOR, hexColor)
-                .apply();
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs != null) {
+            prefs.edit().putString(KEY_ACCENT_COLOR, hexColor).apply();
+        }
 
         // Broadcast accent update to widgets instantly!
         notifyWidgets(context);
@@ -95,6 +113,33 @@ public class ThemeUtils {
                         .setValue(hexColor);
             } catch (Exception ignored) {}
         }
+    }
+
+    public static void syncUserThemeFromFirebase(Context context) {
+        if (context == null) return;
+        String userId = UserManager.getUserId(context);
+        if (userId.isEmpty()) return;
+
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(userId).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                String cloudAccent = snapshot.child("accentColor").getValue(String.class);
+                Long cloudTheme = snapshot.child("themeMode").getValue(Long.class);
+
+                SharedPreferences prefs = getPrefs(context);
+                if (prefs != null) {
+                    SharedPreferences.Editor editor = prefs.edit();
+                    if (cloudAccent != null && !cloudAccent.trim().isEmpty()) {
+                        editor.putString(KEY_ACCENT_COLOR, cloudAccent);
+                    }
+                    if (cloudTheme != null) {
+                        editor.putInt(KEY_THEME_MODE, cloudTheme.intValue());
+                        AppCompatDelegate.setDefaultNightMode(cloudTheme.intValue());
+                    }
+                    editor.apply();
+                }
+            }
+        });
     }
 
     public static void notifyWidgets(Context context) {
@@ -146,7 +191,20 @@ public class ThemeUtils {
 
     public static void applyAccentToActivity(Activity activity) {
         if (activity == null) return;
-        int accentColor = getAccentColor(activity);
+        int accentColor;
+        if (activity instanceof LoginActivity || activity instanceof SignUpActivity) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    accentColor = activity.getColor(android.R.color.system_accent1_500);
+                } catch (Exception e) {
+                    accentColor = Color.parseColor(DEFAULT_ACCENT);
+                }
+            } else {
+                accentColor = Color.parseColor(DEFAULT_ACCENT);
+            }
+        } else {
+            accentColor = getAccentColor(activity);
+        }
         int textColorOnAccent = getContrastingTextColor(accentColor);
 
         // Ensure user's accent color is synced to Firebase for partner's map view

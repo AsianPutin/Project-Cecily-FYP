@@ -234,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        ThemeUtils.syncUserThemeFromFirebase(this);
         updateDynamicAccent();
         ThemeUtils.applyAccentToActivity(this);
         SubscriptionDialogHelper.syncSubscriptionFromFirebase(this);

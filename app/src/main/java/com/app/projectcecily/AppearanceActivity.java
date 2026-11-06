@@ -154,6 +154,12 @@ public class AppearanceActivity extends AppCompatActivity {
     }
 
     private void setupUnitToggles() {
+        View cardUnits = findViewById(R.id.cardUnitsMeasurement);
+        boolean isLoggedIn = UserManager.isLoggedIn(this);
+        if (cardUnits != null) {
+            cardUnits.setVisibility(isLoggedIn ? View.VISIBLE : View.GONE);
+        }
+
         if (toggleDistanceUnit != null) {
             String currentDistUnit = UnitUtils.getUnitSystem(this);
             if (UnitUtils.UNIT_IMPERIAL.equals(currentDistUnit)) {
