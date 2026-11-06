@@ -31,6 +31,55 @@ public class StripePaymentHelper {
         void onFailure(String errorMessage);
     }
 
+    public static boolean isValidLuhn(String cardNumber) {
+        String digits = cardNumber.replaceAll("\\D+", "");
+        if (digits.length() < 13 || digits.length() > 19) return false;
+
+        int sum = 0;
+        boolean alternate = false;
+        for (int i = digits.length() - 1; i >= 0; i--) {
+            int n = Integer.parseInt(digits.substring(i, i + 1));
+            if (alternate) {
+                n *= 2;
+                if (n > 9) n = (n % 10) + 1;
+            }
+            sum += n;
+            alternate = !alternate;
+        }
+        return (sum % 10 == 0);
+    }
+
+    public static boolean isValidExpiry(String exp) {
+        if (exp == null || !exp.contains("/")) return false;
+        String[] parts = exp.split("/");
+        if (parts.length != 2) return false;
+        try {
+            int month = Integer.parseInt(parts[0].trim());
+            int year = Integer.parseInt(parts[1].trim());
+            if (year < 100) year += 2000;
+            if (month < 1 || month > 12) return false;
+
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            int curYear = cal.get(java.util.Calendar.YEAR);
+            int curMonth = cal.get(java.util.Calendar.MONTH) + 1;
+
+            if (year < curYear) return false;
+            if (year == curYear && month < curMonth) return false;
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static String getCardBrand(String number) {
+        String digits = number.replaceAll("\\D+", "");
+        if (digits.startsWith("4")) return "Visa";
+        if (digits.startsWith("51") || digits.startsWith("52") || digits.startsWith("53") || digits.startsWith("54") || digits.startsWith("55")) return "Mastercard";
+        if (digits.startsWith("34") || digits.startsWith("37")) return "American Express";
+        if (digits.startsWith("6011") || digits.startsWith("65")) return "Discover";
+        return "Card";
+    }
+
     public static void processMockPayment(AppCompatActivity activity, long amountCents, String description, StripePaymentCallback callback) {
         if (activity == null || activity.isFinishing()) return;
 
@@ -54,8 +103,36 @@ public class StripePaymentHelper {
         if (btnPayNow != null) {
             btnPayNow.setText("Pay " + formattedAmount + " 🔒");
             btnPayNow.setOnClickListener(v -> {
+                String rawCardNum = (etCardNumber != null && etCardNumber.getText() != null) ? etCardNumber.getText().toString().trim() : "";
+                String rawExpiry = (etCardExpiry != null && etCardExpiry.getText() != null) ? etCardExpiry.getText().toString().trim() : "";
+                String rawCvc = (etCardCvc != null && etCardCvc.getText() != null) ? etCardCvc.getText().toString().trim() : "";
+
+                if (!isValidLuhn(rawCardNum)) {
+                    Toast.makeText(activity, "⚠️ Invalid Credit Card Number! Checksum check failed.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (!isValidExpiry(rawExpiry)) {
+                    Toast.makeText(activity, "⚠️ Invalid Expiration Date! Format must be MM/YY.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (rawCvc.length() < 3) {
+                    Toast.makeText(activity, "⚠️ Invalid CVC Code! Please enter 3 or 4 digits.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                String digits = rawCardNum.replaceAll("\\D+", "");
+                if ("4000000200110044".equals(digits)) {
+                    Toast.makeText(activity, "⚠️ Stripe Error: Your card was declined by the bank.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                String last4 = digits.length() >= 4 ? digits.substring(digits.length() - 4) : "4242";
+                String brand = getCardBrand(rawCardNum);
+
                 sheet.dismiss();
-                executeStripeApiCharge(activity, amountCents, description, callback);
+                executeStripeApiCharge(activity, amountCents, description, brand, last4, callback);
             });
         }
 
@@ -66,7 +143,7 @@ public class StripePaymentHelper {
         sheet.show();
     }
 
-    private static void executeStripeApiCharge(AppCompatActivity activity, long amountCents, String description, StripePaymentCallback callback) {
+    private static void executeStripeApiCharge(AppCompatActivity activity, long amountCents, String description, String cardBrand, String last4, StripePaymentCallback callback) {
         ProgressDialog progressDialog = new ProgressDialog(activity);
         progressDialog.setMessage("Authorizing with Stripe API (Test Mode)...");
         progressDialog.setCancelable(false);
@@ -102,7 +179,7 @@ public class StripePaymentHelper {
                         if (response.isSuccessful() && json.has("id")) {
                             String intentId = json.optString("id", "pi_mock_12345");
                             String status = json.optString("status", "succeeded");
-                            showStripeReceiptDialog(activity, intentId, status, amountCents, description, callback);
+                            showStripeReceiptDialog(activity, intentId, status, amountCents, description, cardBrand, last4, callback);
                         } else {
                             String errorMsg = "Stripe Authorization Failed";
                             if (json.has("error")) {
@@ -130,7 +207,7 @@ public class StripePaymentHelper {
         }).start();
     }
 
-    private static void showStripeReceiptDialog(AppCompatActivity activity, String intentId, String status, long amountCents, String description, StripePaymentCallback callback) {
+    private static void showStripeReceiptDialog(AppCompatActivity activity, String intentId, String status, long amountCents, String description, String cardBrand, String last4, StripePaymentCallback callback) {
         String formattedAmount = String.format(java.util.Locale.US, "$%.2f USD", amountCents / 100.0);
 
         String receiptMessage = "💳 Stripe Test Mode Payment Authorized\n\n" +
@@ -138,7 +215,7 @@ public class StripePaymentHelper {
                 "• Amount: " + formattedAmount + "\n" +
                 "• Status: " + status.toUpperCase() + " ✅\n" +
                 "• Payment ID: " + intentId + "\n" +
-                "• Test Card: Visa ending in 4242";
+                "• Test Card: " + cardBrand + " ending in " + last4;
 
         new MaterialAlertDialogBuilder(activity)
                 .setTitle("Stripe Checkout Receipt")
