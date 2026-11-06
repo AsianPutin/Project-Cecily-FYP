@@ -94,6 +94,10 @@ public class ContributeActivity extends AppCompatActivity {
             if (btnMonthly != null) {
                 btnMonthly.setEnabled(false);
                 btnMonthly.setAlpha(0.4f);
+                if (btnMonthly instanceof android.widget.Button) {
+                    String expiryStr = SubscriptionDialogHelper.getFormattedMonthlyExpiryDate(this);
+                    ((android.widget.Button) btnMonthly).setText("Monthly Pass Active (" + (expiryStr.isEmpty() ? "30 Days" : "Expires " + expiryStr) + ") ✅");
+                }
             }
             if (btnLifetime != null) {
                 btnLifetime.setEnabled(true);
@@ -109,6 +113,9 @@ public class ContributeActivity extends AppCompatActivity {
             if (btnMonthly != null) {
                 btnMonthly.setEnabled(false);
                 btnMonthly.setAlpha(0.4f);
+                if (btnMonthly instanceof android.widget.Button) {
+                    ((android.widget.Button) btnMonthly).setText("Monthly Ad-Free Pass ($0.99 / mo)");
+                }
             }
             if (btnLifetime != null) {
                 btnLifetime.setEnabled(false);
@@ -124,6 +131,9 @@ public class ContributeActivity extends AppCompatActivity {
             if (btnMonthly != null) {
                 btnMonthly.setEnabled(true);
                 btnMonthly.setAlpha(1.0f);
+                if (btnMonthly instanceof android.widget.Button) {
+                    ((android.widget.Button) btnMonthly).setText("Monthly Ad-Free Pass ($0.99 / mo)");
+                }
             }
             if (btnLifetime != null) {
                 btnLifetime.setEnabled(true);

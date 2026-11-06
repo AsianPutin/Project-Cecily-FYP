@@ -64,9 +64,17 @@ public class SettingsActivity extends AppCompatActivity {
         TextView tvSubtext = findViewById(R.id.tvFreedomSubtext);
         View btnUpgrade = findViewById(R.id.btnUpgradeFreedomPass);
 
-        boolean unlocked = SubscriptionDialogHelper.isPremiumUnlocked(this);
+        int mode = SubscriptionDialogHelper.getSubscriptionMode(this);
+        boolean unlocked = (mode != SubscriptionDialogHelper.MODE_FREE);
         if (tvBadge != null) {
-            tvBadge.setText(unlocked ? "🌟 Ad-Free Premium Active" : "Free Tier");
+            if (mode == SubscriptionDialogHelper.MODE_MONTHLY) {
+                String expiryStr = SubscriptionDialogHelper.getFormattedMonthlyExpiryDate(this);
+                tvBadge.setText("🌟 Monthly Active (" + (expiryStr.isEmpty() ? "30 Days" : "Expires " + expiryStr) + ")");
+            } else if (mode == SubscriptionDialogHelper.MODE_LIFETIME) {
+                tvBadge.setText("🌟 Lifetime Premium Active");
+            } else {
+                tvBadge.setText("Free Tier");
+            }
         }
         if (tvSubtext != null) {
             tvSubtext.setText(unlocked ? "Your Ad-Free Premium status is active! Banner ads are permanently hidden app-wide." : "Unlock a clean, 100% ad-free experience across all screens.");

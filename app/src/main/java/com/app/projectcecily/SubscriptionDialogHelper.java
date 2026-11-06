@@ -23,16 +23,33 @@ public class SubscriptionDialogHelper {
 
     public static int getSubscriptionMode(Context context) {
         if (context == null) return MODE_FREE;
+        checkSubscriptionExpiry(context);
         SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         return prefs.getInt("premium_subscription_mode", MODE_FREE);
     }
 
+    public static long getMonthlyExpiryMillis(Context context) {
+        if (context == null) return 0L;
+        SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        return prefs.getLong("monthly_expiry_millis", 0L);
+    }
+
+    public static String getFormattedMonthlyExpiryDate(Context context) {
+        long expiryMs = getMonthlyExpiryMillis(context);
+        if (expiryMs <= 0) return "";
+        return android.text.format.DateFormat.format("MMM dd, yyyy", expiryMs).toString();
+    }
+
     public static void setSubscriptionMode(Context context, int mode) {
         if (context == null) return;
+        long now = System.currentTimeMillis();
+        long expiryMs = (mode == MODE_MONTHLY) ? (now + (30L * 24 * 60 * 60 * 1000L)) : 0L;
+
         SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         prefs.edit()
                 .putInt("premium_subscription_mode", mode)
                 .putBoolean("is_premium_unlocked", mode != MODE_FREE)
+                .putLong("monthly_expiry_millis", expiryMs)
                 .apply();
 
         String userId = UserManager.getUserId(context);
@@ -41,6 +58,19 @@ public class SubscriptionDialogHelper {
                     .getReference("profiles").child(userId);
             userRef.child("isPremium").setValue(mode != MODE_FREE);
             userRef.child("subscriptionMode").setValue(mode);
+            userRef.child("monthlyExpiryMillis").setValue(expiryMs);
+        }
+    }
+
+    public static void checkSubscriptionExpiry(Context context) {
+        if (context == null) return;
+        SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        int mode = prefs.getInt("premium_subscription_mode", MODE_FREE);
+        if (mode == MODE_MONTHLY) {
+            long expiryMs = prefs.getLong("monthly_expiry_millis", 0L);
+            if (expiryMs > 0 && System.currentTimeMillis() > expiryMs) {
+                setSubscriptionMode(context, MODE_FREE);
+            }
         }
     }
 
@@ -54,6 +84,7 @@ public class SubscriptionDialogHelper {
             if (snapshot.exists()) {
                 Long modeVal = snapshot.child("subscriptionMode").getValue(Long.class);
                 Boolean isPrem = snapshot.child("isPremium").getValue(Boolean.class);
+                Long expiryVal = snapshot.child("monthlyExpiryMillis").getValue(Long.class);
 
                 int mode = MODE_FREE;
                 if (modeVal != null) {
@@ -62,10 +93,21 @@ public class SubscriptionDialogHelper {
                     mode = MODE_LIFETIME;
                 }
 
+                long expiryMs = expiryVal != null ? expiryVal : 0L;
+                long now = System.currentTimeMillis();
+
+                if (mode == MODE_MONTHLY && expiryMs > 0 && now > expiryMs) {
+                    mode = MODE_FREE;
+                    expiryMs = 0L;
+                    setSubscriptionMode(context, MODE_FREE);
+                    return;
+                }
+
                 SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
                 prefs.edit()
                         .putInt("premium_subscription_mode", mode)
                         .putBoolean("is_premium_unlocked", mode != MODE_FREE)
+                        .putLong("monthly_expiry_millis", expiryMs)
                         .apply();
             }
         });
