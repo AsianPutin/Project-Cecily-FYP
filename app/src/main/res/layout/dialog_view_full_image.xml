@@ -1,28 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#111111">
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="300dp"
+    android:layout_gravity="center"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="12dp"
+    app:strokeWidth="0dp">
 
-    <ImageView
-        android:id="@+id/ivFullImage"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:adjustViewBounds="true"
-        android:contentDescription="Full Profile Picture"
-        android:scaleType="fitCenter"
-        android:src="@mipmap/ic_launcher_round" />
+        android:layout_height="match_parent">
 
-    <ImageButton
-        android:id="@+id/btnCloseFullImage"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Close"
-        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+        <!-- Layer 1: Soft Blurred Profile Picture Background -->
+        <ImageView
+            android:id="@+id/ivBlurBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Blurred Background"
+            android:scaleType="centerCrop" />
 
-</RelativeLayout>
+        <!-- Layer 2: Semi-Transparent Dark Overlay -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#44000000" />
+
+        <!-- Layer 3: Crisp Foreground Profile Picture -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivFullImage"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
+            android:layout_gravity="center"
+            android:contentDescription="Full Profile Picture"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+        <!-- Layer 4: Close X Button in Top Right -->
+        <ImageButton
+            android:id="@+id/btnCloseFullImage"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="#FFFFFF" />
+
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>

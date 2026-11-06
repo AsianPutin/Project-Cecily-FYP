@@ -164,18 +164,49 @@ public class AccountActivity extends AppCompatActivity {
         sheet.show();
     }
 
+    private Bitmap createBlurredBitmap(Bitmap original, int radius) {
+        if (original == null) return null;
+        try {
+            Bitmap input = Bitmap.createScaledBitmap(original, Math.max(1, original.getWidth() / 4), Math.max(1, original.getHeight() / 4), false);
+            Bitmap output = Bitmap.createBitmap(input.getWidth(), input.getHeight(), Bitmap.Config.ARGB_8888);
+
+            android.renderscript.RenderScript rs = android.renderscript.RenderScript.create(this);
+            android.renderscript.ScriptIntrinsicBlur script = android.renderscript.ScriptIntrinsicBlur.create(rs, android.renderscript.Element.U8_4(rs));
+            android.renderscript.Allocation allocIn = android.renderscript.Allocation.createFromBitmap(rs, input);
+            android.renderscript.Allocation allocOut = android.renderscript.Allocation.createFromBitmap(rs, output);
+
+            script.setRadius(Math.min(25, Math.max(1, radius)));
+            script.setInput(allocIn);
+            script.forEach(allocOut);
+            allocOut.copyTo(output);
+            rs.destroy();
+            return output;
+        } catch (Exception e) {
+            return original;
+        }
+    }
+
     private void showFullProfilePictureDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_view_full_image, null);
+        ImageView ivBlurBg = view.findViewById(R.id.ivBlurBg);
         ImageView ivFull = view.findViewById(R.id.ivFullImage);
-        
-        if (currentProfileBitmap != null) {
-            ivFull.setImageBitmap(currentProfileBitmap);
-        } else {
-            ivFull.setImageResource(R.mipmap.ic_launcher_round);
+
+        Bitmap srcBitmap = currentProfileBitmap;
+        if (srcBitmap == null) {
+            srcBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
+        }
+
+        if (srcBitmap != null) {
+            ivFull.setImageBitmap(srcBitmap);
+            Bitmap blurred = createBlurredBitmap(srcBitmap, 25);
+            if (blurred != null && ivBlurBg != null) {
+                ivBlurBg.setImageBitmap(blurred);
+            }
         }
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
+                .setBackground(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
                 .create();
 
         view.findViewById(R.id.btnCloseFullImage).setOnClickListener(v -> dialog.dismiss());
