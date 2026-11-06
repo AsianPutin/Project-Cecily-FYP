@@ -190,12 +190,13 @@
                     android:textColor="#FFFFFF" />
             </LinearLayout>
 
-            <!-- Contribute Button at the Very Bottom -->
+            <!-- Contribute Button at the Very Bottom (Centered & Half Length) -->
             <Button
                 android:id="@+id/btnContribute"
                 style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
+                android:layout_width="160dp"
                 android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
                 android:text="Contribute" />
 
