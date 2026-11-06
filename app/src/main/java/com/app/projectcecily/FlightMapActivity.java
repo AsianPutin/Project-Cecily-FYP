@@ -342,12 +342,17 @@ public class FlightMapActivity extends AppCompatActivity {
         tvArrCity.setText(resolveCityAndCountry(arrIataCode, arrCityName));
 
         long depMillis = info.depTimeMillis > 0 ? info.depTimeMillis : System.currentTimeMillis();
-        long durationMs = (110 * 60 * 1000L); // 1h 50m duration
-        long arrMillis = depMillis + durationMs;
+        long arrMillis = (info.estimatedArrivalMillis > depMillis) ? info.estimatedArrivalMillis : (depMillis + (110 * 60 * 1000L));
+        long durationMs = arrMillis - depMillis;
+        if (durationMs <= 0) durationMs = 110 * 60 * 1000L;
+
+        long hours = durationMs / (60 * 60 * 1000L);
+        long mins = (durationMs % (60 * 60 * 1000L)) / (60 * 1000L);
+        String formattedDuration = String.format(java.util.Locale.US, "%dh %02dm", hours, mins);
 
         tvDepTime.setText(formatTimeSystem(depMillis));
         tvArrTime.setText(formatTimeSystem(arrMillis));
-        tvDuration.setText("1h 50m");
+        tvDuration.setText(formattedDuration);
 
         tvDepDate.setText(formatDateSystem(depMillis));
         tvArrDate.setText(formatDateSystem(arrMillis));
@@ -400,9 +405,10 @@ public class FlightMapActivity extends AppCompatActivity {
             @Override
             public void run() {
                 long now = System.currentTimeMillis();
-                long totalDuration = 2 * 60 * 60 * 1000;
                 long depTime = info.depTimeMillis;
-                long arrTime = depTime + totalDuration;
+                long arrTime = (info.estimatedArrivalMillis > depTime) ? info.estimatedArrivalMillis : (depTime + (110 * 60 * 1000L));
+                long totalDuration = arrTime - depTime;
+                if (totalDuration <= 0) totalDuration = 110 * 60 * 1000L;
 
                 double progress;
                 if (now < depTime) {

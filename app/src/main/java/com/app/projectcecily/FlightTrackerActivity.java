@@ -829,8 +829,20 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                         if (apiSchedTime > 0) finalDepTime = apiSchedTime;
                     }
 
+                    long finalArrTime = 0;
+                    if (arrObj.has("estimated") && !arrObj.get("estimated").isJsonNull()) {
+                        finalArrTime = parseIsoTimeToMillis(arrObj.get("estimated").getAsString());
+                    }
+                    if (finalArrTime <= 0 && arrObj.has("scheduled") && !arrObj.get("scheduled").isJsonNull()) {
+                        finalArrTime = parseIsoTimeToMillis(arrObj.get("scheduled").getAsString());
+                    }
+                    if (finalArrTime <= 0 && finalDepTime > 0) {
+                        finalArrTime = finalDepTime + (110 * 60 * 1000L);
+                    }
+
                     String id = activeRef.push().getKey();
                     FlightInfo flight = new FlightInfo(id, flightNum, depIataCode, arrIataCode, finalDepTime, userId);
+                    flight.estimatedArrivalMillis = finalArrTime;
                     flight.airlineName = knownAirline.equals("Airline") ? apiAirline : knownAirline;
                     flight.depCity = depAirportName;
                     flight.arrCity = arrAirportName;
@@ -862,7 +874,9 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     private void saveFallback(String flightNum, long targetTimeMillis, String knownAirline, String depIata, String arrIata, String depCity, String arrCity, String passengerType) {
         String id = activeRef.push().getKey();
         long depTime = targetTimeMillis > 0 ? targetTimeMillis : selectedDateTime.getTimeInMillis();
+        long arrTime = depTime + (110 * 60 * 1000L);
         FlightInfo flight = new FlightInfo(id, flightNum, depIata, arrIata, depTime, userId);
+        flight.estimatedArrivalMillis = arrTime;
         flight.airlineName = knownAirline;
         flight.depCity = depCity;
         flight.arrCity = arrCity;
