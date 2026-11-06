@@ -109,6 +109,7 @@ public class AccountActivity extends AppCompatActivity {
         loadSavedProfilePicture();
         listenForProfileUpdates();
         updatePairingUI();
+        setupDeveloperModeTapListener();
 
         View.OnClickListener profilePicClickListener = v -> showProfilePictureOptionsSheet();
         ivProfilePic.setOnClickListener(profilePicClickListener);
@@ -544,6 +545,32 @@ public class AccountActivity extends AppCompatActivity {
                 cal.get(java.util.Calendar.DAY_OF_MONTH)
         );
         datePicker.show();
+    }
+
+    private int devTapCount = 0;
+    private long lastDevTapTime = 0;
+
+    private void setupDeveloperModeTapListener() {
+        View cardPairing = findViewById(R.id.cardPartnerPairing);
+        if (cardPairing != null) {
+            cardPairing.setOnClickListener(v -> {
+                long now = System.currentTimeMillis();
+                if (now - lastDevTapTime > 2000) {
+                    devTapCount = 0;
+                }
+                lastDevTapTime = now;
+                devTapCount++;
+
+                int remaining = 7 - devTapCount;
+                if (devTapCount >= 7) {
+                    devTapCount = 0;
+                    Toast.makeText(this, "🎉 Developer Options Unlocked!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, DeveloperActivity.class));
+                } else if (devTapCount >= 3) {
+                    Toast.makeText(this, "You are now " + remaining + " steps away from Developer Debug Menu.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void unpairPartner() {
