@@ -30,15 +30,47 @@ public class ContributeActivity extends AppCompatActivity {
         View btnLifetime = findViewById(R.id.btnSubLifetime);
 
         if (btnKofi != null) {
-            btnKofi.setOnClickListener(v -> Toast.makeText(this, "Ko-fi Donation Link (Dummy for presentation)", Toast.LENGTH_SHORT).show());
+            btnKofi.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
+                this, 300, "Developer Ko-fi Support ($3.00 USD)", new StripePaymentHelper.StripePaymentCallback() {
+                    @Override
+                    public void onSuccess(String paymentIntentId, long amountCents) {
+                        Toast.makeText(ContributeActivity.this, "☕ Thank you for supporting the developer!", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {}
+                }
+            ));
         }
 
         if (btnMonthly != null) {
-            btnMonthly.setOnClickListener(v -> Toast.makeText(this, "Monthly Impulse Pass $0.99 (Dummy for presentation)", Toast.LENGTH_SHORT).show());
+            btnMonthly.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
+                this, 99, "Freedom Pass - Monthly Impulse ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
+                    @Override
+                    public void onSuccess(String paymentIntentId, long amountCents) {
+                        SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
+                        Toast.makeText(ContributeActivity.this, "🎉 Freedom Pass Monthly Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {}
+                }
+            ));
         }
 
         if (btnLifetime != null) {
-            btnLifetime.setOnClickListener(v -> Toast.makeText(this, "Lifetime Freedom Pass $9.99 (Dummy for presentation)", Toast.LENGTH_SHORT).show());
+            btnLifetime.setOnClickListener(v -> StripePaymentHelper.processMockPayment(
+                this, 999, "Freedom Pass - Lifetime Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
+                    @Override
+                    public void onSuccess(String paymentIntentId, long amountCents) {
+                        SubscriptionDialogHelper.setPremiumUnlocked(ContributeActivity.this, true);
+                        Toast.makeText(ContributeActivity.this, "🎉 Freedom Pass Lifetime Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {}
+                }
+            ));
         }
     }
 

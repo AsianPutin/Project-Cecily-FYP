@@ -47,15 +47,40 @@ public class SubscriptionDialogHelper {
         View cardMonthly = view.findViewById(R.id.cardMonthlySub);
         View cardLifetime = view.findViewById(R.id.cardLifetimeSub);
 
-        View.OnClickListener purchaseListener = v -> {
+        View.OnClickListener monthlyListener = v -> {
             sheet.dismiss();
-            confirmMockPayment(activity, listener);
+            StripePaymentHelper.processMockPayment(activity, 99, "Freedom Pass - Monthly Impulse ($0.99/mo)", new StripePaymentHelper.StripePaymentCallback() {
+                @Override
+                public void onSuccess(String paymentIntentId, long amountCents) {
+                    setPremiumUnlocked(activity, true);
+                    Toast.makeText(activity, "🎉 Freedom Pass Monthly Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    if (listener != null) listener.onStatusChanged(true);
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {}
+            });
         };
 
-        if (btnMonthly != null) btnMonthly.setOnClickListener(purchaseListener);
-        if (btnLifetime != null) btnLifetime.setOnClickListener(purchaseListener);
-        if (cardMonthly != null) cardMonthly.setOnClickListener(purchaseListener);
-        if (cardLifetime != null) cardLifetime.setOnClickListener(purchaseListener);
+        View.OnClickListener lifetimeListener = v -> {
+            sheet.dismiss();
+            StripePaymentHelper.processMockPayment(activity, 999, "Freedom Pass - Lifetime Access ($9.99)", new StripePaymentHelper.StripePaymentCallback() {
+                @Override
+                public void onSuccess(String paymentIntentId, long amountCents) {
+                    setPremiumUnlocked(activity, true);
+                    Toast.makeText(activity, "🎉 Freedom Pass Lifetime Unlocked! Ads removed across all screens.", Toast.LENGTH_LONG).show();
+                    if (listener != null) listener.onStatusChanged(true);
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {}
+            });
+        };
+
+        if (btnMonthly != null) btnMonthly.setOnClickListener(monthlyListener);
+        if (cardMonthly != null) cardMonthly.setOnClickListener(monthlyListener);
+        if (btnLifetime != null) btnLifetime.setOnClickListener(lifetimeListener);
+        if (cardLifetime != null) cardLifetime.setOnClickListener(lifetimeListener);
 
         sheet.show();
     }
