@@ -297,7 +297,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         updateVibrationUiSummary();
         vibrateDevicePattern(VIBRATION_PATTERNS[index]);
-        Toast.makeText(this, "Vibration pattern set: " + name, Toast.LENGTH_SHORT).show();
     }
 
     private void vibrateDevicePattern(long[] pattern) {
