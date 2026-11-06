@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
@@ -61,7 +60,6 @@ public class DeveloperActivity extends AppCompatActivity {
                 SubscriptionDialogHelper.setPremiumUnlocked(this, !current);
                 boolean updated = SubscriptionDialogHelper.isPremiumUnlocked(this);
                 btnTogglePremium.setText(updated ? "Reset Freedom Pass (Show Ads)" : "Unlock Freedom Pass (Ad-Free)");
-                Toast.makeText(this, updated ? "🎉 Premium Unlocked! Ads hidden." : "🔄 Premium Reset! Ads restored.", Toast.LENGTH_SHORT).show();
             });
         }
     }
@@ -119,11 +117,8 @@ public class DeveloperActivity extends AppCompatActivity {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) {
                 nm.notify((int) System.currentTimeMillis(), builder.build());
-                Toast.makeText(this, "Notification posted: " + title, Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Failed to post notification: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        } catch (Exception ignored) {}
     }
 
     private void triggerCurrentVibration() {
@@ -147,10 +142,7 @@ public class DeveloperActivity extends AppCompatActivity {
                     v.vibrate(pattern, -1);
                 }
             }
-            Toast.makeText(this, "Vibrating pattern index: " + vibrationIndex, Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Vibration failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        } catch (Exception ignored) {}
     }
 
     @Override

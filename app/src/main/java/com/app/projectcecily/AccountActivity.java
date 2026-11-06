@@ -591,15 +591,11 @@ public class AccountActivity extends AppCompatActivity {
                 }
             } else {
                 devTapCount++;
-                int stepsLeft = 7 - devTapCount;
 
                 if (devTapCount >= 7) {
                     devTapCount = 0;
                     prefs.edit().putBoolean(devKey, true).apply();
-                    Toast.makeText(this, "🎉 Developer Options Unlocked!", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(this, DeveloperActivity.class));
-                } else if (devTapCount >= 3) {
-                    Toast.makeText(this, "You are now " + stepsLeft + " step" + (stepsLeft > 1 ? "s" : "") + " away from Developer Options.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
