@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etIdentifier, etPassword;
-    private Button btnLogin, btnGoToSignUp, btnGuestAppearance;
+    private Button btnLogin, btnGoToSignUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +40,11 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etLoginPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnGoToSignUp = findViewById(R.id.btnGoToSignUp);
-        btnGuestAppearance = findViewById(R.id.btnGuestAppearance);
 
         btnLogin.setOnClickListener(v -> handleLogin());
 
         btnGoToSignUp.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
-        });
-
-        btnGuestAppearance.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, AppearanceActivity.class));
         });
     }
 
