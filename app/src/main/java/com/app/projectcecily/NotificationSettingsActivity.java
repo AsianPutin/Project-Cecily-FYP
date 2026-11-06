@@ -248,16 +248,43 @@ public class NotificationSettingsActivity extends AppCompatActivity {
     }
 
     private void showVibrationPatternDialog() {
-        int currentIndex = prefs.getInt(KEY_VIBRATION_PATTERN_INDEX, 0);
+        int initialIndex = prefs.getInt(KEY_VIBRATION_PATTERN_INDEX, 0);
+        final int[] selectedIndexHolder = {initialIndex};
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Select Vibration Pattern")
-                .setSingleChoiceItems(VIBRATION_PATTERN_NAMES, currentIndex, (dialog, which) -> {
-                    dialog.dismiss();
-                    saveVibrationPattern(which);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_vibration_pattern_options, null);
+        sheet.setContentView(view);
+
+        RadioGroup radioGroup = view.findViewById(R.id.radioGroupVibrations);
+        Button btnCancel = view.findViewById(R.id.btnCancelVibration);
+        Button btnConfirm = view.findViewById(R.id.btnConfirmVibration);
+
+        int[] radioIds = {R.id.radioVib0, R.id.radioVib1, R.id.radioVib2, R.id.radioVib3, R.id.radioVib4};
+        if (initialIndex >= 0 && initialIndex < radioIds.length) {
+            radioGroup.check(radioIds[initialIndex]);
+        }
+
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int newIndex = 0;
+            if (checkedId == R.id.radioVib1) newIndex = 1;
+            else if (checkedId == R.id.radioVib2) newIndex = 2;
+            else if (checkedId == R.id.radioVib3) newIndex = 3;
+            else if (checkedId == R.id.radioVib4) newIndex = 4;
+
+            selectedIndexHolder[0] = newIndex;
+            vibrateDevicePattern(VIBRATION_PATTERNS[newIndex]);
+        });
+
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> sheet.dismiss());
+
+        if (btnConfirm != null) {
+            btnConfirm.setOnClickListener(v -> {
+                sheet.dismiss();
+                saveVibrationPattern(selectedIndexHolder[0]);
+            });
+        }
+
+        sheet.show();
     }
 
     private void saveVibrationPattern(int index) {

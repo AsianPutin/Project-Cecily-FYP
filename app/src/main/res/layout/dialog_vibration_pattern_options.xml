@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/card_background"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Top Drag Handle Pill -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#666666" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Vibration Pattern"
+        android:textColor="@color/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="12dp"
+        android:text="Tap a pattern to feel a live haptic preview before confirming."
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp" />
+
+    <!-- RadioGroup for Vibration Patterns -->
+    <RadioGroup
+        android:id="@+id/radioGroupVibrations"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/radioVib0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Default Pulse 📳"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/radioVib1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Heartbeat 💓"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/radioVib2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Double Tap ⚡"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/radioVib3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Long Buzz 📳"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/radioVib4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Tick-Tock ⏰"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+    </RadioGroup>
+
+    <!-- Bottom Action Buttons: Cancel and Confirm -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancelVibration"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textColor="@color/text_secondary" />
+
+        <Button
+            android:id="@+id/btnConfirmVibration"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Confirm" />
+    </LinearLayout>
+
+</LinearLayout>
