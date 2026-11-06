@@ -37,9 +37,38 @@ public class SubscriptionDialogHelper {
 
         String userId = UserManager.getUserId(context);
         if (userId != null && !userId.isEmpty()) {
-            FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                    .getReference("profiles").child(userId).child("isPremium").setValue(mode != MODE_FREE);
+            com.google.firebase.database.DatabaseReference userRef = FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .getReference("profiles").child(userId);
+            userRef.child("isPremium").setValue(mode != MODE_FREE);
+            userRef.child("subscriptionMode").setValue(mode);
         }
+    }
+
+    public static void syncSubscriptionFromFirebase(Context context) {
+        if (context == null) return;
+        String userId = UserManager.getUserId(context);
+        if (userId.isEmpty()) return;
+
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(userId).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                Long modeVal = snapshot.child("subscriptionMode").getValue(Long.class);
+                Boolean isPrem = snapshot.child("isPremium").getValue(Boolean.class);
+
+                int mode = MODE_FREE;
+                if (modeVal != null) {
+                    mode = modeVal.intValue();
+                } else if (Boolean.TRUE.equals(isPrem)) {
+                    mode = MODE_LIFETIME;
+                }
+
+                SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                prefs.edit()
+                        .putInt("premium_subscription_mode", mode)
+                        .putBoolean("is_premium_unlocked", mode != MODE_FREE)
+                        .apply();
+            }
+        });
     }
 
     public static boolean isPremiumUnlocked(Context context) {

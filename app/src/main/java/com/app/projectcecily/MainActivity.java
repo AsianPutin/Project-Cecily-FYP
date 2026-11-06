@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         updateDynamicAccent();
         ThemeUtils.applyAccentToActivity(this);
+        SubscriptionDialogHelper.syncSubscriptionFromFirebase(this);
         setupBannerAd();
         if (lastDistanceInKm > 0 && tvDistance != null) {
             tvDistance.setText(UnitUtils.formatDistance(this, lastDistanceInKm));
