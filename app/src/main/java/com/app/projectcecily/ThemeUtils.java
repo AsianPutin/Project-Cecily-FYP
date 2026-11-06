@@ -133,7 +133,12 @@ public class ThemeUtils {
                         editor.putString(KEY_ACCENT_COLOR, cloudAccent);
                     }
                     if (cloudTheme != null) {
-                        editor.putInt(KEY_THEME_MODE, cloudTheme.intValue());
+                        int mode = cloudTheme.intValue();
+                        int localSaved = prefs.getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                        editor.putInt(KEY_THEME_MODE, mode);
+                        if (mode != localSaved && mode != AppCompatDelegate.getDefaultNightMode()) {
+                            AppCompatDelegate.setDefaultNightMode(mode);
+                        }
                     }
                     editor.apply();
                 }

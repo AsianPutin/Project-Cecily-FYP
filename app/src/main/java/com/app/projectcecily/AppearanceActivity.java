@@ -34,6 +34,7 @@ public class AppearanceActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.applySavedThemeMode(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appearance);
 
