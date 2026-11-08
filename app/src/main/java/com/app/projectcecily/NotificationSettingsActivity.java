@@ -281,7 +281,8 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         int vibrationIndex = prefs.getInt(KEY_VIBRATION_PATTERN_INDEX, 0);
 
         androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setSubText(subtext)

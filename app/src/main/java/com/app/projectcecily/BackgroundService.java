@@ -25,8 +25,9 @@ public class BackgroundService extends Service {
         
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("LDR Sync Active")
-                .setContentText("Project is waiting for partner pokes...")
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentText("Project Cecily is waiting for partner pokes...")
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
 
@@ -77,7 +78,8 @@ public class BackgroundService extends Service {
 
     private void sendFlightNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "poke_channel")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -106,8 +108,9 @@ public class BackgroundService extends Service {
 
     private void sendPokeNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "poke_channel")
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Project Notification")
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
+                .setContentTitle("Partner Poke 🔔")
                 .setContentText("Your partner poked you!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);

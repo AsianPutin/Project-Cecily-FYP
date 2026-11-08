@@ -405,8 +405,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void showPokeNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Project Notification")
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
+                .setContentTitle("Partner Poke 🔔")
                 .setContentText("Your partner poked you!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);

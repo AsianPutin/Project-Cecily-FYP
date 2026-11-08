@@ -44,7 +44,8 @@ public class FlightReminderReceiver extends BroadcastReceiver {
         int vibrationIndex = prefs.getInt(NotificationSettingsActivity.KEY_VIBRATION_PATTERN_INDEX, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(context))
                 .setContentTitle(isLandingAlert ? "Flight Landing Alert: " + flightNum : "Flight Reminder: " + flightNum)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

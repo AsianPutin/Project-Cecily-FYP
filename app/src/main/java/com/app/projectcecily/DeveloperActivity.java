@@ -253,7 +253,8 @@ public class DeveloperActivity extends AppCompatActivity {
         int vibrationIndex = prefs.getInt(NotificationSettingsActivity.KEY_VIBRATION_PATTERN_INDEX, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(IconManager.getNotificationSmallIcon())
+                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
