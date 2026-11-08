@@ -167,26 +167,38 @@ public class AppearanceActivity extends AppCompatActivity {
         updateIconPreview();
     }
 
+    private boolean hasPendingIconChange = false;
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (hasPendingIconChange) {
+            hasPendingIconChange = false;
+            IconManager.applyLauncherComponent(this, IconManager.getIconLogoStyle(this));
+        }
+    }
+
     private void showRestartRequiredDialog(String pendingLogoStyle, String pendingBgStyle) {
+        // Save new icon and background choices immediately
+        IconManager.setIconLogoStyle(this, pendingLogoStyle);
+        IconManager.setIconBgStyle(this, pendingBgStyle);
+        hasPendingIconChange = true;
+
+        // Set target menu flag so MainActivity opens AppearanceActivity on launch
+        getSharedPreferences("prefs_" + UserManager.getUserId(this), MODE_PRIVATE)
+                .edit()
+                .putString("restart_target_menu", "AppearanceActivity")
+                .apply();
+
+        refreshIconToggleUI();
+
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                 .setTitle("Restart required")
                 .setMessage("Restart the app for this change to take effect. You will be automatically returned to this menu.")
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    dialog.dismiss();
-                    refreshIconToggleUI();
-                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .setPositiveButton("Restart", (dialog, which) -> {
                     dialog.dismiss();
-
-                    // Save new icon and background choices
-                    IconManager.setIconLogoStyle(this, pendingLogoStyle);
-                    IconManager.setIconBgStyle(this, pendingBgStyle);
-
-                    // Set target menu flag so MainActivity opens AppearanceActivity on launch
-                    getSharedPreferences("prefs_" + UserManager.getUserId(this), MODE_PRIVATE)
-                            .edit()
-                            .putString("restart_target_menu", "AppearanceActivity")
-                            .apply();
+                    hasPendingIconChange = false;
 
                     IconManager.applyLauncherComponent(this, pendingLogoStyle);
 
@@ -199,7 +211,6 @@ public class AppearanceActivity extends AppCompatActivity {
                     finishAffinity();
                     Runtime.getRuntime().exit(0);
                 })
-                .setOnCancelListener(dialog -> refreshIconToggleUI())
                 .show();
     }
 
