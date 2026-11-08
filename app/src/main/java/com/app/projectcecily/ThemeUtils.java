@@ -149,9 +149,12 @@ public class ThemeUtils {
     }
 
     public static String getAccentColorHex(Context context) {
+        if (!UserManager.isLoggedIn(context)) {
+            return "DYNAMIC"; // Material You strictly for unlogged guest users!
+        }
         SharedPreferences prefs = getPrefs(context);
-        if (prefs == null) return "DYNAMIC";
-        return prefs.getString(KEY_ACCENT_COLOR, "DYNAMIC");
+        if (prefs == null) return "#25D366";
+        return prefs.getString(KEY_ACCENT_COLOR, "#25D366");
     }
 
     public static void saveAccentColor(Context context, String hexColor) {
@@ -192,6 +195,13 @@ public class ThemeUtils {
                     SharedPreferences.Editor editor = prefs.edit();
                     if (cloudAccent != null && !cloudAccent.trim().isEmpty()) {
                         editor.putString(KEY_ACCENT_COLOR, cloudAccent);
+                    } else {
+                        // Default logged in user to #25D366 and record in Firebase
+                        editor.putString(KEY_ACCENT_COLOR, "#25D366");
+                        try {
+                            FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                                    .getReference("profiles").child(userId).child("accentColor").setValue("#25D366");
+                        } catch (Exception ignored) {}
                     }
                     if (cloudTheme != null) {
                         int mode = cloudTheme.intValue();

@@ -44,6 +44,9 @@ public class UserManager {
     }
 
     public static String getUserId(Context context) {
+        if (!isLoggedIn(context)) {
+            return ""; // Guest unauthenticated session
+        }
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String id = prefs.getString(KEY_USER_ID, null);
         if (id == null || id.equals("user_1") || id.equals("user_2")) {
