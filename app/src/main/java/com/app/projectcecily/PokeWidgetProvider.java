@@ -47,11 +47,19 @@ public class PokeWidgetProvider extends AppWidgetProvider {
         String userId = UserManager.getUserId(context);
         String partnerId = UserManager.getPartnerId(context);
 
-        // When NOT logged in -> Display Monochrome App Icon!
+        // When NOT logged in -> Display Monochrome App Icon & Launch App on click!
         if (!UserManager.isLoggedIn(context) || userId.isEmpty()) {
             views.setImageViewResource(R.id.ivPokeHand, isNight ? R.drawable.ic_app_logo_mono_white : R.drawable.ic_app_logo_mono_black);
             views.setInt(R.id.ivPokeHand, "setColorFilter", 0);
             views.setTextViewText(R.id.tvPokeText, "Log In");
+
+            Intent appLaunchIntent = new Intent(context, MainActivity.class);
+            appLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent appPendingIntent = PendingIntent.getActivity(
+                    context, 0, appLaunchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+            views.setOnClickPendingIntent(R.id.widget_poke_root, appPendingIntent);
+
             appWidgetManager.updateAppWidget(appWidgetId, views);
             return;
         }

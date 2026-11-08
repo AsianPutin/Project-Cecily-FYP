@@ -11,8 +11,8 @@
 
     <ImageView
         android:id="@+id/ivPokeHand"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:contentDescription="Poke Partner"
         android:src="@drawable/ic_poke_hand"
         app:tint="#FF4081" />
