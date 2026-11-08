@@ -44,7 +44,22 @@ public class PokeWidgetProvider extends AppWidgetProvider {
 
         views.setOnClickPendingIntent(R.id.widget_poke_root, pendingIntent);
 
+        String userId = UserManager.getUserId(context);
         String partnerId = UserManager.getPartnerId(context);
+
+        // When NOT logged in -> Display Monochrome App Icon!
+        if (!UserManager.isLoggedIn(context) || userId.isEmpty()) {
+            views.setImageViewResource(R.id.ivPokeHand, isNight ? R.drawable.ic_app_logo_mono_white : R.drawable.ic_app_logo_mono_black);
+            views.setInt(R.id.ivPokeHand, "setColorFilter", 0);
+            views.setTextViewText(R.id.tvPokeText, "Log In");
+            appWidgetManager.updateAppWidget(appWidgetId, views);
+            return;
+        }
+
+        // When Logged In -> Use Poke Hand & Partner Accent
+        views.setImageViewResource(R.id.ivPokeHand, R.drawable.ic_poke_hand);
+        views.setTextViewText(R.id.tvPokeText, "Poke");
+
         if (partnerId.isEmpty()) {
             int defaultPartnerColor = Color.parseColor("#FF4081");
             views.setInt(R.id.ivPokeHand, "setColorFilter", defaultPartnerColor);
