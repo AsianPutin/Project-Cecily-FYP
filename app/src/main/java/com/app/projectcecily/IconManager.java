@@ -18,9 +18,9 @@ public class IconManager {
     }
 
     public static String getIconBgStyle(Context context) {
-        if (context == null) return "FOLLOW_THEME";
+        if (context == null) return "SYSTEM";
         SharedPreferences prefs = context.getSharedPreferences(getPrefsName(context), Context.MODE_PRIVATE);
-        return prefs.getString(KEY_ICON_BG, "FOLLOW_THEME");
+        return prefs.getString(KEY_ICON_BG, "SYSTEM");
     }
 
     public static void setIconLogoStyle(Context context, String style) {
@@ -47,8 +47,15 @@ public class IconManager {
             return Color.WHITE;
         } else if ("DARK".equalsIgnoreCase(bgStyle)) {
             return Color.parseColor("#121212");
+        } else if ("MATERIAL_YOU".equalsIgnoreCase(bgStyle)) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                try {
+                    return context.getColor(android.R.color.system_accent1_500);
+                } catch (Exception ignored) {}
+            }
+            return Color.parseColor(ThemeUtils.DEFAULT_ACCENT);
         } else {
-            // "FOLLOW_THEME" -> Follow active app accent color!
+            // "SYSTEM" -> Follow active app accent color!
             return ThemeUtils.getAccentColor(context);
         }
     }
@@ -60,7 +67,7 @@ public class IconManager {
             ComponentName monoComp = new ComponentName(context, "com.app.projectcecily.MainActivityMonochrome");
             ComponentName mainComp = new ComponentName(context, "com.app.projectcecily.MainActivity");
 
-            if ("MONOCHROME".equalsIgnoreCase(logoStyle)) {
+            if ("BLACK".equalsIgnoreCase(logoStyle) || "WHITE".equalsIgnoreCase(logoStyle) || "MONOCHROME".equalsIgnoreCase(logoStyle)) {
                 pm.setComponentEnabledSetting(monoComp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
                 pm.setComponentEnabledSetting(defaultComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
                 pm.setComponentEnabledSetting(mainComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);

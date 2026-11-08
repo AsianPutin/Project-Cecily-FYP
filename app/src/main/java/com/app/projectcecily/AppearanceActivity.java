@@ -115,33 +115,44 @@ public class AppearanceActivity extends AppCompatActivity {
         String currentLogo = IconManager.getIconLogoStyle(this);
         String currentBg = IconManager.getIconBgStyle(this);
 
-        if ("MONOCHROME".equalsIgnoreCase(currentLogo)) {
-            toggleIconLogoStyle.check(R.id.btnIconLogoMonochrome);
+        if ("BLACK".equalsIgnoreCase(currentLogo)) {
+            toggleIconLogoStyle.check(R.id.btnIconLogoBlack);
+        } else if ("WHITE".equalsIgnoreCase(currentLogo)) {
+            toggleIconLogoStyle.check(R.id.btnIconLogoWhite);
         } else {
-            toggleIconLogoStyle.check(R.id.btnIconLogoPinkGreen);
+            toggleIconLogoStyle.check(R.id.btnIconLogoDefault);
         }
 
         if ("WHITE".equalsIgnoreCase(currentBg)) {
             toggleIconBgStyle.check(R.id.btnIconBgWhite);
         } else if ("DARK".equalsIgnoreCase(currentBg)) {
             toggleIconBgStyle.check(R.id.btnIconBgDark);
+        } else if ("MATERIAL_YOU".equalsIgnoreCase(currentBg)) {
+            toggleIconBgStyle.check(R.id.btnIconBgMaterialYou);
         } else {
-            toggleIconBgStyle.check(R.id.btnIconBgFollowTheme);
+            toggleIconBgStyle.check(R.id.btnIconBgSystem);
         }
 
         updateIconPreview();
 
         toggleIconLogoStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
-            String newStyle = (checkedId == R.id.btnIconLogoMonochrome) ? "MONOCHROME" : "DEFAULT";
+            String newStyle = "DEFAULT";
+            if (checkedId == R.id.btnIconLogoBlack) {
+                newStyle = "BLACK";
+            } else if (checkedId == R.id.btnIconLogoWhite) {
+                newStyle = "WHITE";
+            }
             IconManager.setIconLogoStyle(this, newStyle);
             updateIconPreview();
         });
 
         toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
-            String newBg = "FOLLOW_THEME";
-            if (checkedId == R.id.btnIconBgWhite) {
+            String newBg = "SYSTEM";
+            if (checkedId == R.id.btnIconBgMaterialYou) {
+                newBg = "MATERIAL_YOU";
+            } else if (checkedId == R.id.btnIconBgWhite) {
                 newBg = "WHITE";
             } else if (checkedId == R.id.btnIconBgDark) {
                 newBg = "DARK";
@@ -160,7 +171,9 @@ public class AppearanceActivity extends AppCompatActivity {
             int bgColor = IconManager.getIconBackgroundColor(this);
 
             cardFrame.setCardBackgroundColor(bgColor);
-            if ("MONOCHROME".equalsIgnoreCase(logoStyle)) {
+            if ("WHITE".equalsIgnoreCase(logoStyle)) {
+                ivLogo.setImageResource(R.drawable.ic_app_logo_mono_white);
+            } else if ("BLACK".equalsIgnoreCase(logoStyle) || "MONOCHROME".equalsIgnoreCase(logoStyle)) {
                 ivLogo.setImageResource(R.drawable.ic_app_logo_mono_black);
             } else {
                 ivLogo.setImageResource(R.drawable.ic_app_logo);
