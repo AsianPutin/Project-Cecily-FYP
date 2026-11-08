@@ -18,16 +18,15 @@ public class IconManager {
     }
 
     public static String getIconBgStyle(Context context) {
-        if (context == null) return "SYSTEM";
+        if (context == null) return "LIGHT";
         SharedPreferences prefs = context.getSharedPreferences(getPrefsName(context), Context.MODE_PRIVATE);
-        return prefs.getString(KEY_ICON_BG, "SYSTEM");
+        return prefs.getString(KEY_ICON_BG, "LIGHT");
     }
 
     public static void setIconLogoStyle(Context context, String style) {
         if (context == null) return;
         SharedPreferences prefs = context.getSharedPreferences(getPrefsName(context), Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_ICON_LOGO, style).apply();
-        applyLauncherComponent(context, style);
     }
 
     public static void setIconBgStyle(Context context, String bgStyle) {
@@ -43,12 +42,16 @@ public class IconManager {
 
     public static int getIconBackgroundColor(Context context) {
         if (context == null) return Color.WHITE;
-        boolean isNightMode = (context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        return isNightMode ? Color.parseColor("#121212") : Color.WHITE;
+        String bgStyle = getIconBgStyle(context);
+        if ("DARK".equalsIgnoreCase(bgStyle)) {
+            return Color.parseColor("#121212");
+        }
+        return Color.WHITE;
     }
 
-    public static void applyLauncherComponent(Context context, String logoStyle) {
+    public static void applySavedIconComponent(Context context) {
         if (context == null) return;
+        String logoStyle = getIconLogoStyle(context);
         Context appContext = context.getApplicationContext();
 
         new Thread(() -> {

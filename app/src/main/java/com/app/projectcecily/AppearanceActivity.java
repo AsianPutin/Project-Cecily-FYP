@@ -106,11 +106,20 @@ public class AppearanceActivity extends AppCompatActivity {
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        IconManager.applySavedIconComponent(this);
+    }
+
     private void setupIconCustomization() {
         MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
-        if (toggleIconLogoStyle == null) return;
+        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
+
+        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
 
         String currentLogo = IconManager.getIconLogoStyle(this);
+        String currentBg = IconManager.getIconBgStyle(this);
 
         if ("BLACK".equalsIgnoreCase(currentLogo)) {
             toggleIconLogoStyle.check(R.id.btnIconLogoBlack);
@@ -118,6 +127,12 @@ public class AppearanceActivity extends AppCompatActivity {
             toggleIconLogoStyle.check(R.id.btnIconLogoWhite);
         } else {
             toggleIconLogoStyle.check(R.id.btnIconLogoDefault);
+        }
+
+        if ("DARK".equalsIgnoreCase(currentBg)) {
+            toggleIconBgStyle.check(R.id.btnIconBgDark);
+        } else {
+            toggleIconBgStyle.check(R.id.btnIconBgLight);
         }
 
         updateIconPreview();
@@ -131,6 +146,13 @@ public class AppearanceActivity extends AppCompatActivity {
                 newStyle = "WHITE";
             }
             IconManager.setIconLogoStyle(this, newStyle);
+            updateIconPreview();
+        });
+
+        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String newBg = (checkedId == R.id.btnIconBgDark) ? "DARK" : "LIGHT";
+            IconManager.setIconBgStyle(this, newBg);
             updateIconPreview();
         });
     }
