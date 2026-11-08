@@ -1,5 +1,6 @@
 package com.app.projectcecily;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -106,13 +107,41 @@ public class AppearanceActivity extends AppCompatActivity {
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        IconManager.applySavedIconComponent(this);
+    private void setupIconCustomization() {
+        MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
+        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
+
+        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
+
+        refreshIconToggleUI();
+
+        toggleIconLogoStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String currentStyle = IconManager.getIconLogoStyle(this);
+            String newStyle = "DEFAULT";
+            if (checkedId == R.id.btnIconLogoBlack) {
+                newStyle = "BLACK";
+            } else if (checkedId == R.id.btnIconLogoWhite) {
+                newStyle = "WHITE";
+            }
+
+            if (!newStyle.equalsIgnoreCase(currentStyle)) {
+                showRestartRequiredDialog(newStyle, IconManager.getIconBgStyle(this));
+            }
+        });
+
+        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String currentBg = IconManager.getIconBgStyle(this);
+            String newBg = (checkedId == R.id.btnIconBgDark) ? "DARK" : "LIGHT";
+
+            if (!newBg.equalsIgnoreCase(currentBg)) {
+                showRestartRequiredDialog(IconManager.getIconLogoStyle(this), newBg);
+            }
+        });
     }
 
-    private void setupIconCustomization() {
+    private void refreshIconToggleUI() {
         MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
         MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
 
@@ -136,25 +165,42 @@ public class AppearanceActivity extends AppCompatActivity {
         }
 
         updateIconPreview();
+    }
 
-        toggleIconLogoStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            String newStyle = "DEFAULT";
-            if (checkedId == R.id.btnIconLogoBlack) {
-                newStyle = "BLACK";
-            } else if (checkedId == R.id.btnIconLogoWhite) {
-                newStyle = "WHITE";
-            }
-            IconManager.setIconLogoStyle(this, newStyle);
-            updateIconPreview();
-        });
+    private void showRestartRequiredDialog(String pendingLogoStyle, String pendingBgStyle) {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Restart required")
+                .setMessage("Restart the app for this change to take effect. You will be automatically returned to this menu.")
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.dismiss();
+                    refreshIconToggleUI();
+                })
+                .setPositiveButton("Restart", (dialog, which) -> {
+                    dialog.dismiss();
 
-        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            String newBg = (checkedId == R.id.btnIconBgDark) ? "DARK" : "LIGHT";
-            IconManager.setIconBgStyle(this, newBg);
-            updateIconPreview();
-        });
+                    // Save new icon and background choices
+                    IconManager.setIconLogoStyle(this, pendingLogoStyle);
+                    IconManager.setIconBgStyle(this, pendingBgStyle);
+
+                    // Set target menu flag so MainActivity opens AppearanceActivity on launch
+                    getSharedPreferences("prefs_" + UserManager.getUserId(this), MODE_PRIVATE)
+                            .edit()
+                            .putString("restart_target_menu", "AppearanceActivity")
+                            .apply();
+
+                    IconManager.applyLauncherComponent(this, pendingLogoStyle);
+
+                    // Restart App
+                    Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                    if (intent != null) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                    }
+                    finishAffinity();
+                    Runtime.getRuntime().exit(0);
+                })
+                .setOnCancelListener(dialog -> refreshIconToggleUI())
+                .show();
     }
 
     private void updateIconPreview() {

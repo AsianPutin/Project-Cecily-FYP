@@ -637,7 +637,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Customize your app launcher icon logo style and background"
+                        android:text="Changing the icon requires an app restart. You will be automatically returned to this menu upon restart."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 

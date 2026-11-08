@@ -78,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
         userId = UserManager.getUserId(this);
         partnerId = UserManager.getPartnerId(this);
 
+        SharedPreferences restartPrefs = getSharedPreferences("prefs_" + userId, MODE_PRIVATE);
+        String targetMenu = restartPrefs.getString("restart_target_menu", "");
+        if ("AppearanceActivity".equals(targetMenu)) {
+            restartPrefs.edit().remove("restart_target_menu").apply();
+            Intent intent = new Intent(this, AppearanceActivity.class);
+            startActivity(intent);
+        }
+
         syncLocalTimezone();
 
         // Keep partnerId synced in real time
