@@ -65,9 +65,13 @@ public class PokeWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        // When Logged In -> Use Poke Hand with generous 18dp breathing padding for compact proportions!
-        int pad = Math.round(18 * context.getResources().getDisplayMetrics().density);
-        views.setViewPadding(R.id.ivPokeHand, pad, pad, pad, pad);
+        // When Logged In -> Use Poke Hand with asymmetric left-shift padding for optical centering!
+        float density = context.getResources().getDisplayMetrics().density;
+        int padLeft = Math.round(10 * density);
+        int padTop = Math.round(15 * density);
+        int padRight = Math.round(20 * density);
+        int padBottom = Math.round(15 * density);
+        views.setViewPadding(R.id.ivPokeHand, padLeft, padTop, padRight, padBottom);
         views.setImageViewResource(R.id.ivPokeHand, R.drawable.ic_poke_hand);
         views.setTextViewText(R.id.tvPokeText, "Poke");
 
