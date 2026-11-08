@@ -61,7 +61,16 @@ public class LdrStatusWidgetProvider extends AppWidgetProvider {
         String userId = UserManager.getUserId(context);
         String partnerId = UserManager.getPartnerId(context);
 
-        if (userId.isEmpty() || partnerId.isEmpty()) {
+        if (!UserManager.isLoggedIn(context) || userId.isEmpty()) {
+            views.setTextViewText(R.id.tvWidgetTopLine, "Log In Required");
+            views.setTextViewText(R.id.tvWidgetBottomLine, "Tap to log in & sync distance");
+            views.setViewVisibility(R.id.tvLeftDottedLine, View.GONE);
+            views.setViewVisibility(R.id.tvRightDottedLine, View.GONE);
+            appWidgetManager.updateAppWidget(appWidgetId, views);
+            return;
+        }
+
+        if (partnerId.isEmpty()) {
             views.setTextViewText(R.id.tvWidgetTopLine, "Not Paired");
             views.setTextViewText(R.id.tvWidgetBottomLine, "Pair in Account Settings");
             appWidgetManager.updateAppWidget(appWidgetId, views);
