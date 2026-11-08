@@ -46,7 +46,7 @@
                 android:layout_height="80dp"
                 android:layout_marginTop="20dp"
                 android:contentDescription="App Logo"
-                android:src="@mipmap/ic_launcher_round" />
+                android:src="@drawable/ic_app_logo" />
 
             <TextView
                 android:layout_width="wrap_content"

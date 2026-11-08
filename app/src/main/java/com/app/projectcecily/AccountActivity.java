@@ -204,7 +204,7 @@ public class AccountActivity extends AppCompatActivity {
         } catch (Exception ignored) {}
 
         if (blurSrc == null) {
-            blurSrc = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
+            blurSrc = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.drawable.ic_default_avatar);
         }
 
         Bitmap blurred = createBlurredBitmap(blurSrc, 25);
@@ -212,7 +212,7 @@ public class AccountActivity extends AppCompatActivity {
             ivBlurBg.setImageBitmap(blurred);
         }
 
-        Bitmap crispPic = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
+        Bitmap crispPic = currentProfileBitmap != null ? currentProfileBitmap : BitmapFactory.decodeResource(getResources(), R.drawable.ic_default_avatar);
         if (crispPic != null && ivFull != null) {
             ivFull.setImageBitmap(crispPic);
         }
