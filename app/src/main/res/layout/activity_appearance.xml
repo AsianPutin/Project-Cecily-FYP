@@ -714,61 +714,6 @@
                             android:textSize="11sp" />
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                    <!-- Subcategory 2: Icon Background -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Icon Background"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.button.MaterialButtonToggleGroup
-                        android:id="@+id/toggleIconBgStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:singleSelection="true"
-                        app:selectionRequired="true">
-
-                        <Button
-                            android:id="@+id/btnIconBgSystem"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="System (Follows App Theme)"
-                            android:textSize="10sp" />
-
-                        <Button
-                            android:id="@+id/btnIconBgMaterialYou"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Material You"
-                            android:textSize="10sp" />
-
-                        <Button
-                            android:id="@+id/btnIconBgWhite"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="White"
-                            android:textSize="10sp" />
-
-                        <Button
-                            android:id="@+id/btnIconBgDark"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Dark"
-                            android:textSize="10sp" />
-                    </com.google.android.material.button.MaterialButtonToggleGroup>
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

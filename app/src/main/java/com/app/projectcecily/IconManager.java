@@ -42,40 +42,33 @@ public class IconManager {
     }
 
     public static int getIconBackgroundColor(Context context) {
-        String bgStyle = getIconBgStyle(context);
-        if ("WHITE".equalsIgnoreCase(bgStyle)) {
-            return Color.WHITE;
-        } else if ("DARK".equalsIgnoreCase(bgStyle)) {
-            return Color.parseColor("#121212");
-        } else if ("MATERIAL_YOU".equalsIgnoreCase(bgStyle)) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                try {
-                    return context.getColor(android.R.color.system_accent1_500);
-                } catch (Exception ignored) {}
-            }
-            return Color.parseColor(ThemeUtils.DEFAULT_ACCENT);
-        } else {
-            // "SYSTEM" -> Follow active app accent color!
-            return ThemeUtils.getAccentColor(context);
-        }
+        if (context == null) return Color.WHITE;
+        boolean isNightMode = (context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        return isNightMode ? Color.parseColor("#121212") : Color.WHITE;
     }
 
     public static void applyLauncherComponent(Context context, String logoStyle) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            ComponentName defaultComp = new ComponentName(context, "com.app.projectcecily.MainActivityDefault");
-            ComponentName monoComp = new ComponentName(context, "com.app.projectcecily.MainActivityMonochrome");
-            ComponentName mainComp = new ComponentName(context, "com.app.projectcecily.MainActivity");
+        if (context == null) return;
+        Context appContext = context.getApplicationContext();
 
-            if ("BLACK".equalsIgnoreCase(logoStyle) || "WHITE".equalsIgnoreCase(logoStyle) || "MONOCHROME".equalsIgnoreCase(logoStyle)) {
-                pm.setComponentEnabledSetting(monoComp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                pm.setComponentEnabledSetting(defaultComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                pm.setComponentEnabledSetting(mainComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-            } else {
-                pm.setComponentEnabledSetting(defaultComp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-                pm.setComponentEnabledSetting(monoComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-                pm.setComponentEnabledSetting(mainComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-            }
-        } catch (Exception ignored) {}
+        new Thread(() -> {
+            try {
+                PackageManager pm = appContext.getPackageManager();
+                ComponentName mainComp = new ComponentName(appContext, "com.app.projectcecily.MainActivity");
+                ComponentName monoComp = new ComponentName(appContext, "com.app.projectcecily.MainActivityMonochrome");
+
+                if ("BLACK".equalsIgnoreCase(logoStyle) || "WHITE".equalsIgnoreCase(logoStyle) || "MONOCHROME".equalsIgnoreCase(logoStyle)) {
+                    if (pm.getComponentEnabledSetting(monoComp) != PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                        pm.setComponentEnabledSetting(monoComp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                        pm.setComponentEnabledSetting(mainComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                    }
+                } else {
+                    if (pm.getComponentEnabledSetting(mainComp) != PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                        pm.setComponentEnabledSetting(mainComp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                        pm.setComponentEnabledSetting(monoComp, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                    }
+                }
+            } catch (Exception ignored) {}
+        }).start();
     }
 }

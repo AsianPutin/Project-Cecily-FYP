@@ -108,12 +108,9 @@ public class AppearanceActivity extends AppCompatActivity {
 
     private void setupIconCustomization() {
         MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
-        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
-
-        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
+        if (toggleIconLogoStyle == null) return;
 
         String currentLogo = IconManager.getIconLogoStyle(this);
-        String currentBg = IconManager.getIconBgStyle(this);
 
         if ("BLACK".equalsIgnoreCase(currentLogo)) {
             toggleIconLogoStyle.check(R.id.btnIconLogoBlack);
@@ -121,16 +118,6 @@ public class AppearanceActivity extends AppCompatActivity {
             toggleIconLogoStyle.check(R.id.btnIconLogoWhite);
         } else {
             toggleIconLogoStyle.check(R.id.btnIconLogoDefault);
-        }
-
-        if ("WHITE".equalsIgnoreCase(currentBg)) {
-            toggleIconBgStyle.check(R.id.btnIconBgWhite);
-        } else if ("DARK".equalsIgnoreCase(currentBg)) {
-            toggleIconBgStyle.check(R.id.btnIconBgDark);
-        } else if ("MATERIAL_YOU".equalsIgnoreCase(currentBg)) {
-            toggleIconBgStyle.check(R.id.btnIconBgMaterialYou);
-        } else {
-            toggleIconBgStyle.check(R.id.btnIconBgSystem);
         }
 
         updateIconPreview();
@@ -144,20 +131,6 @@ public class AppearanceActivity extends AppCompatActivity {
                 newStyle = "WHITE";
             }
             IconManager.setIconLogoStyle(this, newStyle);
-            updateIconPreview();
-        });
-
-        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            String newBg = "SYSTEM";
-            if (checkedId == R.id.btnIconBgMaterialYou) {
-                newBg = "MATERIAL_YOU";
-            } else if (checkedId == R.id.btnIconBgWhite) {
-                newBg = "WHITE";
-            } else if (checkedId == R.id.btnIconBgDark) {
-                newBg = "DARK";
-            }
-            IconManager.setIconBgStyle(this, newBg);
             updateIconPreview();
         });
     }
