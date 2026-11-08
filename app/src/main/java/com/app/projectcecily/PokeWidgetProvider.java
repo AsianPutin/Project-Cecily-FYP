@@ -65,8 +65,8 @@ public class PokeWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        // When Logged In -> Use Poke Hand with comfortable 10dp breathing padding!
-        int pad = Math.round(10 * context.getResources().getDisplayMetrics().density);
+        // When Logged In -> Use Poke Hand with generous 18dp breathing padding for compact proportions!
+        int pad = Math.round(18 * context.getResources().getDisplayMetrics().density);
         views.setViewPadding(R.id.ivPokeHand, pad, pad, pad, pad);
         views.setImageViewResource(R.id.ivPokeHand, R.drawable.ic_poke_hand);
         views.setTextViewText(R.id.tvPokeText, "Poke");
