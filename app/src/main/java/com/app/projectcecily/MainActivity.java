@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private long startTime;
     private long backPressedTime = 0;
 
-    private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary, tvPartnerTimeSummary;
+    private TextView tvDistance, tvWishlist, tvFlightSummary, tvTogetherDays, tvBirthdaysSummary, tvPartnerTimeSummary, tvAnniversaryDate;
 
     private String partnerName = "Partner";
     private String partnerAccentColor = "#FF4081";
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         tvWishlist = findViewById(R.id.tvWishlistSummary);
         tvFlightSummary = findViewById(R.id.tvFlightSummary);
         tvTogetherDays = findViewById(R.id.tvTogetherDays);
+        tvAnniversaryDate = findViewById(R.id.tvAnniversaryDate);
         tvPartnerTimeSummary = findViewById(R.id.tvPartnerTimeSummary);
 
         setupBannerAd();
@@ -210,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
     private void updatePartnerSummaryCards() {
         if (partnerId == null || partnerId.isEmpty()) {
             if (tvTogetherDays != null) tvTogetherDays.setText("Not paired yet");
+            if (tvAnniversaryDate != null) tvAnniversaryDate.setText("Pair in Account Settings");
             if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText("Pair in Account Settings");
             if (tvPartnerTimeSummary != null) tvPartnerTimeSummary.setVisibility(View.GONE);
             return;
@@ -217,7 +219,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (cachedDetails != null) {
             if (tvTogetherDays != null) tvTogetherDays.setText(RelationshipManager.formatDaysTogether(cachedDetails.anniversaryTimestamp));
-            if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor));
+            
+            CharSequence bdayCountdown = RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor);
+            if (tvAnniversaryDate != null) {
+                if (cachedDetails.anniversaryTimestamp > 0) {
+                    tvAnniversaryDate.setText(bdayCountdown);
+                } else {
+                    tvAnniversaryDate.setText("Tap to set relationship start date");
+                }
+            }
+            if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText(bdayCountdown);
+
             if (cachedDetails.anniversaryTimestamp <= 0) {
                 RelationshipManager.promptForRelationshipStartDateIfMissing(this);
             }
@@ -292,6 +304,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDashboardClicks() {
+        View cardTogetherDays = findViewById(R.id.cardTogetherDays);
+        if (cardTogetherDays != null) {
+            cardTogetherDays.setOnClickListener(v -> {
+                if (cachedDetails == null || cachedDetails.anniversaryTimestamp <= 0) {
+                    RelationshipManager.promptForRelationshipStartDateIfMissing(this);
+                } else {
+                    startActivity(new Intent(this, ProfileSettingsActivity.class));
+                }
+            });
+        }
         findViewById(R.id.cardProximity).setOnClickListener(v -> startActivity(new Intent(this, TrackingActivity.class)));
         findViewById(R.id.cardWishlist).setOnClickListener(v -> startActivity(new Intent(this, WishlistActivity.class)));
         findViewById(R.id.cardFlight).setOnClickListener(v -> startActivity(new Intent(this, FlightTrackerActivity.class)));
