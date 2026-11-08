@@ -47,7 +47,10 @@ public class BackgroundService extends Service {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         for (DataSnapshot ds : snapshot.getChildren()) {
-                            FlightInfo flight = ds.getValue(FlightInfo.class);
+                            FlightInfo flight = null;
+                            try {
+                                flight = ds.getValue(FlightInfo.class);
+                            } catch (Exception ignored) {}
                             if (flight != null) {
                                 checkFlightChanges(flight);
                             }

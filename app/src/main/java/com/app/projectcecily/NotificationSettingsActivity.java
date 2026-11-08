@@ -194,7 +194,10 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             long now = System.currentTimeMillis();
 
             for (com.google.firebase.database.DataSnapshot ds : snapshot.getChildren()) {
-                FlightInfo f = ds.getValue(FlightInfo.class);
+                FlightInfo f = null;
+                try {
+                    f = ds.getValue(FlightInfo.class);
+                } catch (Exception ignored) {}
                 if (f != null && f.depTimeMillis > now) {
                     boolean isOwner = f.creatorId != null && f.creatorId.equals(userId);
                     if (isMy && isOwner) {

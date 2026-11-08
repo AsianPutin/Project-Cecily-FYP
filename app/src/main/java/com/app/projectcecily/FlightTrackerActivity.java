@@ -235,7 +235,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     for (DataSnapshot ds : snapshot.getChildren()) {
-                        FlightInfo oldInfo = ds.getValue(FlightInfo.class);
+                        FlightInfo oldInfo = null;
+                        try {
+                            oldInfo = ds.getValue(FlightInfo.class);
+                        } catch (Exception ignored) {}
                         if (oldInfo != null && oldInfo.id != null) {
                             activeRef.child(oldInfo.id).setValue(oldInfo);
                         }
@@ -366,7 +369,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 flightList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    FlightInfo info = ds.getValue(FlightInfo.class);
+                    FlightInfo info = null;
+                    try {
+                        info = ds.getValue(FlightInfo.class);
+                    } catch (Exception ignored) {}
                     if (info != null) {
                         sanitizeFlightRoute(info);
                         flightList.add(info);

@@ -166,7 +166,10 @@ public class FlightMapActivity extends AppCompatActivity {
         dbRef.child("flights").child(pairKey).child(flightId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                FlightInfo info = snapshot.getValue(FlightInfo.class);
+                FlightInfo info = null;
+                try {
+                    info = snapshot.getValue(FlightInfo.class);
+                } catch (Exception ignored) {}
                 if (info != null) {
                     currentFlightInfo = info;
                     updateMapAndDetails(info);

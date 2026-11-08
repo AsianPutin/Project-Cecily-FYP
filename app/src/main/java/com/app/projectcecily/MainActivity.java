@@ -332,7 +332,10 @@ public class MainActivity extends AppCompatActivity {
                     long earliestTime = Long.MAX_VALUE;
 
                     for (DataSnapshot ds : snapshot.getChildren()) {
-                        FlightInfo info = ds.getValue(FlightInfo.class);
+                        FlightInfo info = null;
+                        try {
+                            info = ds.getValue(FlightInfo.class);
+                        } catch (Exception ignored) {}
                         if (info != null) {
                             long arrTime = info.depTimeMillis + (110 * 60 * 1000L);
                             if (now <= arrTime + (30 * 60 * 1000L)) {

@@ -35,7 +35,11 @@ public class FlightWorker extends Worker {
                         String flightId = flightSnap.getKey();
                         if (flightId == null) continue;
 
-                        FlightInfo flight = flightSnap.getValue(FlightInfo.class);
+                        FlightInfo flight = null;
+                        try {
+                            flight = flightSnap.getValue(FlightInfo.class);
+                        } catch (Exception ignored) {}
+
                         Long lastCheck = flightSnap.child("lastApiCheckTs").getValue(Long.class);
                         long lastCheckTs = (lastCheck != null) ? lastCheck : 0L;
 
