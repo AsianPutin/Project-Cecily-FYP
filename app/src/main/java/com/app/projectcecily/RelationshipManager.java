@@ -212,4 +212,58 @@ public class RelationshipManager {
             return "";
         }
     }
+
+    private static boolean isPromptShowing = false;
+
+    public static void promptForRelationshipStartDateIfMissing(android.app.Activity activity) {
+        if (activity == null || activity.isFinishing() || isPromptShowing) return;
+
+        String partnerId = UserManager.getPartnerId(activity);
+        if (partnerId == null || partnerId.isEmpty()) return;
+
+        listenFromFirebase(activity, details -> {
+            if (activity.isFinishing() || isPromptShowing) return;
+            if (details == null || details.anniversaryTimestamp <= 0) {
+                isPromptShowing = true;
+                showStartDatePromptDialog(activity, details != null ? details : new Details());
+            }
+        });
+    }
+
+    private static void showStartDatePromptDialog(android.app.Activity activity, Details details) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        final long[] selectedTs = {System.currentTimeMillis()};
+        final String[] selectedFormatted = {(String) android.text.format.DateFormat.format("yyyy-MM-dd", cal)};
+
+        android.view.View view = android.view.LayoutInflater.from(activity).inflate(R.layout.dialog_set_start_date, null);
+        android.widget.TextView tvDate = view.findViewById(R.id.tvSelectedStartDate);
+        com.google.android.material.card.MaterialCardView cardSelect = view.findViewById(R.id.cardSelectStartDate);
+
+        if (tvDate != null) tvDate.setText(selectedFormatted[0]);
+
+        android.view.View.OnClickListener clickListener = v -> new android.app.DatePickerDialog(activity, (datePicker, year, month, dayOfMonth) -> {
+            cal.set(year, month, dayOfMonth, 0, 0, 0);
+            selectedTs[0] = cal.getTimeInMillis();
+            selectedFormatted[0] = (String) android.text.format.DateFormat.format("yyyy-MM-dd", cal);
+            if (tvDate != null) tvDate.setText(selectedFormatted[0]);
+        }, cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+
+        if (cardSelect != null) cardSelect.setOnClickListener(clickListener);
+        if (tvDate != null) tvDate.setOnClickListener(clickListener);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(activity)
+                .setTitle("💖 When did your story begin?")
+                .setMessage("Set your relationship start date to calculate days together and anniversary countdowns.")
+                .setView(view)
+                .setPositiveButton("Save Start Date", (dialog, which) -> {
+                    isPromptShowing = false;
+                    details.anniversaryDate = selectedFormatted[0];
+                    details.anniversaryTimestamp = selectedTs[0];
+                    syncWithFirebase(activity, details);
+                    android.widget.Toast.makeText(activity, "Relationship start date saved!", android.widget.Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Skip for Now", (dialog, which) -> isPromptShowing = false)
+                .setOnDismissListener(dialog -> isPromptShowing = false)
+                .show();
+    }
 }

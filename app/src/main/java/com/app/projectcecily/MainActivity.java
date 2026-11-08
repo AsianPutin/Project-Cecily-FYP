@@ -218,6 +218,9 @@ public class MainActivity extends AppCompatActivity {
         if (cachedDetails != null) {
             if (tvTogetherDays != null) tvTogetherDays.setText(RelationshipManager.formatDaysTogether(cachedDetails.anniversaryTimestamp));
             if (tvBirthdaysSummary != null) tvBirthdaysSummary.setText(RelationshipManager.formatPartnerBirthdayCountdown(partnerName, cachedDetails.partnerBirthday, partnerAccentColor));
+            if (cachedDetails.anniversaryTimestamp <= 0) {
+                RelationshipManager.promptForRelationshipStartDateIfMissing(this);
+            }
         }
 
         CharSequence timeText = RelationshipManager.formatPartnerCurrentTime(this, partnerName, partnerTimeZoneId, partnerAccentColor);
