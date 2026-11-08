@@ -100,9 +100,72 @@ public class AppearanceActivity extends AppCompatActivity {
 
         setupThemeToggle();
         setupColorStyleToggle();
+        setupIconCustomization();
         setupColorSwatches();
         setupUnitToggles();
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
+    }
+
+    private void setupIconCustomization() {
+        MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
+        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
+
+        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
+
+        String currentLogo = IconManager.getIconLogoStyle(this);
+        String currentBg = IconManager.getIconBgStyle(this);
+
+        if ("MONOCHROME".equalsIgnoreCase(currentLogo)) {
+            toggleIconLogoStyle.check(R.id.btnIconLogoMonochrome);
+        } else {
+            toggleIconLogoStyle.check(R.id.btnIconLogoPinkGreen);
+        }
+
+        if ("WHITE".equalsIgnoreCase(currentBg)) {
+            toggleIconBgStyle.check(R.id.btnIconBgWhite);
+        } else if ("DARK".equalsIgnoreCase(currentBg)) {
+            toggleIconBgStyle.check(R.id.btnIconBgDark);
+        } else {
+            toggleIconBgStyle.check(R.id.btnIconBgFollowTheme);
+        }
+
+        updateIconPreview();
+
+        toggleIconLogoStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String newStyle = (checkedId == R.id.btnIconLogoMonochrome) ? "MONOCHROME" : "DEFAULT";
+            IconManager.setIconLogoStyle(this, newStyle);
+            updateIconPreview();
+        });
+
+        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String newBg = "FOLLOW_THEME";
+            if (checkedId == R.id.btnIconBgWhite) {
+                newBg = "WHITE";
+            } else if (checkedId == R.id.btnIconBgDark) {
+                newBg = "DARK";
+            }
+            IconManager.setIconBgStyle(this, newBg);
+            updateIconPreview();
+        });
+    }
+
+    private void updateIconPreview() {
+        MaterialCardView cardFrame = findViewById(R.id.cardIconPreviewFrame);
+        ImageView ivLogo = findViewById(R.id.ivIconPreviewLogo);
+
+        if (cardFrame != null && ivLogo != null) {
+            String logoStyle = IconManager.getIconLogoStyle(this);
+            int bgColor = IconManager.getIconBackgroundColor(this);
+
+            cardFrame.setCardBackgroundColor(bgColor);
+            if ("MONOCHROME".equalsIgnoreCase(logoStyle)) {
+                ivLogo.setImageResource(R.drawable.ic_app_logo_mono_black);
+            } else {
+                ivLogo.setImageResource(R.drawable.ic_app_logo);
+            }
+        }
     }
 
     private void setupThemeToggle() {
@@ -326,12 +389,14 @@ public class AppearanceActivity extends AppCompatActivity {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
+        updateIconPreview();
     }
 
     private void selectAccent(String hexColor) {
         ThemeUtils.saveAccentColor(this, hexColor);
         updateSelectedAccentUI(hexColor);
         ThemeUtils.applyAccentToActivity(this);
+        updateIconPreview();
     }
 
     private void updateSelectedAccentUI(String currentHex) {
