@@ -50,7 +50,7 @@ public class IconManager {
     }
 
     public static int getNotificationSmallIcon() {
-        return R.drawable.ic_launcher_monochrome_fg;
+        return R.drawable.ic_app_logo;
     }
 
     public static android.graphics.Bitmap getNotificationLargeIcon(Context context) {
