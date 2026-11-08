@@ -282,7 +282,6 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(IconManager.getNotificationSmallIcon())
-                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setSubText(subtext)

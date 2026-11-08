@@ -78,7 +78,6 @@ public class BackgroundService extends Service {
     private void sendFlightNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "poke_channel")
                 .setSmallIcon(IconManager.getNotificationSmallIcon())
-                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -108,7 +107,6 @@ public class BackgroundService extends Service {
     private void sendPokeNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "poke_channel")
                 .setSmallIcon(IconManager.getNotificationSmallIcon())
-                .setLargeIcon(IconManager.getNotificationLargeIcon(this))
                 .setContentTitle("Partner Poke 🔔")
                 .setContentText("Your partner poked you!")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

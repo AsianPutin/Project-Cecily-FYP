@@ -45,7 +45,6 @@ public class FlightReminderReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(IconManager.getNotificationSmallIcon())
-                .setLargeIcon(IconManager.getNotificationLargeIcon(context))
                 .setContentTitle(isLandingAlert ? "Flight Landing Alert: " + flightNum : "Flight Reminder: " + flightNum)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
