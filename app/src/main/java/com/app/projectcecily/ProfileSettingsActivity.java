@@ -30,11 +30,14 @@ public class ProfileSettingsActivity extends AppCompatActivity {
     private TextInputEditText etPartnerName, etPartnerBirthday;
     private MaterialButtonToggleGroup togglePartnerGender;
 
+    private TextInputEditText etAnniversaryDate;
+
     private String userId, partnerId = "";
     private DatabaseReference dbRef;
 
     private final Calendar myCal = Calendar.getInstance();
     private final Calendar partnerCal = Calendar.getInstance();
+    private final Calendar anniversaryCal = Calendar.getInstance();
     private RelationshipManager.Details cachedDetails = new RelationshipManager.Details();
 
     @Override
@@ -89,6 +92,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         etPartnerName = findViewById(R.id.etPartnerName);
         togglePartnerGender = findViewById(R.id.togglePartnerGender);
         etPartnerBirthday = findViewById(R.id.etPartnerBirthday);
+        etAnniversaryDate = findViewById(R.id.etAnniversaryDate);
         Button btnSaveProfileDetails = findViewById(R.id.btnSaveProfileDetails);
 
         setupDatePickers();
@@ -109,6 +113,16 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             partnerCal.set(year, month, dayOfMonth);
             etPartnerBirthday.setText(android.text.format.DateFormat.format("yyyy-MM-dd", partnerCal));
         }, partnerCal.get(Calendar.YEAR), partnerCal.get(Calendar.MONTH), partnerCal.get(Calendar.DAY_OF_MONTH)).show());
+
+        if (etAnniversaryDate != null) {
+            etAnniversaryDate.setOnClickListener(v -> new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                anniversaryCal.set(year, month, dayOfMonth, 0, 0, 0);
+                String formatted = (String) android.text.format.DateFormat.format("yyyy-MM-dd", anniversaryCal);
+                etAnniversaryDate.setText(formatted);
+                cachedDetails.anniversaryDate = formatted;
+                cachedDetails.anniversaryTimestamp = anniversaryCal.getTimeInMillis();
+            }, anniversaryCal.get(Calendar.YEAR), anniversaryCal.get(Calendar.MONTH), anniversaryCal.get(Calendar.DAY_OF_MONTH)).show());
+        }
     }
 
     private void loadProfileData() {
@@ -157,6 +171,12 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                 }
                 if (details.partnerBirthday != null && !details.partnerBirthday.isEmpty()) {
                     etPartnerBirthday.setText(details.partnerBirthday);
+                }
+                if (details.anniversaryDate != null && !details.anniversaryDate.isEmpty() && etAnniversaryDate != null) {
+                    etAnniversaryDate.setText(details.anniversaryDate);
+                    if (details.anniversaryTimestamp > 0) {
+                        anniversaryCal.setTimeInMillis(details.anniversaryTimestamp);
+                    }
                 }
                 setGenderToggle(toggleMyGender, details.yourGender, true);
                 setGenderToggle(togglePartnerGender, details.partnerGender, false);
@@ -279,6 +299,14 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         cachedDetails.partnerGender = getGenderFromToggle(togglePartnerGender, false);
         cachedDetails.yourBirthday = etMyBirthday.getText() != null ? etMyBirthday.getText().toString().trim() : "";
         cachedDetails.partnerBirthday = etPartnerBirthday.getText() != null ? etPartnerBirthday.getText().toString().trim() : "";
+
+        if (etAnniversaryDate != null && etAnniversaryDate.getText() != null) {
+            String dateStr = etAnniversaryDate.getText().toString().trim();
+            cachedDetails.anniversaryDate = dateStr;
+            if (cachedDetails.anniversaryTimestamp <= 0 && !dateStr.isEmpty()) {
+                cachedDetails.anniversaryTimestamp = anniversaryCal.getTimeInMillis();
+            }
+        }
 
         RelationshipManager.syncWithFirebase(this, cachedDetails);
         Toast.makeText(this, "Profile details saved successfully!", Toast.LENGTH_SHORT).show();
