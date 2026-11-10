@@ -272,6 +272,14 @@ public class MainActivity extends AppCompatActivity {
                 tvPartnerTimeSummary.setVisibility(View.GONE);
             }
         }
+
+        ImageView ivDashPokeIcon = findViewById(R.id.ivDashPokeIcon);
+        if (ivDashPokeIcon != null && partnerAccentColor != null && !partnerAccentColor.isEmpty()) {
+            try {
+                int color = android.graphics.Color.parseColor(partnerAccentColor);
+                ivDashPokeIcon.setImageTintList(android.content.res.ColorStateList.valueOf(color));
+            } catch (Exception ignored) {}
+        }
     }
 
     private void scheduleFlightTracking() {
