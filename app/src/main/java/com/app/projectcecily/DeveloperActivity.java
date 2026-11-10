@@ -420,7 +420,9 @@ public class DeveloperActivity extends AppCompatActivity {
                         } else {
                             long hours = diff / (3600 * 1000L);
                             long mins = (diff % (3600 * 1000L)) / (60 * 1000L);
-                            if (hours > 0) {
+                            if (hours > 0 && mins > 0) {
+                                tvTimes[i].setText(hours + "h " + mins + "m left");
+                            } else if (hours > 0) {
                                 tvTimes[i].setText(hours + "h left");
                             } else {
                                 tvTimes[i].setText(Math.max(1, mins) + "m left");
