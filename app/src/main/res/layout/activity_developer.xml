@@ -213,9 +213,12 @@
 
                     <!-- 2x2 Thumbnail Grid (Slots 1 to 4) -->
                     <LinearLayout
+                        android:id="@+id/layoutDevPhotoGridContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:orientation="vertical">
 
                         <LinearLayout
@@ -302,16 +305,16 @@
                     </LinearLayout>
 
                     <!-- Bright Red Delete Photo Button -->
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDevDeletePhoto"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:backgroundTint="#D32F2F"
                         android:text="Delete Selected Photo"
                         android:textColor="#FFFFFF"
                         android:textStyle="bold"
-                        app:backgroundTint="#D32F2F" />
+                        app:backgroundTint="#D32F2F"
+                        app:rippleColor="#FFCDD2" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

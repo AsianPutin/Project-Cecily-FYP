@@ -202,6 +202,38 @@ public class DeveloperActivity extends AppCompatActivity {
             });
         }
 
+        View gridContainer = findViewById(R.id.layoutDevPhotoGridContainer);
+        if (gridContainer != null) {
+            android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+                private static final int SWIPE_THRESHOLD = 80;
+                private static final int SWIPE_VELOCITY_THRESHOLD = 80;
+
+                @Override
+                public boolean onFling(android.view.MotionEvent e1, android.view.MotionEvent e2, float velocityX, float velocityY) {
+                    if (e1 == null || e2 == null) return false;
+                    float diffX = e2.getX() - e1.getX();
+                    float diffY = e2.getY() - e1.getY();
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffX < 0) {
+                                if (isViewingMyPhotos && toggleDevPhotoStream != null) {
+                                    toggleDevPhotoStream.check(R.id.btnDevStreamPartner);
+                                }
+                            } else {
+                                if (!isViewingMyPhotos && toggleDevPhotoStream != null) {
+                                    toggleDevPhotoStream.check(R.id.btnDevStreamMe);
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            gridContainer.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+        }
+
         loadDevPhotoStream();
     }
 
