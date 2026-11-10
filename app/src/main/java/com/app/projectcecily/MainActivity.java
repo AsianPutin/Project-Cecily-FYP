@@ -761,6 +761,12 @@ public class MainActivity extends AppCompatActivity {
 
         cardBannerAd.setVisibility(View.VISIBLE);
 
+        if (cardBannerAd instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView adCard = (com.google.android.material.card.MaterialCardView) cardBannerAd;
+            adCard.setStrokeColor(ThemeUtils.getAccentColor(this));
+            adCard.setStrokeWidth((int) (1.5f * getResources().getDisplayMetrics().density));
+        }
+
         if (randomizedAdsList.isEmpty()) {
             randomizedAdsList.addAll(Arrays.asList(MOCK_ADS));
             Collections.shuffle(randomizedAdsList);

@@ -252,7 +252,7 @@
             <!-- 2-Column Action Cards: [ Flights ] [ Wishlist ] -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="90dp"
+                android:layout_height="72dp"
                 android:layout_marginBottom="16dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal">
@@ -271,9 +271,11 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="8dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -287,9 +289,9 @@
                             android:id="@+id/tvFlightSummary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="2dp"
                             android:ellipsize="end"
-                            android:maxLines="2"
+                            android:maxLines="1"
                             android:text="No flights added"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
@@ -311,9 +313,11 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="8dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -327,9 +331,9 @@
                             android:id="@+id/tvWishlistSummary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="2dp"
                             android:ellipsize="end"
-                            android:maxLines="2"
+                            android:maxLines="1"
                             android:text="No items yet"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
@@ -342,28 +346,28 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Non-Intrusive Transparent Mock Banner Ad -->
+    <!-- Map-Style Themed Border Mock Banner Ad -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardBannerAd"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="52dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="4dp"
-        app:cardBackgroundColor="@android:color/transparent"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0dp"
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="@color/card_background"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp"
+        app:strokeColor="@color/nav_selected"
+        app:strokeWidth="1.5dp"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="4dp"
-            android:paddingVertical="4dp">
+            android:paddingHorizontal="12dp">
 
             <TextView
                 android:layout_width="wrap_content"
