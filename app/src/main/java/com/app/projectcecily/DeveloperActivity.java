@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
@@ -28,6 +29,17 @@ public class DeveloperActivity extends AppCompatActivity {
     private MaterialSwitch switchMonthlyDemo;
     private MaterialSwitch switchLifetimeDemo;
     private boolean isProgrammaticSwitching = false;
+
+    // Photo Stream Controls State
+    private com.google.android.material.button.MaterialButtonToggleGroup toggleDevPhotoStream;
+    private android.widget.ImageView ivDevPhotoPreview;
+    private com.google.android.material.card.MaterialCardView[] devThumbCards = new com.google.android.material.card.MaterialCardView[4];
+    private android.widget.ImageView[] devThumbViews = new android.widget.ImageView[4];
+    private Button btnDevDeletePhoto;
+
+    private boolean isViewingMyPhotos = true;
+    private List<PhotoItem> currentDevPhotos = new java.util.ArrayList<>();
+    private int selectedPhotoIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +68,13 @@ public class DeveloperActivity extends AppCompatActivity {
 
         findViewById(R.id.btnTestVibration).setOnClickListener(v -> triggerCurrentVibration());
 
+        setupDevPhotoControls();
+
         switchMonthlyDemo = findViewById(R.id.switchMonthlyDemo);
         switchLifetimeDemo = findViewById(R.id.switchLifetimeDemo);
         Button btnEndSub = findViewById(R.id.btnEndSubscription);
 
+        setupDevPhotoControls();
         setupSubscriptionSwitches();
         setupMonthlyDatePicker();
         applySwitchAccentTints();
@@ -106,6 +121,120 @@ public class DeveloperActivity extends AppCompatActivity {
         if (switchLifetimeDemo != null) {
             switchLifetimeDemo.setThumbTintList(thumbTintList);
             switchLifetimeDemo.setTrackTintList(trackTintList);
+        }
+    }
+
+    private void setupDevPhotoControls() {
+        toggleDevPhotoStream = findViewById(R.id.toggleDevPhotoStream);
+        ivDevPhotoPreview = findViewById(R.id.ivDevPhotoPreview);
+        btnDevDeletePhoto = findViewById(R.id.btnDevDeletePhoto);
+
+        devThumbCards[0] = findViewById(R.id.cardThumb1);
+        devThumbCards[1] = findViewById(R.id.cardThumb2);
+        devThumbCards[2] = findViewById(R.id.cardThumb3);
+        devThumbCards[3] = findViewById(R.id.cardThumb4);
+
+        devThumbViews[0] = findViewById(R.id.ivThumb1);
+        devThumbViews[1] = findViewById(R.id.ivThumb2);
+        devThumbViews[2] = findViewById(R.id.ivThumb3);
+        devThumbViews[3] = findViewById(R.id.ivThumb4);
+
+        if (toggleDevPhotoStream != null) {
+            toggleDevPhotoStream.check(R.id.btnDevStreamMe);
+            toggleDevPhotoStream.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (!isChecked) return;
+                isViewingMyPhotos = (checkedId == R.id.btnDevStreamMe);
+                selectedPhotoIndex = 0;
+                loadDevPhotoStream();
+            });
+        }
+
+        for (int i = 0; i < 4; i++) {
+            final int index = i;
+            if (devThumbCards[i] != null) {
+                devThumbCards[i].setOnClickListener(v -> {
+                    selectedPhotoIndex = index;
+                    updateDevPhotoUI();
+                });
+            }
+        }
+
+        if (btnDevDeletePhoto != null) {
+            btnDevDeletePhoto.setOnClickListener(v -> {
+                if (selectedPhotoIndex >= 0 && selectedPhotoIndex < currentDevPhotos.size()) {
+                    PhotoItem target = currentDevPhotos.get(selectedPhotoIndex);
+                    String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
+                    PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
+                        android.widget.Toast.makeText(this, "Photo slot deleted!", android.widget.Toast.LENGTH_SHORT).show();
+                        selectedPhotoIndex = 0;
+                    });
+                } else {
+                    android.widget.Toast.makeText(this, "No photo in selected slot to delete.", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        loadDevPhotoStream();
+    }
+
+    private void loadDevPhotoStream() {
+        String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
+        PhotoCycleManager.listenActivePhotos(this, targetUserId, photos -> {
+            currentDevPhotos = (photos != null) ? photos : new java.util.ArrayList<>();
+            if (selectedPhotoIndex >= currentDevPhotos.size()) {
+                selectedPhotoIndex = Math.max(0, currentDevPhotos.size() - 1);
+            }
+            updateDevPhotoUI();
+        });
+    }
+
+    private void updateDevPhotoUI() {
+        int accentColor = ThemeUtils.getAccentColor(this);
+
+        for (int i = 0; i < 4; i++) {
+            com.google.android.material.card.MaterialCardView card = devThumbCards[i];
+            android.widget.ImageView iv = devThumbViews[i];
+
+            if (i < currentDevPhotos.size()) {
+                PhotoItem item = currentDevPhotos.get(i);
+                try {
+                    String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
+                    byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (iv != null) iv.setImageBitmap(bmp);
+                } catch (Exception e) {
+                    if (iv != null) iv.setImageBitmap(null);
+                }
+            } else {
+                if (iv != null) iv.setImageBitmap(null);
+            }
+
+            if (card != null) {
+                if (i == selectedPhotoIndex && i < currentDevPhotos.size()) {
+                    // Theme-colored border ring highlight for active selection!
+                    card.setStrokeColor(accentColor);
+                    card.setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
+                } else {
+                    card.setStrokeWidth(0);
+                }
+            }
+        }
+
+        // Update Large Preview Window
+        if (ivDevPhotoPreview != null) {
+            if (selectedPhotoIndex >= 0 && selectedPhotoIndex < currentDevPhotos.size()) {
+                PhotoItem selected = currentDevPhotos.get(selectedPhotoIndex);
+                try {
+                    String clean = selected.photoBase64.contains(",") ? selected.photoBase64.split(",")[1] : selected.photoBase64;
+                    byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    ivDevPhotoPreview.setImageBitmap(bmp);
+                } catch (Exception e) {
+                    ivDevPhotoPreview.setImageBitmap(null);
+                }
+            } else {
+                ivDevPhotoPreview.setImageBitmap(null);
+            }
         }
     }
 
