@@ -32,13 +32,15 @@ public class DeveloperActivity extends AppCompatActivity {
 
     // Photo Stream Controls State
     private com.google.android.material.button.MaterialButtonToggleGroup toggleDevPhotoStream;
-    private com.google.android.material.card.MaterialCardView[] devThumbCards = new com.google.android.material.card.MaterialCardView[4];
-    private android.widget.ImageView[] devThumbViews = new android.widget.ImageView[4];
-    private Button btnDevDeletePhoto;
+    private androidx.viewpager2.widget.ViewPager2 viewPagerDevPhotos;
+    private com.google.android.material.button.MaterialButton btnDevDeletePhoto;
 
     private boolean isViewingMyPhotos = true;
-    private List<PhotoItem> currentDevPhotos = new java.util.ArrayList<>();
-    private int selectedPhotoIndex = 0;
+    private boolean isUpdatingViewPagerProgrammatically = false;
+    private List<PhotoItem> myPhotosList = new java.util.ArrayList<>();
+    private List<PhotoItem> partnerPhotosList = new java.util.ArrayList<>();
+    private int selectedMyPhotoIndex = 0;
+    private int selectedPartnerPhotoIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,73 +127,59 @@ public class DeveloperActivity extends AppCompatActivity {
 
     private void setupDevPhotoControls() {
         toggleDevPhotoStream = findViewById(R.id.toggleDevPhotoStream);
+        viewPagerDevPhotos = findViewById(R.id.viewPagerDevPhotos);
         btnDevDeletePhoto = findViewById(R.id.btnDevDeletePhoto);
 
-        devThumbCards[0] = findViewById(R.id.cardThumb1);
-        devThumbCards[1] = findViewById(R.id.cardThumb2);
-        devThumbCards[2] = findViewById(R.id.cardThumb3);
-        devThumbCards[3] = findViewById(R.id.cardThumb4);
-
-        devThumbViews[0] = findViewById(R.id.ivThumb1);
-        devThumbViews[1] = findViewById(R.id.ivThumb2);
-        devThumbViews[2] = findViewById(R.id.ivThumb3);
-        devThumbViews[3] = findViewById(R.id.ivThumb4);
-
         updatePartnerPillButtonText();
+
+        DevPhotoPagerAdapter devAdapter = new DevPhotoPagerAdapter();
+        if (viewPagerDevPhotos != null) {
+            viewPagerDevPhotos.setAdapter(devAdapter);
+            viewPagerDevPhotos.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    isViewingMyPhotos = (position == 0);
+                    isUpdatingViewPagerProgrammatically = true;
+                    if (toggleDevPhotoStream != null) {
+                        toggleDevPhotoStream.check(position == 0 ? R.id.btnDevStreamMe : R.id.btnDevStreamPartner);
+                    }
+                    isUpdatingViewPagerProgrammatically = false;
+                }
+            });
+        }
 
         if (toggleDevPhotoStream != null) {
             toggleDevPhotoStream.check(R.id.btnDevStreamMe);
             toggleDevPhotoStream.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-                if (!isChecked) return;
-                isViewingMyPhotos = (checkedId == R.id.btnDevStreamMe);
-                selectedPhotoIndex = 0;
-                loadDevPhotoStream();
+                if (!isChecked || isUpdatingViewPagerProgrammatically) return;
+                int page = (checkedId == R.id.btnDevStreamMe) ? 0 : 1;
+                isViewingMyPhotos = (page == 0);
+                if (viewPagerDevPhotos != null) {
+                    viewPagerDevPhotos.setCurrentItem(page, true);
+                }
             });
         }
 
-        for (int i = 0; i < 4; i++) {
-            final int index = i;
-            if (devThumbCards[i] != null) {
-                // Click once -> Open Fullscreen Blurred Background Photo Viewer Dialog
-                devThumbCards[i].setOnClickListener(v -> {
-                    if (index < currentDevPhotos.size()) {
-                        PhotoItem item = currentDevPhotos.get(index);
-                        try {
-                            String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
-                            byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
-                            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                            showFullPhotoDialog(bmp);
-                        } catch (Exception ignored) {}
-                    } else {
-                        android.widget.Toast.makeText(this, "Slot empty (No active photo)", android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                // Hold down -> Select photo slot for deletion with theme accent border ring
-                devThumbCards[i].setOnLongClickListener(v -> {
-                    selectedPhotoIndex = index;
-                    updateDevPhotoUI();
-                    if (index < currentDevPhotos.size()) {
-                        android.widget.Toast.makeText(this, "Selected Photo Slot " + (index + 1) + " for deletion", android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                    return true;
-                });
-            }
-        }
-
         if (btnDevDeletePhoto != null) {
-            btnDevDeletePhoto.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#D32F2F")));
+            btnDevDeletePhoto.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF3B30")));
+            btnDevDeletePhoto.setTextColor(android.graphics.Color.WHITE);
             btnDevDeletePhoto.setOnClickListener(v -> {
-                if (selectedPhotoIndex >= 0 && selectedPhotoIndex < currentDevPhotos.size()) {
+                int currentPage = isViewingMyPhotos ? 0 : 1;
+                List<PhotoItem> photos = (currentPage == 0) ? myPhotosList : partnerPhotosList;
+                int selectedIndex = (currentPage == 0) ? selectedMyPhotoIndex : selectedPartnerPhotoIndex;
+
+                if (selectedIndex >= 0 && selectedIndex < photos.size()) {
                     new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                             .setTitle("Delete Photo?")
                             .setMessage("Are you sure you want to delete this photo slot from the 24-hour stream? This action cannot be undone.")
                             .setPositiveButton("Delete", (dialog, which) -> {
-                                PhotoItem target = currentDevPhotos.get(selectedPhotoIndex);
-                                String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
+                                PhotoItem target = photos.get(selectedIndex);
+                                String targetUserId = (currentPage == 0) ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
                                 PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
                                     android.widget.Toast.makeText(this, "Photo slot deleted!", android.widget.Toast.LENGTH_SHORT).show();
-                                    selectedPhotoIndex = 0;
+                                    if (currentPage == 0) selectedMyPhotoIndex = 0; else selectedPartnerPhotoIndex = 0;
+                                    loadDevPhotoStream();
                                 });
                             })
                             .setNegativeButton("Cancel", null)
@@ -200,38 +188,6 @@ public class DeveloperActivity extends AppCompatActivity {
                     android.widget.Toast.makeText(this, "No photo in selected slot to delete.", android.widget.Toast.LENGTH_SHORT).show();
                 }
             });
-        }
-
-        View gridContainer = findViewById(R.id.layoutDevPhotoGridContainer);
-        if (gridContainer != null) {
-            android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
-                private static final int SWIPE_THRESHOLD = 80;
-                private static final int SWIPE_VELOCITY_THRESHOLD = 80;
-
-                @Override
-                public boolean onFling(android.view.MotionEvent e1, android.view.MotionEvent e2, float velocityX, float velocityY) {
-                    if (e1 == null || e2 == null) return false;
-                    float diffX = e2.getX() - e1.getX();
-                    float diffY = e2.getY() - e1.getY();
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                            if (diffX < 0) {
-                                if (isViewingMyPhotos && toggleDevPhotoStream != null) {
-                                    toggleDevPhotoStream.check(R.id.btnDevStreamPartner);
-                                }
-                            } else {
-                                if (!isViewingMyPhotos && toggleDevPhotoStream != null) {
-                                    toggleDevPhotoStream.check(R.id.btnDevStreamMe);
-                                }
-                            }
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
-
-            gridContainer.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
         }
 
         loadDevPhotoStream();
@@ -330,45 +286,124 @@ public class DeveloperActivity extends AppCompatActivity {
     }
 
     private void loadDevPhotoStream() {
-        String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
-        PhotoCycleManager.listenActivePhotos(this, targetUserId, photos -> {
-            currentDevPhotos = (photos != null) ? photos : new java.util.ArrayList<>();
-            if (selectedPhotoIndex >= currentDevPhotos.size()) {
-                selectedPhotoIndex = Math.max(0, currentDevPhotos.size() - 1);
-            }
-            updateDevPhotoUI();
-        });
+        String myUserId = UserManager.getUserId(this);
+        String partnerId = UserManager.getPartnerId(this);
+
+        if (!myUserId.isEmpty()) {
+            PhotoCycleManager.listenActivePhotos(this, myUserId, photos -> {
+                myPhotosList = (photos != null) ? photos : new java.util.ArrayList<>();
+                if (viewPagerDevPhotos != null && viewPagerDevPhotos.getAdapter() != null) {
+                    viewPagerDevPhotos.getAdapter().notifyDataSetChanged();
+                }
+            });
+        }
+
+        if (!partnerId.isEmpty()) {
+            PhotoCycleManager.listenActivePhotos(this, partnerId, photos -> {
+                partnerPhotosList = (photos != null) ? photos : new java.util.ArrayList<>();
+                if (viewPagerDevPhotos != null && viewPagerDevPhotos.getAdapter() != null) {
+                    viewPagerDevPhotos.getAdapter().notifyDataSetChanged();
+                }
+            });
+        }
     }
 
-    private void updateDevPhotoUI() {
-        int accentColor = ThemeUtils.getAccentColor(this);
+    private class DevPhotoPagerAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<DevPhotoPagerAdapter.PhotoViewHolder> {
 
-        for (int i = 0; i < 4; i++) {
-            com.google.android.material.card.MaterialCardView card = devThumbCards[i];
-            android.widget.ImageView iv = devThumbViews[i];
+        @androidx.annotation.NonNull
+        @Override
+        public PhotoViewHolder onCreateViewHolder(@androidx.annotation.NonNull android.view.ViewGroup parent, int viewType) {
+            View v = android.view.LayoutInflater.from(parent.getContext()).inflate(R.layout.item_dev_photo_grid, parent, false);
+            return new PhotoViewHolder(v);
+        }
 
-            if (i < currentDevPhotos.size()) {
-                PhotoItem item = currentDevPhotos.get(i);
-                try {
-                    String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
-                    byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
-                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    if (iv != null) iv.setImageBitmap(bmp);
-                } catch (Exception e) {
-                    if (iv != null) iv.setImageBitmap(null);
-                }
-            } else {
-                if (iv != null) iv.setImageBitmap(null);
-            }
+        @Override
+        public void onBindViewHolder(@androidx.annotation.NonNull PhotoViewHolder holder, int position) {
+            boolean isMyPage = (position == 0);
+            List<PhotoItem> photos = isMyPage ? myPhotosList : partnerPhotosList;
+            int activeSelectedIndex = isMyPage ? selectedMyPhotoIndex : selectedPartnerPhotoIndex;
+            int accentColor = ThemeUtils.getAccentColor(DeveloperActivity.this);
 
-            if (card != null) {
-                if (i == selectedPhotoIndex && i < currentDevPhotos.size()) {
-                    // Theme-colored border ring highlight for active selection!
-                    card.setStrokeColor(accentColor);
-                    card.setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
+            com.google.android.material.card.MaterialCardView[] cards = new com.google.android.material.card.MaterialCardView[]{
+                holder.card1, holder.card2, holder.card3, holder.card4
+            };
+            android.widget.ImageView[] ivs = new android.widget.ImageView[]{
+                holder.iv1, holder.iv2, holder.iv3, holder.iv4
+            };
+
+            for (int i = 0; i < 4; i++) {
+                final int slotIndex = i;
+                if (i < photos.size()) {
+                    PhotoItem item = photos.get(i);
+                    try {
+                        String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
+                        byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        if (ivs[i] != null) ivs[i].setImageBitmap(bmp);
+                    } catch (Exception e) {
+                        if (ivs[i] != null) ivs[i].setImageBitmap(null);
+                    }
                 } else {
-                    card.setStrokeWidth(0);
+                    if (ivs[i] != null) ivs[i].setImageBitmap(null);
                 }
+
+                if (cards[i] != null) {
+                    if (i == activeSelectedIndex && i < photos.size()) {
+                        cards[i].setStrokeColor(accentColor);
+                        cards[i].setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
+                    } else {
+                        cards[i].setStrokeWidth(0);
+                    }
+
+                    cards[i].setOnClickListener(v -> {
+                        if (slotIndex < photos.size()) {
+                            PhotoItem item = photos.get(slotIndex);
+                            try {
+                                String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
+                                byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                showFullPhotoDialog(bmp);
+                            } catch (Exception ignored) {}
+                        } else {
+                            android.widget.Toast.makeText(DeveloperActivity.this, "Slot empty (No active photo)", android.widget.Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    cards[i].setOnLongClickListener(v -> {
+                        if (isMyPage) {
+                            selectedMyPhotoIndex = slotIndex;
+                        } else {
+                            selectedPartnerPhotoIndex = slotIndex;
+                        }
+                        notifyDataSetChanged();
+                        if (slotIndex < photos.size()) {
+                            android.widget.Toast.makeText(DeveloperActivity.this, "Selected Photo Slot " + (slotIndex + 1) + " for deletion", android.widget.Toast.LENGTH_SHORT).show();
+                        }
+                        return true;
+                    });
+                }
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 2;
+        }
+
+        class PhotoViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
+            com.google.android.material.card.MaterialCardView card1, card2, card3, card4;
+            android.widget.ImageView iv1, iv2, iv3, iv4;
+
+            PhotoViewHolder(View v) {
+                super(v);
+                card1 = v.findViewById(R.id.cardPageThumb1);
+                card2 = v.findViewById(R.id.cardPageThumb2);
+                card3 = v.findViewById(R.id.cardPageThumb3);
+                card4 = v.findViewById(R.id.cardPageThumb4);
+                iv1 = v.findViewById(R.id.ivPageThumb1);
+                iv2 = v.findViewById(R.id.ivPageThumb2);
+                iv3 = v.findViewById(R.id.ivPageThumb3);
+                iv4 = v.findViewById(R.id.ivPageThumb4);
             }
         }
     }

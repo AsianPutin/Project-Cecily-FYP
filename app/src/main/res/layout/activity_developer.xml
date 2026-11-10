@@ -211,98 +211,12 @@
                             android:textSize="11sp" />
                     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                    <!-- 2x2 Thumbnail Grid (Slots 1 to 4) -->
-                    <LinearLayout
-                        android:id="@+id/layoutDevPhotoGridContainer"
+                    <!-- ViewPager2 Photo Stream Page Slider (Page 0: Me, Page 1: Partner) -->
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/viewPagerDevPhotos"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:orientation="vertical">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/cardThumb1"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_margin="4dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                app:cardBackgroundColor="#212121"
-                                app:cardCornerRadius="12dp"
-                                app:strokeWidth="0dp">
-                                <ImageView
-                                    android:id="@+id/ivThumb1"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:scaleType="centerCrop" />
-                            </com.google.android.material.card.MaterialCardView>
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/cardThumb2"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_margin="4dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                app:cardBackgroundColor="#212121"
-                                app:cardCornerRadius="12dp"
-                                app:strokeWidth="0dp">
-                                <ImageView
-                                    android:id="@+id/ivThumb2"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:scaleType="centerCrop" />
-                            </com.google.android.material.card.MaterialCardView>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/cardThumb3"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_margin="4dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                app:cardBackgroundColor="#212121"
-                                app:cardCornerRadius="12dp"
-                                app:strokeWidth="0dp">
-                                <ImageView
-                                    android:id="@+id/ivThumb3"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:scaleType="centerCrop" />
-                            </com.google.android.material.card.MaterialCardView>
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/cardThumb4"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_margin="4dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                app:cardBackgroundColor="#212121"
-                                app:cardCornerRadius="12dp"
-                                app:strokeWidth="0dp">
-                                <ImageView
-                                    android:id="@+id/ivThumb4"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:scaleType="centerCrop" />
-                            </com.google.android.material.card.MaterialCardView>
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:layout_height="144dp"
+                        android:layout_marginTop="16dp" />
 
                     <!-- Bright Red Delete Photo Button -->
                     <com.google.android.material.button.MaterialButton
@@ -313,7 +227,7 @@
                         android:text="Delete Selected Photo"
                         android:textColor="#FFFFFF"
                         android:textStyle="bold"
-                        app:backgroundTint="#D32F2F"
+                        app:backgroundTint="#FF3B30"
                         app:rippleColor="#FFCDD2" />
 
                 </LinearLayout>
