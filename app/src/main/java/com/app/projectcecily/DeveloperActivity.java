@@ -614,7 +614,15 @@ public class DeveloperActivity extends AppCompatActivity {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
         applySwitchAccentTints();
+        enforceRedDeleteButtonTint();
         updateMonthlyExpiryUi();
+    }
+
+    private void enforceRedDeleteButtonTint() {
+        if (btnDevDeletePhoto != null) {
+            btnDevDeletePhoto.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF3B30")));
+            btnDevDeletePhoto.setTextColor(android.graphics.Color.WHITE);
+        }
     }
 
     @Override
