@@ -125,6 +125,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".PhotoCycleActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".FlightTrackerActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
