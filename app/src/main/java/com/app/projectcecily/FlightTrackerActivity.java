@@ -160,6 +160,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     private String userId;
     private String partnerId = "";
     private String partnerName = "Partner";
+    private String partnerTimeZoneId = "";
+    private String partnerAccentColor = "";
+    private android.os.Handler timezoneHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable timezoneRunnable;
     private Calendar selectedDateTime = Calendar.getInstance();
     private AviationStackHelper apiHelper = new AviationStackHelper();
     
@@ -275,9 +279,149 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         UIUtils.applyBottomPadding(rv);
         UIUtils.applyTopInsetPadding(rv);
 
+        listenForPartnerProfile();
+        setupHeaderTimezoneTicker();
+
         checkNotificationPermissions();
         checkExactAlarmPermission();
         listenForFlights();
+    }
+
+    private void setupHeaderTimezoneTicker() {
+        timezoneRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateHeaderTimezoneCard();
+                timezoneHandler.postDelayed(this, 10000L);
+            }
+        };
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (timezoneHandler != null && timezoneRunnable != null) {
+            timezoneHandler.removeCallbacks(timezoneRunnable);
+        }
+    }
+
+    private void listenForPartnerProfile() {
+        if (partnerId == null || partnerId.isEmpty()) {
+            updateHeaderTimezoneCard();
+            return;
+        }
+
+        FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(partnerId)
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String pName = snapshot.child("name").getValue(String.class);
+                    if (pName != null && !pName.trim().isEmpty()) partnerName = pName.trim();
+
+                    String pColor = snapshot.child("accentColor").getValue(String.class);
+                    if (pColor != null && !pColor.trim().isEmpty()) partnerAccentColor = pColor.trim();
+
+                    String pTz = snapshot.child("timeZone").getValue(String.class);
+                    if (pTz != null && !pTz.trim().isEmpty()) partnerTimeZoneId = pTz.trim();
+
+                    updateHeaderTimezoneCard();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void updateHeaderTimezoneCard() {
+        View layoutDual = findViewById(R.id.layoutDualTimezone);
+        View layoutSingle = findViewById(R.id.layoutSingleTimezone);
+
+        if (layoutDual == null || layoutSingle == null) return;
+
+        // My Timezone
+        java.util.TimeZone myTz = java.util.TimeZone.getDefault();
+        Calendar myCal = Calendar.getInstance(myTz);
+        java.text.SimpleDateFormat clockFormat = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+        clockFormat.setTimeZone(myTz);
+        String myClockStr = clockFormat.format(myCal.getTime());
+
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("EEE, d MMM", java.util.Locale.getDefault());
+        dateFormat.setTimeZone(myTz);
+        String myDateStr = dateFormat.format(myCal.getTime());
+
+        int myOffsetHrs = myTz.getRawOffset() / (3600 * 1000);
+        String myTzOffsetStr = "GMT" + (myOffsetHrs >= 0 ? "+" + myOffsetHrs : myOffsetHrs);
+
+        boolean isPaired = partnerId != null && !partnerId.isEmpty();
+        java.util.TimeZone partnerTz = null;
+        if (isPaired && partnerTimeZoneId != null && !partnerTimeZoneId.trim().isEmpty()) {
+            try {
+                partnerTz = java.util.TimeZone.getTimeZone(partnerTimeZoneId);
+            } catch (Exception ignored) {}
+        }
+
+        if (!isPaired || partnerTz == null || partnerTz.getID().equalsIgnoreCase(myTz.getID())) {
+            // Case 2: Single Centered Timezone View
+            layoutDual.setVisibility(View.GONE);
+            layoutSingle.setVisibility(View.VISIBLE);
+
+            TextView tvSingleClock = findViewById(R.id.tvSingleTimeClock);
+            TextView tvSingleDate = findViewById(R.id.tvSingleDateInfo);
+
+            if (tvSingleClock != null) tvSingleClock.setText(myClockStr + " (" + myTzOffsetStr + ")");
+            if (tvSingleDate != null) {
+                if (!isPaired) {
+                    tvSingleDate.setText(myDateStr + " • Pair up in Account Settings");
+                } else {
+                    tvSingleDate.setText(myDateStr + " • Same Timezone 💖");
+                }
+            }
+        } else {
+            // Case 1: Dual Timezone 2-Column View
+            layoutDual.setVisibility(View.VISIBLE);
+            layoutSingle.setVisibility(View.GONE);
+
+            // My Left Column
+            TextView tvMyTitle = findViewById(R.id.tvMyTzTitle);
+            TextView tvMyClock = findViewById(R.id.tvMyTimeClock);
+            TextView tvMyDate = findViewById(R.id.tvMyDateInfo);
+
+            if (tvMyTitle != null) tvMyTitle.setText("My Time");
+            if (tvMyClock != null) tvMyClock.setText(myClockStr);
+            if (tvMyDate != null) tvMyDate.setText(myDateStr + " (" + myTzOffsetStr + ")");
+
+            // Partner Right Column
+            Calendar partnerCal = Calendar.getInstance(partnerTz);
+            java.text.SimpleDateFormat partnerClockFormat = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+            partnerClockFormat.setTimeZone(partnerTz);
+            String partnerClockStr = partnerClockFormat.format(partnerCal.getTime());
+
+            java.text.SimpleDateFormat partnerDateFormat = new java.text.SimpleDateFormat("EEE, d MMM", java.util.Locale.getDefault());
+            partnerDateFormat.setTimeZone(partnerTz);
+            String partnerDateStr = partnerDateFormat.format(partnerCal.getTime());
+
+            int partnerOffsetHrs = partnerTz.getRawOffset() / (3600 * 1000);
+            int diffHrs = partnerOffsetHrs - myOffsetHrs;
+            String diffStr = (diffHrs >= 0 ? "+" + diffHrs : String.valueOf(diffHrs)) + " hrs";
+
+            TextView tvPartnerTitle = findViewById(R.id.tvPartnerTzTitle);
+            TextView tvPartnerClock = findViewById(R.id.tvPartnerTimeClock);
+            TextView tvPartnerDate = findViewById(R.id.tvPartnerDateInfo);
+
+            if (tvPartnerTitle != null) tvPartnerTitle.setText(partnerName + "'s Time");
+            if (tvPartnerClock != null) {
+                tvPartnerClock.setText(partnerClockStr);
+                if (partnerAccentColor != null && !partnerAccentColor.isEmpty()) {
+                    try {
+                        tvPartnerClock.setTextColor(android.graphics.Color.parseColor(partnerAccentColor));
+                    } catch (Exception ignored) {}
+                }
+            }
+            if (tvPartnerDate != null) tvPartnerDate.setText(partnerDateStr + " (" + diffStr + ")");
+        }
     }
 
     private void checkNotificationPermissions() {
@@ -1057,6 +1201,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
     protected void onResume() {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
+        if (timezoneHandler != null && timezoneRunnable != null) {
+            timezoneHandler.removeCallbacks(timezoneRunnable);
+            timezoneHandler.post(timezoneRunnable);
+        }
     }
 
     @Override
