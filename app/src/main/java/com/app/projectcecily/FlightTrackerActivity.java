@@ -277,7 +277,6 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
         
         UIUtils.applyBottomMargin(fab);
         UIUtils.applyBottomPadding(rv);
-        UIUtils.applyTopInsetPadding(rv);
 
         listenForPartnerProfile();
         setupHeaderTimezoneTicker();
