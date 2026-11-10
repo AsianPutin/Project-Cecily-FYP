@@ -51,12 +51,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvMyTzTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:text="My Time"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
@@ -67,6 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
                     android:text="--:--"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
@@ -77,6 +80,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
                     android:text="---"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
@@ -94,12 +98,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvPartnerTzTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:text="Partner's Time"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
@@ -110,6 +116,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
                     android:text="--:--"
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
@@ -120,6 +127,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
                     android:text="---"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />

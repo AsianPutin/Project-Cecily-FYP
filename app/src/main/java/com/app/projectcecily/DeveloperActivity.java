@@ -78,6 +78,7 @@ public class DeveloperActivity extends AppCompatActivity {
         setupDevPhotoControls();
         setupSubscriptionSwitches();
         setupMonthlyDatePicker();
+        setupTimezoneSimulationControls();
         applySwitchAccentTints();
 
         if (btnEndSub != null) {
@@ -664,6 +665,47 @@ public class DeveloperActivity extends AppCompatActivity {
                 }
             }
         } catch (Exception ignored) {}
+    }
+
+    private void setupTimezoneSimulationControls() {
+        com.google.android.material.button.MaterialButtonToggleGroup toggleTz = findViewById(R.id.toggleDevTimezone);
+        if (toggleTz == null) return;
+
+        String partnerId = UserManager.getPartnerId(this);
+        if (partnerId.isEmpty()) return;
+
+        // Check current partner timezone from Firebase
+        com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(partnerId).child("timeZone").get().addOnSuccessListener(snapshot -> {
+            String tz = snapshot.getValue(String.class);
+            if (tz == null) tz = "";
+            if (tz.contains("London")) {
+                toggleTz.check(R.id.btnTzLondon);
+            } else if (tz.contains("New_York") || tz.contains("NewYork")) {
+                toggleTz.check(R.id.btnTzNy);
+            } else {
+                toggleTz.check(R.id.btnTzSame);
+            }
+        });
+
+        toggleTz.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            String newTz = "Asia/Kuching";
+            String label = "Same Timezone (Asia/Kuching GMT+8)";
+
+            if (checkedId == R.id.btnTzLondon) {
+                newTz = "Europe/London";
+                label = "London Timezone (Europe/London GMT+0)";
+            } else if (checkedId == R.id.btnTzNy) {
+                newTz = "America/New_York";
+                label = "New York Timezone (America/New_York GMT-5)";
+            }
+
+            com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .getReference("profiles").child(partnerId).child("timeZone").setValue(newTz);
+
+            android.widget.Toast.makeText(this, "Partner Timezone set to " + label, android.widget.Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override

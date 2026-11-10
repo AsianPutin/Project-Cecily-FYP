@@ -393,7 +393,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             TextView tvMyDate = findViewById(R.id.tvMyDateInfo);
 
             if (tvMyTitle != null) tvMyTitle.setText("My Time");
-            if (tvMyClock != null) tvMyClock.setText(myClockStr);
+            if (tvMyClock != null) {
+                tvMyClock.setText(myClockStr);
+                tvMyClock.setTextColor(myAccentColor);
+            }
             if (tvMyDate != null) tvMyDate.setText(myDateStr + " (" + myTzOffsetStr + ")");
 
             // Partner Right Column
