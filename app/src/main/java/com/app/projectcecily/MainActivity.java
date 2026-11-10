@@ -483,13 +483,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void showDashPhotoOptionsSheet() {
         BottomSheetDialog sheet = new BottomSheetDialog(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_profile_picture_options, null);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_photo_cycle_options, null);
         sheet.setContentView(view);
 
-        View btnViewPic = view.findViewById(R.id.optionViewPicture);
-        if (btnViewPic != null) {
-            btnViewPic.setVisibility(View.VISIBLE);
-            btnViewPic.setOnClickListener(v -> {
+        View btnViewPhotos = view.findViewById(R.id.optionViewPhotos);
+        if (btnViewPhotos != null) {
+            btnViewPhotos.setVisibility(View.VISIBLE);
+            btnViewPhotos.setOnClickListener(v -> {
                 sheet.dismiss();
                 startActivity(new Intent(this, PhotoCycleActivity.class));
             });

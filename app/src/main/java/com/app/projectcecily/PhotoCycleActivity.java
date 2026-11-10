@@ -155,12 +155,12 @@ public class PhotoCycleActivity extends AppCompatActivity {
     }
 
     private void showImageSourceChooser() {
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_profile_picture_options, null);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_photo_cycle_options, null);
         BottomSheetDialog sheet = new BottomSheetDialog(this);
         sheet.setContentView(view);
 
-        View btnViewPic = view.findViewById(R.id.optionViewPicture);
-        if (btnViewPic != null) btnViewPic.setVisibility(View.GONE);
+        View btnViewPhotos = view.findViewById(R.id.optionViewPhotos);
+        if (btnViewPhotos != null) btnViewPhotos.setVisibility(View.GONE);
 
         view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
             sheet.dismiss();
