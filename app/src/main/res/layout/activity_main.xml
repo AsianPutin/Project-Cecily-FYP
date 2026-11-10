@@ -297,21 +297,24 @@
             <!-- 2-Column Action Cards: [ Flights ] [ Wishlist ] -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="72dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingBottom="6dp">
 
                 <!-- Flight Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardFlight"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="68dp"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    app:cardElevation="3dp"
                     app:strokeWidth="0dp">
 
                     <LinearLayout
@@ -348,12 +351,12 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardWishlist"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="68dp"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    app:cardElevation="3dp"
                     app:strokeWidth="0dp">
 
                     <LinearLayout
@@ -391,14 +394,14 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Map-Style Themed Border Mock Banner Ad -->
+    <!-- Map-Style High-Contrast Themed Border Mock Banner Ad -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardBannerAd"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="8dp"
-        app:cardBackgroundColor="@color/card_background"
+        app:cardBackgroundColor="#212121"
         app:cardCornerRadius="14dp"
         app:cardElevation="4dp"
         app:strokeColor="@color/nav_selected"
