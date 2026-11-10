@@ -65,13 +65,8 @@ public class PokeWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        // When Logged In -> Use Poke Hand with asymmetric left-shift padding for optical centering!
-        float density = context.getResources().getDisplayMetrics().density;
-        int padLeft = Math.round(10 * density);
-        int padTop = Math.round(15 * density);
-        int padRight = Math.round(20 * density);
-        int padBottom = Math.round(15 * density);
-        views.setViewPadding(R.id.ivPokeHand, padLeft, padTop, padRight, padBottom);
+        // When Logged In -> Clean centered Poke Hand!
+        views.setViewPadding(R.id.ivPokeHand, 0, 0, 0, 0);
         views.setImageViewResource(R.id.ivPokeHand, R.drawable.ic_poke_hand);
         views.setTextViewText(R.id.tvPokeText, "Poke");
 

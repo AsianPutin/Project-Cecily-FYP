@@ -6,14 +6,12 @@
     android:background="@drawable/widget_background"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingLeft="2dp"
-    android:paddingRight="12dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:padding="12dp">
 
     <ImageView
-        android:layout_width="52dp"
-        android:layout_height="52dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
         android:contentDescription="Poke Partner"
         android:src="@drawable/ic_poke_hand"
         app:tint="#FF4081" />
@@ -21,7 +19,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
         android:text="Poke"
         android:textColor="@color/widget_text_color"
         android:textSize="11sp"

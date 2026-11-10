@@ -11,8 +11,9 @@
 
     <ImageView
         android:id="@+id/ivPokeHand"
-        android:layout_width="68dp"
-        android:layout_height="68dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
         android:contentDescription="Poke Partner"
         android:src="@drawable/ic_poke_hand"
         app:tint="#FF4081" />
@@ -21,7 +22,9 @@
         android:id="@+id/tvPokeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
         android:text="Poke"
         android:textColor="@color/widget_text_color"
         android:textSize="11sp"
