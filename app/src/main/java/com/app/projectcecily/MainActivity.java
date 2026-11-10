@@ -8,22 +8,35 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -45,6 +58,16 @@ public class MainActivity extends AppCompatActivity {
     private String partnerAccentColor = "#FF4081";
     private String partnerTimeZoneId = "";
     private RelationshipManager.Details cachedDetails;
+
+    // Photo Cycle Dashboard State
+    private List<PhotoItem> dashPartnerPhotos = new ArrayList<>();
+    private List<PhotoItem> dashMyPhotos = new ArrayList<>();
+    private int currentDashPhotoIndex = 0;
+    private android.os.Handler photoCycleHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable photoCycleRunnable;
+
+    private ActivityResultLauncher<Intent> dashCameraLauncher;
+    private ActivityResultLauncher<Intent> dashGalleryLauncher;
 
     private android.os.Handler adHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable adRunnable;
@@ -128,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
         tvPartnerTimeSummary = findViewById(R.id.tvPartnerTimeSummary);
 
         setupBannerAd();
+
+        setupDashCameraLaunchers();
+        setupPhotoCycleDashboardControls();
 
         RelationshipManager.listenFromFirebase(this, details -> {
             cachedDetails = details;
@@ -265,6 +291,20 @@ public class MainActivity extends AppCompatActivity {
             tvDistance.setText(UnitUtils.formatDistance(this, lastDistanceInKm));
         }
         updatePartnerSummaryCards();
+        listenForDashPhotoStreams();
+
+        if (photoCycleHandler != null && photoCycleRunnable != null) {
+            photoCycleHandler.removeCallbacks(photoCycleRunnable);
+            photoCycleHandler.postDelayed(photoCycleRunnable, 5000L);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (photoCycleHandler != null && photoCycleRunnable != null) {
+            photoCycleHandler.removeCallbacks(photoCycleRunnable);
+        }
     }
 
     private void updateDynamicAccent() {
@@ -277,6 +317,234 @@ public class MainActivity extends AppCompatActivity {
             navView.setItemIconTintList(colorList);
             navView.setItemTextColor(colorList);
         }
+    }
+
+    private void setupDashCameraLaunchers() {
+        dashCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+                if (photo != null) {
+                    PhotoCycleManager.saveUneditedPhotoToGallery(this, photo);
+                    showDashCropEditorDialog(photo);
+                }
+            }
+        });
+
+        dashGalleryLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Uri selectedImage = result.getData().getData();
+                if (selectedImage != null) {
+                    try (java.io.InputStream imageStream = getContentResolver().openInputStream(selectedImage)) {
+                        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+                        if (bitmap != null) {
+                            showDashCropEditorDialog(bitmap);
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+    }
+
+    private void setupPhotoCycleDashboardControls() {
+        View cardDashPhoto = findViewById(R.id.cardDashPhotoCycle);
+        if (cardDashPhoto == null) return;
+
+        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 80;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 80;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null || dashPartnerPhotos.isEmpty()) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            currentDashPhotoIndex = (currentDashPhotoIndex + 1) % dashPartnerPhotos.size();
+                        } else {
+                            currentDashPhotoIndex = (currentDashPhotoIndex - 1 + dashPartnerPhotos.size()) % dashPartnerPhotos.size();
+                        }
+                        updateDashPhotoUI();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                showDashPhotoOptionsSheet();
+                return true;
+            }
+        });
+
+        cardDashPhoto.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+
+        photoCycleRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!dashPartnerPhotos.isEmpty()) {
+                    currentDashPhotoIndex = (currentDashPhotoIndex + 1) % dashPartnerPhotos.size();
+                    updateDashPhotoUI();
+                }
+                long delay = 5000L + (long) (Math.random() * 5000L);
+                photoCycleHandler.postDelayed(this, delay);
+            }
+        };
+    }
+
+    private void listenForDashPhotoStreams() {
+        String myUserId = UserManager.getUserId(this);
+        String pId = UserManager.getPartnerId(this);
+
+        if (!myUserId.isEmpty()) {
+            PhotoCycleManager.listenActivePhotos(this, myUserId, photos -> {
+                dashMyPhotos = (photos != null) ? photos : new ArrayList<>();
+            });
+        }
+
+        if (!pId.isEmpty()) {
+            PhotoCycleManager.listenActivePhotos(this, pId, photos -> {
+                dashPartnerPhotos = (photos != null) ? photos : new ArrayList<>();
+                if (currentDashPhotoIndex >= dashPartnerPhotos.size()) {
+                    currentDashPhotoIndex = 0;
+                }
+                updateDashPhotoUI();
+            });
+        }
+    }
+
+    private void updateDashPhotoUI() {
+        ImageView ivDashPhoto = findViewById(R.id.ivDashPhotoCycle);
+        View layoutFallback = findViewById(R.id.layoutDashPhotoFallback);
+        TextView tvFallback = findViewById(R.id.tvDashPhotoFallbackText);
+
+        boolean isLoggedIn = UserManager.isLoggedIn(this);
+        boolean isPaired = !UserManager.getPartnerId(this).isEmpty();
+
+        if (!isLoggedIn || !isPaired || dashPartnerPhotos.isEmpty()) {
+            if (ivDashPhoto != null) ivDashPhoto.setVisibility(View.GONE);
+            if (layoutFallback != null) layoutFallback.setVisibility(View.VISIBLE);
+            if (tvFallback != null) {
+                if (!isLoggedIn) tvFallback.setText("Log In to view\npartner photos");
+                else if (!isPaired) tvFallback.setText("Pair up to view\npartner photos!");
+                else tvFallback.setText("No active photos\nTap to send or view!");
+            }
+        } else {
+            if (layoutFallback != null) layoutFallback.setVisibility(View.GONE);
+            if (ivDashPhoto != null) {
+                ivDashPhoto.setVisibility(View.VISIBLE);
+                PhotoItem item = dashPartnerPhotos.get(currentDashPhotoIndex % dashPartnerPhotos.size());
+                try {
+                    String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
+                    byte[] bytes = Base64.decode(clean, Base64.DEFAULT);
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    ivDashPhoto.setImageBitmap(bmp);
+                } catch (Exception e) {
+                    ivDashPhoto.setImageBitmap(null);
+                }
+            }
+        }
+    }
+
+    private void showDashPhotoOptionsSheet() {
+        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_profile_picture_options, null);
+        sheet.setContentView(view);
+
+        View btnViewPic = view.findViewById(R.id.optionViewPicture);
+        if (btnViewPic != null) {
+            btnViewPic.setVisibility(View.VISIBLE);
+            btnViewPic.setOnClickListener(v -> {
+                sheet.dismiss();
+                startActivity(new Intent(this, PhotoCycleActivity.class));
+            });
+        }
+
+        view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
+            sheet.dismiss();
+            checkCapacityBeforeCapture(true);
+        });
+
+        view.findViewById(R.id.optionGallery).setOnClickListener(v -> {
+            sheet.dismiss();
+            checkCapacityBeforeCapture(false);
+        });
+
+        sheet.show();
+    }
+
+    private void checkCapacityBeforeCapture(boolean isCamera) {
+        if (dashMyPhotos.size() >= PhotoCycleManager.MAX_PHOTOS_PER_USER) {
+            // Option B Replace Prompt Dialog
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Photo Stream Full (4/4)")
+                    .setMessage("Your 24-hour photo stream is at maximum capacity (4/4 photos). Sending a new photo will replace your oldest active photo. Continue?")
+                    .setPositiveButton("Replace & Send", (dialog, which) -> {
+                        if (!dashMyPhotos.isEmpty()) {
+                            PhotoItem oldest = dashMyPhotos.get(0);
+                            String myUserId = UserManager.getUserId(this);
+                            PhotoCycleManager.deletePhoto(this, myUserId, oldest.photoId, () -> {
+                                launchCaptureIntent(isCamera);
+                            });
+                        } else {
+                            launchCaptureIntent(isCamera);
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else {
+            launchCaptureIntent(isCamera);
+        }
+    }
+
+    private void launchCaptureIntent(boolean isCamera) {
+        if (isCamera) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            dashCameraLauncher.launch(intent);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            dashGalleryLauncher.launch(intent);
+        }
+    }
+
+    private void showDashCropEditorDialog(Bitmap rawBitmap) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_crop_profile_pic, null);
+        CropImageView ivCropTarget = view.findViewById(R.id.ivCropTarget);
+        CircularOverlayView overlayView = view.findViewById(R.id.circularOverlayView);
+        Button btnRotate = view.findViewById(R.id.btnRotateCrop);
+        Button btnSave = view.findViewById(R.id.btnSaveCroppedPic);
+
+        ivCropTarget.setImageAndReset(rawBitmap);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setView(view)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        btnRotate.setOnClickListener(v -> ivCropTarget.rotate90());
+
+        btnSave.setOnClickListener(v -> {
+            Bitmap cropped = ivCropTarget.getCroppedCircleBitmap(overlayView.getCircleRect());
+            Bitmap finalUpload = (cropped != null) ? cropped : rawBitmap;
+            PhotoCycleManager.uploadPhoto(this, finalUpload, new PhotoCycleManager.UploadCallback() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(MainActivity.this, "Photo sent to partner's stream! 📸✨", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void setupNavigation() {
