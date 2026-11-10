@@ -1,8 +1,10 @@
-name: Android Build
+name: Android Build & Release
 
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -29,3 +31,22 @@ jobs:
         with:
           name: project-cecily-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/debug/app-debug.apk
+          tag_name: v1.2.0
+          name: Project Cecily - Release v1.2.0
+          body: |
+            ### 💖 Project Cecily - Release v1.2.0
+
+            #### 🌟 Highlights & Features Included:
+            - **Photo Cycle Stream & Widget:** 24-hour ephemeral photos, camera/gallery high-res 1080x1080 crop engine, ViewPager2 smooth photo stream, 2x2 home screen widget, and Developer multi-select photo controls.
+            - **Flight Tracker & Dual Timezones:** Freely floating live timezone header (Dual & Single mode), airport IATA resolver, zero-gap layout, and developer timezone simulator.
+            - **Live Map & Together Mode:** OSMDroid OpenStreetMap integration, Life360 dual avatars, 2-column food/date swipe decision engine, and Together Mode composite map markers.
+            - **Wishlist & Secret Gift Privacy:** Secret gift privacy shielding, creator "Received" status, and ViewPager2 horizontal swipe.
+            - **Appearance & Dynamic Color Engine:** 18-color palette swatches, rainbow custom hue slider, per-user account theme sync, custom launcher app icon switcher, and OriginOS single-badge notification integration.
+            - **Subscriptions & Billing Engine:** Stripe credit card payment checkout sheet, Freedom Pass Ad-Free Premium, and Ko-fi contribution support.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

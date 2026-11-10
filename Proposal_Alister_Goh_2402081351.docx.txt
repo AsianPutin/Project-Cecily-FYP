@@ -17,7 +17,7 @@ Name
 	Ms. Ain Nazihah Binti Pakasa
 	
 
-Title: Couple’s Companion App (Temporary name)
+Title: LDR Companion App (Temporary name)
 	Introduction:
 Long-distance relationship (LDR) couples currently face significant "Information Fragmentation," having to jump between multiple high-maintenance apps like Life360 for location, airline apps for flight status, and notes for shared lists. Furthermore, many dedicated couple apps (e.g., Couple Tree) prioritize "digital fluff"—virtual pets, furnished gardens, or daily emotional "essays" that require users to scrape the "bottom of their brain barrels" for deep thoughts every morning.
 While one partner may enjoy these inefficiencies, the other—often the logical or forgetful type—finds these forced interactions mentally draining. There is a distinct lack of a utility-first LDR hub that automates logistics without demanding constant, active emotional labor or high battery consumption. 
@@ -30,41 +30,41 @@ Competitors often focus on virtual pets and house-furnishing leaderboards that b
 3. Logistical Fragmentation & Battery Drain: 
 There is no unified, low-power solution for LDR logistics. Couples currently jump between fragmented platforms, and GPS-heavy trackers like Life360 are notoriously battery-intensive, lacking a "Together Mode" to disable tracking when the couple is physically in the same location. 
 	Objectives:
-   1. Secure Handshake & Pair Sync: 
-Develop a Firebase-backed pairing protocol using 6-digit invite codes to link two users and manage real-time data persistence for shared profiles. 
-   2. Automated Flight Logistics Engine: 
-Implement a background monitoring service using WorkManager that automatically tracks flight status (takeoff, landing, delays) from pasted flight data to provide ETA alerts to the partner. 
-   3. Integrated Lifestyle & Health Hub: 
-Build a centralized dashboard for shared wishlists and period tracking to automate support and visit planning without daily manual entry. 
-   4. Weighted Consensus Resolver: 
-Implement a Tinder-style swiping mechanic for date and food preferences that uses pre-existing preferences to help the couple decide on activities when together. 
-   5. Multi-State Ambient Widgets: 
-Develop a suite of Android home-screen widgets for passive connection, including random photo cycles, a Poke interaction button, and a low-power proximity tracker that auto-disables when partners are together. 
+   1. Quick and easy pairing and syncing
+To develop a secure mobile application module that enables real-time synchronization between two devices through a unique 6-digit verification token pairing mechanism.
+   2. Flight tracker within the app
+To integrate a background travel monitoring framework that processes pasted flight telemetry data to display real-time status updates and arrival estimations passively to the partner.
+   3. Integrated lifestyle hub
+To design a centralized dashboard that enables users to coordinate shared calendar events, manage lifestyle wishlists with post-purchase privacy shielding.
+   4. Decision helper 
+To implement a preference-shielded activity selection utility using a swipe-based interface to facilitate joint decision-making without real-time choice bias.
+   5. Dynamic ambient widgets
+To deploy passive home-screen desktop widgets that provide glanceable status indicators, including distance metrics, photo cycling, and a single-button notification ping for ambient awareness.
 	Scope:
 User Scope:
-      * Couples in LDRs where one partner seeks logistical automation (the "logical" type) and the other seeks consistent updates. 
+   * Couples in LDRs where one partner seeks logistical automation (the "logical" type) and the other seeks consistent updates. 
 System Scope:
-      * An Android-native application (API 30+) using Firebase for real-time syncing. The system integrates external Aviation APIs and prioritizes low-power background tasks to protect battery life. 
+   * An Android-native application (API 30+) using Firebase for real-time syncing. The system integrates external Aviation APIs and prioritizes low-power background tasks to protect battery life. 
 	Revenue Model:
 The app will use a multi-tiered monetization strategy to attract impulsive buyers while remaining student-friendly:
-      * Freemium/Ads: The app is free with non-intrusive banner ads.
-      * Impulse Subscription: A low-cost monthly tier ($0.99) to remove ads and unlock power features. 
-      * One-Time "Freedom" Purchase: A single payment option (equivalent to 10 months of subscription) to unlock everything forever. 
-      * Ko-fi Function: An optional "funsies" donation button for users who wish to support the developer's work with no additional features attached.
+   * Freemium/Ads: The app is free with non-intrusive banner ads.
+   * Impulse Subscription: A low-cost monthly tier ($0.99) to remove ads and unlock power features. 
+   * One-Time "Freedom" Purchase: A single payment option (equivalent to 10 months of subscription) to unlock everything forever. 
+   * Ko-fi Function: An optional "funsies" donation button for users who wish to support the developer's work with no additional features attached.
 	Methodology:
 The Agile model in the software development life cycle will be used to develop the application. Agile is an adaptable and iterative approach that emphasizes teamwork and producing usable software in small steps through time-boxed iterations and continuous feedback. This model is chosen to allow for the developer to manage this project alongside other subjects, an internship, and personal testing with their partner. By developing in incremental, rapid cycles, the project can maintain a flexible baseline, ensuring requirement satisfaction and a functional delivery by December 2026.
 	Software Tools:
-      1. IDE: Android Studio
-      2. Backend: Firebase (Firestore, Auth, Cloud Functions). 
-      3. Documentation: Google Office Suite (Docs, Sheets).
-      4. Hardware: Two physical Android devices and a development laptop.
+   1. IDE: Android Studio
+   2. Backend: Firebase (Firestore, Auth, Cloud Functions). 
+   3. Documentation: Google Office Suite (Docs, Sheets).
+   4. Hardware: Two physical Android devices and a development laptop.
 	Conclusion:
 This project prioritizes logical utility over the "forced deep thinking" typical of current couple apps. By centralizing flight logistics, health tracking, and decision-making into a low-friction Android system, it creates a practical bridge between partners. The Agile methodology ensures the project remains manageable across two semesters, delivering a high-quality, privacy-focused tool that respects the user's battery life and mental bandwidth. 
 	References: 
-      1. Holtzman, S., DeClerck, D., Turcotte, K., Lisi, D., & Woodworth, M. (2021). Long-distance texting: Text messaging is linked with higher relationship satisfaction in long-distance relationships. Journal of Social and Personal Relationships, 38(12), 3543–3565. https://doi.org/10.1177/02654075211043296 (Peer-reviewed proof from within the last 5 years that low-effort digital pings maintain LDRs better than forced heavy interactions).
-      2. Jiang, L. C., & Hancock, J. T. (2013). Absence Makes the Communication Grow Fonder: Geographic Separation, Interpersonal Media, and Intimacy in Dating Relationships. Journal of Communication, 63(3), 556–577. https://doi.org/10.1111/jcom.12029 (The seminal study proving asynchronous communication effectively bridges geographic gaps).
-      3. Watkins, K. E., Ferris, B., Borning, A., Rutherford, G. S., & Layton, D. (2011). Where Is My Bus? Impact of mobile real-time information on the perceived and actual wait time of transit riders. Transportation Research Part A: Policy and Practice, 45(8), 839–848. https://doi.org/10.1016/j.tra.2011.06.010 (The academic baseline proving that automated, real-time travel logistics directly reduces user anxiety).
-      4. Zhao, C., & Rosson, M. B. (2016). Ambient awareness: From random noise to digital closeness in online social networks. Computers in Human Behavior, 60, 42–52. https://doi.org/10.1016/j.chb.2016.02.037
+   1. Holtzman, S., DeClerck, D., Turcotte, K., Lisi, D., & Woodworth, M. (2021). Long-distance texting: Text messaging is linked with higher relationship satisfaction in long-distance relationships. Journal of Social and Personal Relationships, 38(12), 3543–3565. https://doi.org/10.1177/02654075211043296 (Peer-reviewed proof from within the last 5 years that low-effort digital pings maintain LDRs better than forced heavy interactions).
+   2. Jiang, L. C., & Hancock, J. T. (2013). Absence Makes the Communication Grow Fonder: Geographic Separation, Interpersonal Media, and Intimacy in Dating Relationships. Journal of Communication, 63(3), 556–577. https://doi.org/10.1111/jcom.12029 (The seminal study proving asynchronous communication effectively bridges geographic gaps).
+   3. Watkins, K. E., Ferris, B., Borning, A., Rutherford, G. S., & Layton, D. (2011). Where Is My Bus? Impact of mobile real-time information on the perceived and actual wait time of transit riders. Transportation Research Part A: Policy and Practice, 45(8), 839–848. https://doi.org/10.1016/j.tra.2011.06.010 (The academic baseline proving that automated, real-time travel logistics directly reduces user anxiety).
+   4. Zhao, C., & Rosson, M. B. (2016). Ambient awareness: From random noise to digital closeness in online social networks. Computers in Human Behavior, 60, 42–52. https://doi.org/10.1016/j.chb.2016.02.037
 	
 
 
