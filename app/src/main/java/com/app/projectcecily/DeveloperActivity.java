@@ -32,7 +32,6 @@ public class DeveloperActivity extends AppCompatActivity {
 
     // Photo Stream Controls State
     private com.google.android.material.button.MaterialButtonToggleGroup toggleDevPhotoStream;
-    private android.widget.ImageView ivDevPhotoPreview;
     private com.google.android.material.card.MaterialCardView[] devThumbCards = new com.google.android.material.card.MaterialCardView[4];
     private android.widget.ImageView[] devThumbViews = new android.widget.ImageView[4];
     private Button btnDevDeletePhoto;
@@ -126,7 +125,6 @@ public class DeveloperActivity extends AppCompatActivity {
 
     private void setupDevPhotoControls() {
         toggleDevPhotoStream = findViewById(R.id.toggleDevPhotoStream);
-        ivDevPhotoPreview = findViewById(R.id.ivDevPhotoPreview);
         btnDevDeletePhoto = findViewById(R.id.btnDevDeletePhoto);
 
         devThumbCards[0] = findViewById(R.id.cardThumb1);
@@ -138,6 +136,8 @@ public class DeveloperActivity extends AppCompatActivity {
         devThumbViews[1] = findViewById(R.id.ivThumb2);
         devThumbViews[2] = findViewById(R.id.ivThumb3);
         devThumbViews[3] = findViewById(R.id.ivThumb4);
+
+        updatePartnerPillButtonText();
 
         if (toggleDevPhotoStream != null) {
             toggleDevPhotoStream.check(R.id.btnDevStreamMe);
@@ -152,22 +152,50 @@ public class DeveloperActivity extends AppCompatActivity {
         for (int i = 0; i < 4; i++) {
             final int index = i;
             if (devThumbCards[i] != null) {
+                // Click once -> Open Fullscreen Blurred Background Photo Viewer Dialog
                 devThumbCards[i].setOnClickListener(v -> {
+                    if (index < currentDevPhotos.size()) {
+                        PhotoItem item = currentDevPhotos.get(index);
+                        try {
+                            String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
+                            byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
+                            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            showFullPhotoDialog(bmp);
+                        } catch (Exception ignored) {}
+                    } else {
+                        android.widget.Toast.makeText(this, "Slot empty (No active photo)", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // Hold down -> Select photo slot for deletion with theme accent border ring
+                devThumbCards[i].setOnLongClickListener(v -> {
                     selectedPhotoIndex = index;
                     updateDevPhotoUI();
+                    if (index < currentDevPhotos.size()) {
+                        android.widget.Toast.makeText(this, "Selected Photo Slot " + (index + 1) + " for deletion", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
                 });
             }
         }
 
         if (btnDevDeletePhoto != null) {
+            btnDevDeletePhoto.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#D32F2F")));
             btnDevDeletePhoto.setOnClickListener(v -> {
                 if (selectedPhotoIndex >= 0 && selectedPhotoIndex < currentDevPhotos.size()) {
-                    PhotoItem target = currentDevPhotos.get(selectedPhotoIndex);
-                    String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
-                    PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
-                        android.widget.Toast.makeText(this, "Photo slot deleted!", android.widget.Toast.LENGTH_SHORT).show();
-                        selectedPhotoIndex = 0;
-                    });
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                            .setTitle("Delete Photo?")
+                            .setMessage("Are you sure you want to delete this photo slot from the 24-hour stream? This action cannot be undone.")
+                            .setPositiveButton("Delete", (dialog, which) -> {
+                                PhotoItem target = currentDevPhotos.get(selectedPhotoIndex);
+                                String targetUserId = isViewingMyPhotos ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
+                                PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
+                                    android.widget.Toast.makeText(this, "Photo slot deleted!", android.widget.Toast.LENGTH_SHORT).show();
+                                    selectedPhotoIndex = 0;
+                                });
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
                 } else {
                     android.widget.Toast.makeText(this, "No photo in selected slot to delete.", android.widget.Toast.LENGTH_SHORT).show();
                 }
@@ -175,6 +203,98 @@ public class DeveloperActivity extends AppCompatActivity {
         }
 
         loadDevPhotoStream();
+    }
+
+    private void updatePartnerPillButtonText() {
+        Button btnPartner = findViewById(R.id.btnDevStreamPartner);
+        if (btnPartner == null) return;
+
+        String partnerId = UserManager.getPartnerId(this);
+        if (partnerId.isEmpty()) {
+            btnPartner.setText("Partner's Photos");
+            return;
+        }
+
+        com.google.firebase.database.FirebaseDatabase.getInstance("https://i-must-finish-this-in-2026-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("profiles").child(partnerId).child("name").get().addOnSuccessListener(snapshot -> {
+            String name = snapshot.getValue(String.class);
+            if (name != null && !name.trim().isEmpty()) {
+                btnPartner.setText(name.trim() + "'s Photos");
+            } else {
+                btnPartner.setText("Partner's Photos");
+            }
+        }).addOnFailureListener(e -> btnPartner.setText("Partner's Photos"));
+    }
+
+    private android.graphics.Bitmap createBlurredBitmap(android.graphics.Bitmap original, int radius) {
+        if (original == null) return null;
+        try {
+            android.graphics.Bitmap input = android.graphics.Bitmap.createScaledBitmap(original, Math.max(1, original.getWidth() / 4), Math.max(1, original.getHeight() / 4), false);
+            android.graphics.Bitmap output = android.graphics.Bitmap.createBitmap(input.getWidth(), input.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+
+            android.renderscript.RenderScript rs = android.renderscript.RenderScript.create(this);
+            android.renderscript.ScriptIntrinsicBlur script = android.renderscript.ScriptIntrinsicBlur.create(rs, android.renderscript.Element.U8_4(rs));
+            android.renderscript.Allocation allocIn = android.renderscript.Allocation.createFromBitmap(rs, input);
+            android.renderscript.Allocation allocOut = android.renderscript.Allocation.createFromBitmap(rs, output);
+
+            script.setRadius(Math.min(25, Math.max(1, radius)));
+            script.setInput(allocIn);
+            script.forEach(allocOut);
+            allocOut.copyTo(output);
+            rs.destroy();
+            return output;
+        } catch (Exception e) {
+            return original;
+        }
+    }
+
+    private void showFullPhotoDialog(android.graphics.Bitmap photoBitmap) {
+        if (photoBitmap == null) return;
+        View view = android.view.LayoutInflater.from(this).inflate(R.layout.dialog_view_full_image, null);
+        android.widget.ImageView ivBlurBg = view.findViewById(R.id.ivBlurBg);
+        android.widget.ImageView ivFull = view.findViewById(R.id.ivFullImage);
+        View cardHolder = view.findViewById(R.id.cardImageHolder);
+
+        android.graphics.Bitmap blurSrc = null;
+        try {
+            View rootView = getWindow().getDecorView().getRootView();
+            rootView.setDrawingCacheEnabled(true);
+            android.graphics.Bitmap cache = rootView.getDrawingCache();
+            if (cache != null) {
+                blurSrc = android.graphics.Bitmap.createBitmap(cache);
+            }
+            rootView.setDrawingCacheEnabled(false);
+        } catch (Exception ignored) {}
+
+        if (blurSrc == null) blurSrc = photoBitmap;
+
+        android.graphics.Bitmap blurred = createBlurredBitmap(blurSrc, 25);
+        if (blurred != null && ivBlurBg != null) {
+            ivBlurBg.setImageBitmap(blurred);
+        }
+
+        if (photoBitmap != null && ivFull != null) {
+            ivFull.setImageBitmap(photoBitmap);
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+                .setView(view)
+                .create();
+
+        view.setOnClickListener(v -> dialog.dismiss());
+        if (cardHolder != null) {
+            cardHolder.setOnClickListener(v -> {});
+        }
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            dialog.getWindow().setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            );
+        }
     }
 
     private void loadDevPhotoStream() {
@@ -217,23 +337,6 @@ public class DeveloperActivity extends AppCompatActivity {
                 } else {
                     card.setStrokeWidth(0);
                 }
-            }
-        }
-
-        // Update Large Preview Window
-        if (ivDevPhotoPreview != null) {
-            if (selectedPhotoIndex >= 0 && selectedPhotoIndex < currentDevPhotos.size()) {
-                PhotoItem selected = currentDevPhotos.get(selectedPhotoIndex);
-                try {
-                    String clean = selected.photoBase64.contains(",") ? selected.photoBase64.split(",")[1] : selected.photoBase64;
-                    byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
-                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    ivDevPhotoPreview.setImageBitmap(bmp);
-                } catch (Exception e) {
-                    ivDevPhotoPreview.setImageBitmap(null);
-                }
-            } else {
-                ivDevPhotoPreview.setImageBitmap(null);
             }
         }
     }
