@@ -125,22 +125,26 @@ public class CropImageView extends AppCompatImageView {
     }
 
     public Bitmap getCroppedCircleBitmap(RectF circleRect) {
+        return getCroppedSquareBitmap(circleRect, 1080);
+    }
+
+    public Bitmap getCroppedSquareBitmap(RectF squareRect, int targetSize) {
         setDrawingCacheEnabled(true);
         Bitmap viewBitmap = Bitmap.createBitmap(getDrawingCache());
         setDrawingCacheEnabled(false);
 
         if (viewBitmap == null) return null;
 
-        int left = Math.max(0, (int) circleRect.left);
-        int top = Math.max(0, (int) circleRect.top);
-        int width = Math.min(viewBitmap.getWidth() - left, (int) circleRect.width());
-        int height = Math.min(viewBitmap.getHeight() - top, (int) circleRect.height());
+        int left = Math.max(0, (int) squareRect.left);
+        int top = Math.max(0, (int) squareRect.top);
+        int width = Math.min(viewBitmap.getWidth() - left, (int) squareRect.width());
+        int height = Math.min(viewBitmap.getHeight() - top, (int) squareRect.height());
 
         if (width <= 0 || height <= 0) return null;
 
         Bitmap croppedSquare = Bitmap.createBitmap(viewBitmap, left, top, width, height);
 
-        // Scale down to standard 300x300 for profile picture saving
-        return Bitmap.createScaledBitmap(croppedSquare, 300, 300, true);
+        int size = targetSize > 0 ? targetSize : 1080;
+        return Bitmap.createScaledBitmap(croppedSquare, size, size, true);
     }
 }

@@ -319,10 +319,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private Uri dashTempCameraUri;
+
     private void setupDashCameraLaunchers() {
         dashCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+            if (result.getResultCode() == RESULT_OK && dashTempCameraUri != null) {
+                Bitmap photo = PhotoCycleManager.decodeHighResBitmap(this, dashTempCameraUri);
                 if (photo != null) {
                     PhotoCycleManager.saveUneditedPhotoToGallery(this, photo);
                     showDashCropEditorDialog(photo);
@@ -334,17 +336,28 @@ public class MainActivity extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Uri selectedImage = result.getData().getData();
                 if (selectedImage != null) {
-                    try (java.io.InputStream imageStream = getContentResolver().openInputStream(selectedImage)) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-                        if (bitmap != null) {
-                            showDashCropEditorDialog(bitmap);
-                        }
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    Bitmap bitmap = PhotoCycleManager.decodeHighResBitmap(this, selectedImage);
+                    if (bitmap != null) {
+                        showDashCropEditorDialog(bitmap);
                     }
                 }
             }
         });
+    }
+
+    private void launchCaptureIntent(boolean isCamera) {
+        if (isCamera) {
+            dashTempCameraUri = PhotoCycleManager.createTempCameraUri(this);
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (dashTempCameraUri != null) {
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, dashTempCameraUri);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+            dashCameraLauncher.launch(intent);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            dashGalleryLauncher.launch(intent);
+        }
     }
 
     private void setupPhotoCycleDashboardControls() {
@@ -498,16 +511,6 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         } else {
             launchCaptureIntent(isCamera);
-        }
-    }
-
-    private void launchCaptureIntent(boolean isCamera) {
-        if (isCamera) {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            dashCameraLauncher.launch(intent);
-        } else {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            dashGalleryLauncher.launch(intent);
         }
     }
 

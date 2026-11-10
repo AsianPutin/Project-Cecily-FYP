@@ -3,6 +3,7 @@ package com.app.projectcecily;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -39,6 +40,29 @@ public class PhotoCycleManager {
         String partnerId = UserManager.getPartnerId(context);
         if (partnerId.isEmpty()) return userId;
         return (userId.compareTo(partnerId) < 0) ? (userId + "_" + partnerId) : (partnerId + "_" + userId);
+    }
+
+    public static Uri createTempCameraUri(Context context) {
+        if (context == null) return null;
+        try {
+            java.io.File cacheDir = context.getExternalCacheDir();
+            if (cacheDir == null) cacheDir = context.getCacheDir();
+            java.io.File tempFile = java.io.File.createTempFile("highres_camera_", ".jpg", cacheDir);
+            return androidx.core.content.FileProvider.getUriForFile(context, "com.app.projectcecily.fileprovider", tempFile);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static Bitmap decodeHighResBitmap(Context context, Uri imageUri) {
+        if (context == null || imageUri == null) return null;
+        try (java.io.InputStream is = context.getContentResolver().openInputStream(imageUri)) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            return BitmapFactory.decodeStream(is, null, options);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static void saveUneditedPhotoToGallery(Context context, Bitmap bitmap) {

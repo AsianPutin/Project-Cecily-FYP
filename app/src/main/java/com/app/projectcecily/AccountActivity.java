@@ -43,20 +43,17 @@ public class AccountActivity extends AppCompatActivity {
     private DatabaseReference dbRef;
     private Bitmap currentProfileBitmap;
 
+    private Uri accountTempCameraUri;
+
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (imageUri != null) {
-                        try {
-                            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                            if (bitmap != null) {
-                                showCropEditorDialog(bitmap);
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(this, "Failed to load image from gallery", Toast.LENGTH_SHORT).show();
+                        Bitmap bitmap = PhotoCycleManager.decodeHighResBitmap(this, imageUri);
+                        if (bitmap != null) {
+                            showCropEditorDialog(bitmap);
                         }
                     }
                 }
@@ -66,10 +63,9 @@ public class AccountActivity extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Bundle extras = result.getData().getExtras();
-                    if (extras != null && extras.get("data") instanceof Bitmap) {
-                        Bitmap bitmap = (Bitmap) extras.get("data");
+                if (result.getResultCode() == RESULT_OK && accountTempCameraUri != null) {
+                    Bitmap bitmap = PhotoCycleManager.decodeHighResBitmap(this, accountTempCameraUri);
+                    if (bitmap != null) {
                         showCropEditorDialog(bitmap);
                     }
                 }
@@ -151,7 +147,12 @@ public class AccountActivity extends AppCompatActivity {
 
         view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
             sheet.dismiss();
+            accountTempCameraUri = PhotoCycleManager.createTempCameraUri(this);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (accountTempCameraUri != null) {
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, accountTempCameraUri);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
             cameraLauncher.launch(intent);
         });
 

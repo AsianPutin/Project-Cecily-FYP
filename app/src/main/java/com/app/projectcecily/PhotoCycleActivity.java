@@ -127,10 +127,12 @@ public class PhotoCycleActivity extends AppCompatActivity {
         }).addOnFailureListener(e -> btnStreamPartner.setText("Partner's Photos"));
     }
 
+    private Uri tempCameraUri;
+
     private void setupLaunchers() {
         cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+            if (result.getResultCode() == RESULT_OK && tempCameraUri != null) {
+                Bitmap photo = PhotoCycleManager.decodeHighResBitmap(this, tempCameraUri);
                 if (photo != null) {
                     // Save unedited full-res photo to device gallery Pictures/ProjectCecily
                     PhotoCycleManager.saveUneditedPhotoToGallery(this, photo);
@@ -143,13 +145,9 @@ public class PhotoCycleActivity extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Uri selectedImage = result.getData().getData();
                 if (selectedImage != null) {
-                    try (InputStream imageStream = getContentResolver().openInputStream(selectedImage)) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-                        if (bitmap != null) {
-                            showCropEditorDialog(bitmap);
-                        }
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    Bitmap bitmap = PhotoCycleManager.decodeHighResBitmap(this, selectedImage);
+                    if (bitmap != null) {
+                        showCropEditorDialog(bitmap);
                     }
                 }
             }
@@ -166,8 +164,7 @@ public class PhotoCycleActivity extends AppCompatActivity {
 
         view.findViewById(R.id.optionCamera).setOnClickListener(v -> {
             sheet.dismiss();
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            cameraLauncher.launch(intent);
+            launchCameraIntent();
         });
 
         view.findViewById(R.id.optionGallery).setOnClickListener(v -> {
@@ -177,6 +174,16 @@ public class PhotoCycleActivity extends AppCompatActivity {
         });
 
         sheet.show();
+    }
+
+    private void launchCameraIntent() {
+        tempCameraUri = PhotoCycleManager.createTempCameraUri(this);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (tempCameraUri != null) {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, tempCameraUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+        cameraLauncher.launch(intent);
     }
 
     private void showCropEditorDialog(Bitmap rawBitmap) {
