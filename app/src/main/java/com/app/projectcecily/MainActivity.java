@@ -411,23 +411,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void listenForDashPhotoStreams() {
         String myUserId = UserManager.getUserId(this);
-        String pId = UserManager.getPartnerId(this);
-
         if (!myUserId.isEmpty()) {
             PhotoCycleManager.listenActivePhotos(this, myUserId, photos -> {
                 dashMyPhotos = (photos != null) ? photos : new ArrayList<>();
             });
         }
 
-        if (!pId.isEmpty()) {
-            PhotoCycleManager.listenActivePhotos(this, pId, photos -> {
-                dashPartnerPhotos = (photos != null) ? photos : new ArrayList<>();
-                if (currentDashPhotoIndex >= dashPartnerPhotos.size()) {
-                    currentDashPhotoIndex = 0;
-                }
-                updateDashPhotoUI();
-            });
-        }
+        PhotoCycleManager.listenCombinedActivePhotos(this, photos -> {
+            dashPartnerPhotos = (photos != null) ? photos : new ArrayList<>();
+            if (currentDashPhotoIndex >= dashPartnerPhotos.size()) {
+                currentDashPhotoIndex = 0;
+            }
+            updateDashPhotoUI();
+        });
     }
 
     private void updateDashPhotoUI() {

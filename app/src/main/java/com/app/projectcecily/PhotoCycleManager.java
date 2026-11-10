@@ -149,6 +149,55 @@ public class PhotoCycleManager {
         });
     }
 
+    public static void listenCombinedActivePhotos(Context context, PhotosCallback callback) {
+        if (context == null) {
+            if (callback != null) callback.onPhotosLoaded(new ArrayList<>());
+            return;
+        }
+
+        String myUserId = UserManager.getUserId(context);
+        String partnerId = UserManager.getPartnerId(context);
+
+        if (myUserId.isEmpty() && partnerId.isEmpty()) {
+            if (callback != null) callback.onPhotosLoaded(new ArrayList<>());
+            return;
+        }
+
+        String pairKey = getPairKey(context);
+        DatabaseReference ref = FirebaseDatabase.getInstance(FIREBASE_URL).getReference("photo_cycles").child(pairKey);
+
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long now = System.currentTimeMillis();
+                List<PhotoItem> combinedPhotos = new ArrayList<>();
+
+                if (snapshot.exists()) {
+                    for (DataSnapshot userSnap : snapshot.getChildren()) {
+                        for (DataSnapshot photoSnap : userSnap.getChildren()) {
+                            try {
+                                PhotoItem item = photoSnap.getValue(PhotoItem.class);
+                                if (item != null && item.timestamp > 0 && (now - item.timestamp < EXPIRY_MILLIS)) {
+                                    combinedPhotos.add(item);
+                                } else {
+                                    photoSnap.getRef().removeValue();
+                                }
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+
+                // Randomize selection order without a set fixed sequence!
+                java.util.Collections.shuffle(combinedPhotos);
+
+                if (callback != null) callback.onPhotosLoaded(combinedPhotos);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
     public static void listenActivePhotos(Context context, String targetUserId, PhotosCallback callback) {
         if (context == null || targetUserId == null || targetUserId.isEmpty()) {
             if (callback != null) callback.onPhotosLoaded(new ArrayList<>());

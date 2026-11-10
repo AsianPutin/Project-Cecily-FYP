@@ -53,8 +53,8 @@ public class PhotoCycleWidgetProvider extends AppWidgetProvider {
     }
 
     private static void fetchAndRenderWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        String partnerId = UserManager.getPartnerId(context);
-        if (partnerId.isEmpty()) {
+        boolean isLoggedIn = UserManager.isLoggedIn(context);
+        if (!isLoggedIn) {
             cachedPartnerPhotos.clear();
             for (int appWidgetId : appWidgetIds) {
                 renderWidget(context, appWidgetManager, appWidgetId, null);
@@ -62,7 +62,7 @@ public class PhotoCycleWidgetProvider extends AppWidgetProvider {
             return;
         }
 
-        PhotoCycleManager.listenActivePhotos(context, partnerId, photos -> {
+        PhotoCycleManager.listenCombinedActivePhotos(context, photos -> {
             cachedPartnerPhotos = (photos != null) ? photos : new ArrayList<>();
             if (currentPhotoIndex >= cachedPartnerPhotos.size()) {
                 currentPhotoIndex = 0;
