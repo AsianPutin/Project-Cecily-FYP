@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widgetContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background">
+
+    <!-- Active Partner Photo Image -->
+    <ImageView
+        android:id="@+id/ivWidgetPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="Partner Photo" />
+
+    <!-- Unlogged / Empty Fallback Container -->
+    <LinearLayout
+        android:id="@+id/layoutFallback"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivFallbackLogo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_app_logo_mono_black"
+            android:contentDescription="App Logo" />
+
+        <TextView
+            android:id="@+id/tvFallbackText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="No active photos\nTap to send one!"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Overlay Navigation Click Areas (Left 35% Prev, Center 30% App, Right 35% Next) -->
+    <LinearLayout
+        android:id="@+id/layoutNavClickAreas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!-- Left Prev Click Area -->
+        <LinearLayout
+            android:id="@+id/btnNavPrev"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.35"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal" />
+
+        <!-- Center App Launch Click Area -->
+        <LinearLayout
+            android:id="@+id/btnNavCenter"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.30"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal" />
+
+        <!-- Right Next Click Area -->
+        <LinearLayout
+            android:id="@+id/btnNavNext"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.35"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal" />
+    </LinearLayout>
+
+</FrameLayout>
