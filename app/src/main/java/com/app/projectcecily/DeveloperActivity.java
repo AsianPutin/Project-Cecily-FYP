@@ -39,8 +39,8 @@ public class DeveloperActivity extends AppCompatActivity {
     private boolean isUpdatingViewPagerProgrammatically = false;
     private List<PhotoItem> myPhotosList = new java.util.ArrayList<>();
     private List<PhotoItem> partnerPhotosList = new java.util.ArrayList<>();
-    private int selectedMyPhotoIndex = 0;
-    private int selectedPartnerPhotoIndex = 0;
+    private java.util.Set<Integer> selectedMySlots = new java.util.HashSet<>();
+    private java.util.Set<Integer> selectedPartnerSlots = new java.util.HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +125,18 @@ public class DeveloperActivity extends AppCompatActivity {
         }
     }
 
+    private void updateDevDeleteButtonText() {
+        if (btnDevDeletePhoto == null) return;
+        java.util.Set<Integer> activeSlots = isViewingMyPhotos ? selectedMySlots : selectedPartnerSlots;
+        if (activeSlots.isEmpty()) {
+            btnDevDeletePhoto.setText("Delete Selected Photo");
+        } else if (activeSlots.size() == 1) {
+            btnDevDeletePhoto.setText("Delete Selected Photo (1)");
+        } else {
+            btnDevDeletePhoto.setText("Delete Selected Photos (" + activeSlots.size() + ")");
+        }
+    }
+
     private void setupDevPhotoControls() {
         toggleDevPhotoStream = findViewById(R.id.toggleDevPhotoStream);
         viewPagerDevPhotos = findViewById(R.id.viewPagerDevPhotos);
@@ -145,6 +157,7 @@ public class DeveloperActivity extends AppCompatActivity {
                         toggleDevPhotoStream.check(position == 0 ? R.id.btnDevStreamMe : R.id.btnDevStreamPartner);
                     }
                     isUpdatingViewPagerProgrammatically = false;
+                    updateDevDeleteButtonText();
                 }
             });
         }
@@ -158,6 +171,7 @@ public class DeveloperActivity extends AppCompatActivity {
                 if (viewPagerDevPhotos != null) {
                     viewPagerDevPhotos.setCurrentItem(page, true);
                 }
+                updateDevDeleteButtonText();
             });
         }
 
@@ -165,28 +179,50 @@ public class DeveloperActivity extends AppCompatActivity {
             btnDevDeletePhoto.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF3B30")));
             btnDevDeletePhoto.setTextColor(android.graphics.Color.WHITE);
             btnDevDeletePhoto.setOnClickListener(v -> {
-                int currentPage = isViewingMyPhotos ? 0 : 1;
-                List<PhotoItem> photos = (currentPage == 0) ? myPhotosList : partnerPhotosList;
-                int selectedIndex = (currentPage == 0) ? selectedMyPhotoIndex : selectedPartnerPhotoIndex;
+                boolean isMyPage = isViewingMyPhotos;
+                java.util.Set<Integer> activeSlots = isMyPage ? selectedMySlots : selectedPartnerSlots;
+                List<PhotoItem> photos = isMyPage ? myPhotosList : partnerPhotosList;
 
-                if (selectedIndex >= 0 && selectedIndex < photos.size()) {
-                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                            .setTitle("Delete Photo?")
-                            .setMessage("Are you sure you want to delete this photo slot from the 24-hour stream? This action cannot be undone.")
-                            .setPositiveButton("Delete", (dialog, which) -> {
-                                PhotoItem target = photos.get(selectedIndex);
-                                String targetUserId = (currentPage == 0) ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
-                                PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
-                                    android.widget.Toast.makeText(this, "Photo slot deleted!", android.widget.Toast.LENGTH_SHORT).show();
-                                    if (currentPage == 0) selectedMyPhotoIndex = 0; else selectedPartnerPhotoIndex = 0;
-                                    loadDevPhotoStream();
-                                });
-                            })
-                            .setNegativeButton("Cancel", null)
-                            .show();
-                } else {
-                    android.widget.Toast.makeText(this, "No photo in selected slot to delete.", android.widget.Toast.LENGTH_SHORT).show();
+                if (activeSlots.isEmpty()) {
+                    android.widget.Toast.makeText(this, "No photos selected to delete.", android.widget.Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                int count = activeSlots.size();
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setTitle("Delete " + count + " Photo" + (count > 1 ? "s" : "") + "?")
+                        .setMessage("Are you sure you want to delete " + count + " selected photo(s) permanently? This action cannot be undone.")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            String targetUserId = isMyPage ? UserManager.getUserId(this) : UserManager.getPartnerId(this);
+                            java.util.List<PhotoItem> targets = new java.util.ArrayList<>();
+                            for (int slotIdx : activeSlots) {
+                                if (slotIdx < photos.size()) {
+                                    targets.add(photos.get(slotIdx));
+                                }
+                            }
+                            activeSlots.clear();
+                            updateDevDeleteButtonText();
+
+                            if (targets.isEmpty()) {
+                                loadDevPhotoStream();
+                                return;
+                            }
+
+                            final int total = targets.size();
+                            final int[] deletedCount = new int[]{0};
+
+                            for (PhotoItem target : targets) {
+                                PhotoCycleManager.deletePhoto(this, targetUserId, target.photoId, () -> {
+                                    deletedCount[0]++;
+                                    if (deletedCount[0] >= total) {
+                                        android.widget.Toast.makeText(this, "Deleted " + total + " photo(s)!", android.widget.Toast.LENGTH_SHORT).show();
+                                        loadDevPhotoStream();
+                                    }
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             });
         }
 
@@ -321,7 +357,7 @@ public class DeveloperActivity extends AppCompatActivity {
         public void onBindViewHolder(@androidx.annotation.NonNull PhotoViewHolder holder, int position) {
             boolean isMyPage = (position == 0);
             List<PhotoItem> photos = isMyPage ? myPhotosList : partnerPhotosList;
-            int activeSelectedIndex = isMyPage ? selectedMyPhotoIndex : selectedPartnerPhotoIndex;
+            java.util.Set<Integer> activeSlots = isMyPage ? selectedMySlots : selectedPartnerSlots;
             int accentColor = ThemeUtils.getAccentColor(DeveloperActivity.this);
 
             com.google.android.material.card.MaterialCardView[] cards = new com.google.android.material.card.MaterialCardView[]{
@@ -329,6 +365,9 @@ public class DeveloperActivity extends AppCompatActivity {
             };
             android.widget.ImageView[] ivs = new android.widget.ImageView[]{
                 holder.iv1, holder.iv2, holder.iv3, holder.iv4
+            };
+            android.widget.TextView[] tvTimes = new android.widget.TextView[]{
+                holder.tvTime1, holder.tvTime2, holder.tvTime3, holder.tvTime4
             };
 
             for (int i = 0; i < 4; i++) {
@@ -348,39 +387,50 @@ public class DeveloperActivity extends AppCompatActivity {
                 }
 
                 if (cards[i] != null) {
-                    if (i == activeSelectedIndex && i < photos.size()) {
+                    if (activeSlots.contains(slotIndex) && slotIndex < photos.size()) {
                         cards[i].setStrokeColor(accentColor);
-                        cards[i].setStrokeWidth((int) (3 * getResources().getDisplayMetrics().density));
+                        cards[i].setStrokeWidth((int) (2 * getResources().getDisplayMetrics().density));
                     } else {
                         cards[i].setStrokeWidth(0);
                     }
 
                     cards[i].setOnClickListener(v -> {
                         if (slotIndex < photos.size()) {
-                            PhotoItem item = photos.get(slotIndex);
-                            try {
-                                String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
-                                byte[] bytes = android.util.Base64.decode(clean, android.util.Base64.DEFAULT);
-                                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                                showFullPhotoDialog(bmp);
-                            } catch (Exception ignored) {}
-                        } else {
-                            android.widget.Toast.makeText(DeveloperActivity.this, "Slot empty (No active photo)", android.widget.Toast.LENGTH_SHORT).show();
+                            if (activeSlots.contains(slotIndex)) {
+                                activeSlots.remove(slotIndex);
+                            } else {
+                                activeSlots.add(slotIndex);
+                            }
+                            notifyDataSetChanged();
+                            updateDevDeleteButtonText();
                         }
                     });
 
-                    cards[i].setOnLongClickListener(v -> {
-                        if (isMyPage) {
-                            selectedMyPhotoIndex = slotIndex;
+                    cards[i].setOnLongClickListener(null);
+                }
+
+                if (tvTimes[i] != null) {
+                    if (slotIndex < photos.size()) {
+                        PhotoItem item = photos.get(slotIndex);
+                        long now = System.currentTimeMillis();
+                        long diff = PhotoCycleManager.EXPIRY_MILLIS - (now - item.timestamp);
+                        if (diff <= 0) {
+                            tvTimes[i].setText("Expired");
+                            tvTimes[i].setTextColor(android.graphics.Color.parseColor("#FF3B30"));
                         } else {
-                            selectedPartnerPhotoIndex = slotIndex;
+                            long hours = diff / (3600 * 1000L);
+                            long mins = (diff % (3600 * 1000L)) / (60 * 1000L);
+                            if (hours > 0) {
+                                tvTimes[i].setText(hours + "h left");
+                            } else {
+                                tvTimes[i].setText(Math.max(1, mins) + "m left");
+                            }
+                            tvTimes[i].setTextColor(android.graphics.Color.parseColor("#00E676"));
                         }
-                        notifyDataSetChanged();
-                        if (slotIndex < photos.size()) {
-                            android.widget.Toast.makeText(DeveloperActivity.this, "Selected Photo Slot " + (slotIndex + 1) + " for deletion", android.widget.Toast.LENGTH_SHORT).show();
-                        }
-                        return true;
-                    });
+                    } else {
+                        tvTimes[i].setText("N/A");
+                        tvTimes[i].setTextColor(android.graphics.Color.parseColor("#888888"));
+                    }
                 }
             }
         }
@@ -393,6 +443,7 @@ public class DeveloperActivity extends AppCompatActivity {
         class PhotoViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
             com.google.android.material.card.MaterialCardView card1, card2, card3, card4;
             android.widget.ImageView iv1, iv2, iv3, iv4;
+            android.widget.TextView tvTime1, tvTime2, tvTime3, tvTime4;
 
             PhotoViewHolder(View v) {
                 super(v);
@@ -404,6 +455,10 @@ public class DeveloperActivity extends AppCompatActivity {
                 iv2 = v.findViewById(R.id.ivPageThumb2);
                 iv3 = v.findViewById(R.id.ivPageThumb3);
                 iv4 = v.findViewById(R.id.ivPageThumb4);
+                tvTime1 = v.findViewById(R.id.tvDevPhotoTime1);
+                tvTime2 = v.findViewById(R.id.tvDevPhotoTime2);
+                tvTime3 = v.findViewById(R.id.tvDevPhotoTime3);
+                tvTime4 = v.findViewById(R.id.tvDevPhotoTime4);
             }
         }
     }
