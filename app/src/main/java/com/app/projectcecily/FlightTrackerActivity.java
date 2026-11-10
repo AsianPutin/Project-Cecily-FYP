@@ -363,6 +363,8 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             } catch (Exception ignored) {}
         }
 
+        int myAccentColor = ThemeUtils.getAccentColor(this);
+
         if (!isPaired || partnerTz == null || partnerTz.getID().equalsIgnoreCase(myTz.getID())) {
             // Case 2: Single Centered Timezone View
             layoutDual.setVisibility(View.GONE);
@@ -373,10 +375,11 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
             if (tvSingleClock != null) tvSingleClock.setText(myClockStr + " (" + myTzOffsetStr + ")");
             if (tvSingleDate != null) {
+                tvSingleDate.setTextColor(myAccentColor);
                 if (!isPaired) {
-                    tvSingleDate.setText(myDateStr + " • Pair up in Account Settings");
+                    tvSingleDate.setText("Pair up in Account Settings");
                 } else {
-                    tvSingleDate.setText(myDateStr + " • Same Timezone 💖");
+                    tvSingleDate.setText(myDateStr);
                 }
             }
         } else {
@@ -417,7 +420,11 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
                 if (partnerAccentColor != null && !partnerAccentColor.isEmpty()) {
                     try {
                         tvPartnerClock.setTextColor(android.graphics.Color.parseColor(partnerAccentColor));
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                        tvPartnerClock.setTextColor(myAccentColor);
+                    }
+                } else {
+                    tvPartnerClock.setTextColor(myAccentColor);
                 }
             }
             if (tvPartnerDate != null) tvPartnerDate.setText(partnerDateStr + " (" + diffStr + ")");
