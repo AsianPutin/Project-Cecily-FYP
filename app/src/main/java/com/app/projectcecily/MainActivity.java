@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     private androidx.viewpager2.widget.ViewPager2 viewPagerDashPhotos;
     private List<PhotoItem> dashPartnerPhotos = new ArrayList<>();
     private List<PhotoItem> dashMyPhotos = new ArrayList<>();
-    private int currentDashPhotoIndex = 0;
     private android.os.Handler photoCycleHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable photoCycleRunnable;
 
@@ -386,9 +385,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (!dashPartnerPhotos.isEmpty() && viewPagerDashPhotos != null) {
-                    currentDashPhotoIndex = (currentDashPhotoIndex + 1) % dashPartnerPhotos.size();
-                    viewPagerDashPhotos.setCurrentItem(currentDashPhotoIndex, true);
-                    updateDashPhotoUI();
+                    int nextPos = viewPagerDashPhotos.getCurrentItem() + 1;
+                    viewPagerDashPhotos.setCurrentItem(nextPos, true);
                 }
                 long delay = 5000L + (long) (Math.random() * 5000L);
                 photoCycleHandler.postDelayed(this, delay);
@@ -406,9 +404,6 @@ public class MainActivity extends AppCompatActivity {
 
         PhotoCycleManager.listenCombinedActivePhotos(this, photos -> {
             dashPartnerPhotos = (photos != null) ? photos : new ArrayList<>();
-            if (currentDashPhotoIndex >= dashPartnerPhotos.size()) {
-                currentDashPhotoIndex = 0;
-            }
             updateDashPhotoUI();
         });
     }
@@ -434,6 +429,11 @@ public class MainActivity extends AppCompatActivity {
                 viewPagerDashPhotos.setVisibility(View.VISIBLE);
                 if (viewPagerDashPhotos.getAdapter() != null) {
                     viewPagerDashPhotos.getAdapter().notifyDataSetChanged();
+                    if (!dashPartnerPhotos.isEmpty() && viewPagerDashPhotos.getCurrentItem() == 0) {
+                        int count = dashPartnerPhotos.size();
+                        int startPos = (10000 / 2) - ((10000 / 2) % count);
+                        viewPagerDashPhotos.setCurrentItem(startPos, false);
+                    }
                 }
             }
         }
@@ -450,8 +450,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull DashPhotoViewHolder holder, int position) {
-            if (position >= 0 && position < dashPartnerPhotos.size()) {
-                PhotoItem item = dashPartnerPhotos.get(position);
+            if (dashPartnerPhotos != null && !dashPartnerPhotos.isEmpty()) {
+                int realIndex = position % dashPartnerPhotos.size();
+                PhotoItem item = dashPartnerPhotos.get(realIndex);
                 try {
                     String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
                     byte[] bytes = Base64.decode(clean, Base64.DEFAULT);
@@ -468,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return dashPartnerPhotos.size();
+            return (dashPartnerPhotos == null || dashPartnerPhotos.isEmpty()) ? 0 : Integer.MAX_VALUE;
         }
 
         class DashPhotoViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
