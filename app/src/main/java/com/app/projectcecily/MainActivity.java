@@ -17,6 +17,7 @@ import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private RelationshipManager.Details cachedDetails;
 
     // Photo Cycle Dashboard State
+    private androidx.viewpager2.widget.ViewPager2 viewPagerDashPhotos;
     private List<PhotoItem> dashPartnerPhotos = new ArrayList<>();
     private List<PhotoItem> dashMyPhotos = new ArrayList<>();
     private int currentDashPhotoIndex = 0;
@@ -361,46 +363,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupPhotoCycleDashboardControls() {
+        viewPagerDashPhotos = findViewById(R.id.viewPagerDashPhotos);
+        if (viewPagerDashPhotos != null) {
+            DashPhotoPagerAdapter adapter = new DashPhotoPagerAdapter();
+            viewPagerDashPhotos.setAdapter(adapter);
+        }
+
         View cardDashPhoto = findViewById(R.id.cardDashPhotoCycle);
-        if (cardDashPhoto == null) return;
-
-        GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-            private static final int SWIPE_THRESHOLD = 80;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 80;
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 == null || e2 == null || dashPartnerPhotos.isEmpty()) return false;
-                float diffX = e2.getX() - e1.getX();
-                float diffY = e2.getY() - e1.getY();
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX < 0) {
-                            currentDashPhotoIndex = (currentDashPhotoIndex + 1) % dashPartnerPhotos.size();
-                        } else {
-                            currentDashPhotoIndex = (currentDashPhotoIndex - 1 + dashPartnerPhotos.size()) % dashPartnerPhotos.size();
-                        }
-                        updateDashPhotoUI();
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                showDashPhotoOptionsSheet();
-                return true;
-            }
-        });
-
-        cardDashPhoto.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+        if (cardDashPhoto != null) {
+            cardDashPhoto.setOnClickListener(v -> showDashPhotoOptionsSheet());
+        }
 
         photoCycleRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!dashPartnerPhotos.isEmpty()) {
+                if (!dashPartnerPhotos.isEmpty() && viewPagerDashPhotos != null) {
                     currentDashPhotoIndex = (currentDashPhotoIndex + 1) % dashPartnerPhotos.size();
+                    viewPagerDashPhotos.setCurrentItem(currentDashPhotoIndex, true);
                     updateDashPhotoUI();
                 }
                 long delay = 5000L + (long) (Math.random() * 5000L);
@@ -427,7 +406,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDashPhotoUI() {
-        ImageView ivDashPhoto = findViewById(R.id.ivDashPhotoCycle);
         View layoutFallback = findViewById(R.id.layoutDashPhotoFallback);
         TextView tvFallback = findViewById(R.id.tvDashPhotoFallbackText);
 
@@ -435,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isPaired = !UserManager.getPartnerId(this).isEmpty();
 
         if (!isLoggedIn || !isPaired || dashPartnerPhotos.isEmpty()) {
-            if (ivDashPhoto != null) ivDashPhoto.setVisibility(View.GONE);
+            if (viewPagerDashPhotos != null) viewPagerDashPhotos.setVisibility(View.GONE);
             if (layoutFallback != null) layoutFallback.setVisibility(View.VISIBLE);
             if (tvFallback != null) {
                 if (!isLoggedIn) tvFallback.setText("Log In to view\npartner photos");
@@ -444,17 +422,52 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             if (layoutFallback != null) layoutFallback.setVisibility(View.GONE);
-            if (ivDashPhoto != null) {
-                ivDashPhoto.setVisibility(View.VISIBLE);
-                PhotoItem item = dashPartnerPhotos.get(currentDashPhotoIndex % dashPartnerPhotos.size());
+            if (viewPagerDashPhotos != null) {
+                viewPagerDashPhotos.setVisibility(View.VISIBLE);
+                if (viewPagerDashPhotos.getAdapter() != null) {
+                    viewPagerDashPhotos.getAdapter().notifyDataSetChanged();
+                }
+            }
+        }
+    }
+
+    private class DashPhotoPagerAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<DashPhotoPagerAdapter.DashPhotoViewHolder> {
+
+        @NonNull
+        @Override
+        public DashPhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_dash_photo_page, parent, false);
+            return new DashPhotoViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull DashPhotoViewHolder holder, int position) {
+            if (position >= 0 && position < dashPartnerPhotos.size()) {
+                PhotoItem item = dashPartnerPhotos.get(position);
                 try {
                     String clean = item.photoBase64.contains(",") ? item.photoBase64.split(",")[1] : item.photoBase64;
                     byte[] bytes = Base64.decode(clean, Base64.DEFAULT);
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    ivDashPhoto.setImageBitmap(bmp);
+                    holder.ivPhoto.setImageBitmap(bmp);
+                    holder.ivPhoto.setOnClickListener(v -> showDashPhotoOptionsSheet());
                 } catch (Exception e) {
-                    ivDashPhoto.setImageBitmap(null);
+                    holder.ivPhoto.setImageBitmap(null);
                 }
+            } else {
+                holder.ivPhoto.setImageBitmap(null);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return dashPartnerPhotos.size();
+        }
+
+        class DashPhotoViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
+            ImageView ivPhoto;
+            DashPhotoViewHolder(View v) {
+                super(v);
+                ivPhoto = v.findViewById(R.id.ivDashPagePhoto);
             }
         }
     }
