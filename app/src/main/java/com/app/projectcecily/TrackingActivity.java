@@ -91,9 +91,6 @@ public class TrackingActivity extends AppCompatActivity {
             }
         }
 
-        View cardDistanceHeader = findViewById(R.id.cardDistanceHeader);
-        UIUtils.applyTopInsetMargin(cardDistanceHeader);
-
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
