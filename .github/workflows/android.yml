@@ -39,17 +39,39 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/debug/app-debug.apk
-          tag_name: v1.3.0
-          name: Project Cecily - Release v1.3.0
+          tag_name: v1.3.1
+          name: Project Cecily - Academic Release v1.3.1
           body: |
-            ### 💖 Project Cecily - Release v1.3.0
+            ## Project Cecily: Utility-First Long-Distance Relationship Companion System
+            **Academic Release v1.3.1 — Final System Build**
 
-            #### 🌟 Highlights & Features Included:
-            - **Expanded 31-Card LDR Swipe Deck:** Expanded long-distance date deck covering Co-Op Games, Casual Party Games, Watch Parties, Horror Docuseries, Cooking Together, PowerPoint Nights, Gift Unboxings, Bedtime Webtoons, and Virtual Dates.
-            - **Photo Cycle Squircle Crop Engine:** Updated photo crop overlay with squircle card mask (`SquircleOverlayView`) matching dashboard photo card proportions (`20dp` corner radius) and updated labels (*"Crop Photo"*, *"Drag and pinch to fit your photo in the frame"*, *"Save Photo"*).
-            - **Red X & Swipe-to-Delete Mutual Matches:** Added bright red **X** icons and smooth left/right swipe-to-delete gesture removal in Mutual Date Matches with automatic silent Firebase preference resetting.
-            - **One-Handed Double-Tap Drag Map Zoom:** Added continuous quick-scale gesture (`OneHandedZoomGestureHelper`) to Partner Location Tracker and Flight Tracker maps (double-tap & hold drag DOWN to zoom in, UP to zoom out).
-            - **Same-Timezone Single Clock Collapse:** Intelligently collapses dual clocks into a single centered clock when both partners are in the same time zone (0 hrs GMT difference).
-            - **Calibrated Launcher Icons & Build Stability:** 100% mathematically centered launcher icons (+7px horizontal precision calibration) and single default app icon architecture.
+            ### 🎯 Core Objectives & Implemented Features
+
+            #### 1. Quick & Easy Pairing and Real-Time Synchronization
+            - **6-Digit Token Handshake Protocol:** Enables secure, bi-directional 1-to-1 device linking via a unique 6-digit verification token (`AccountActivity`).
+            - **Cloud Synchronization:** Real-time data persistence using Firebase Realtime Database with automated user scoping, phone authentication, and duplicate account protection.
+
+            #### 2. In-App Flight Telemetry & Travel Monitoring
+            - **Real-Time Flight Tracking:** Automated background travel monitoring framework processing IATA flight codes via AviationStack API with multi-key failover and quota management (`FlightTrackerActivity`).
+            - **Interactive Flight Map & Trajectory:** Live flight simulation displaying departure/arrival progress, plane orientation, and dotted trajectory polyline (`FlightMapActivity`).
+            - **Automated Timezone Engine:** Intelligently collapses dual clocks into a single centered clock when partners share the same time zone, or calculates relative time offsets when separated.
+
+            #### 3. Integrated Lifestyle & Wishlist Hub
+            - **Surprise-Preserving Shared Wishlist:** Centralized lifestyle wishlist with post-purchase privacy shielding, secret gift rules, and ViewPager2 horizontal gesture navigation (`WishlistActivity`).
+            - **Ephemeral Photo Cycle Stream:** Shared 24-hour photo cycle hub with squircle card cropping (`SquircleOverlayView`), 1080x1080 high-res camera/gallery processing, and developer multi-photo management (`PhotoCycleActivity`).
+
+            #### 4. Preference-Shielded Decision Helper (Consensus Swiper)
+            - **Weighted Decision Engine:** Tinder-style gesture-driven swiping framework (`SwipeActivity`) with **Together Mode** (local food, dining, and activities) and an expanded **31-Card LDR Mode Deck** (Co-Op video games, watch parties, virtual dates, and co-working sessions).
+            - **Mutual Match Resolution:** Automated overlap detection with silent match deletion, red **X** action buttons, and individual swipe preference resetting.
+
+            #### 5. Dynamic Ambient Desktop Widgets & Location Safety
+            - **Passive Ambient Awareness:** Three native Android home-screen desktop AppWidgets:
+              1. *LDR Distance & Time Widget* (`LdrStatusWidgetProvider`): Live distance calculation and time difference indicator with Together Mode adaptation.
+              2. *Quick Poke Widget* (`PokeWidgetProvider`): One-touch haptic notification pings.
+              3. *Photo Cycle Widget* (`PhotoCycleWidgetProvider`): Auto-cycling 24-hour photo stream directly on the launcher.
+            - **Real-Time Location & Gesture Controls:** OSMDroid OpenStreetMap location tracking (`TrackingActivity`) with edge-clamped partner tracking and continuous one-handed double-tap drag zoom gesture controls (`OneHandedZoomGestureHelper`).
+
+            ---
+            *Built with Android Native SDK (Java, API 35) & Firebase.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
