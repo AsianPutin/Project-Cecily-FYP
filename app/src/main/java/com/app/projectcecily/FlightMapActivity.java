@@ -106,6 +106,7 @@ public class FlightMapActivity extends AppCompatActivity {
         map = findViewById(R.id.flight_map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
+        OneHandedZoomGestureHelper.attach(this, map);
 
         tvFlightNum = findViewById(R.id.tvMapFlightNum);
         tvDepTime = findViewById(R.id.tvMapDepTime);

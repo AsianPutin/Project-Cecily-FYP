@@ -1,0 +1,576 @@
+IT PROJECT 1 REPORT
+Submitted to
+Tay Chung Ang
+IT Project 1 [BSE 5053]
+Project Cecily
+Prepared by: 
+Alister Goh Zhen Hong
+Student ID: 2402081351
+Table of contents
+ TOC \h \u \z \t "Heading 1,1,Heading 2,2,Heading 3,3,Heading 4,4,Heading 5,5,Heading 6,6,"Table of contents2
+1. Proposal5
+1.1. Introduction5
+1.2. Problem Statements5
+1.2.1. Friction of Daily Access & Emotional Fatigue5
+1.2.2. Feature Bloat & Financial Pressure5
+1.2.3. Logistical Fragmentation & Battery Drain6
+1.3. Objectives6
+1.3.1. Quick and easy pairing and syncing6
+1.3.2. Flight tracker within the app6
+1.3.3. Integrated lifestyle hub6
+1.3.4. Decision helper6
+1.3.5. Dynamic ambient widgets6
+1.4. Scope6
+1.4.1. User Scope6
+1.4.2. System Scope7
+1.5. Revenue Model7
+1.5.1. Freemium/Ads7
+1.5.2. Impulse Subscription7
+1.5.3. One-Time “Freedom” Purchase7
+1.5.4. Ko-fi Function7
+1.6. Methodology7
+1.7. Software Tools7
+1.8. Conclusion8
+2. Literature Review8
+2.1. Introduction8
+Literature Review Map9
+2.2. Background Study9
+2.2.1. Differentiating Dating (Matchmaking) Apps from Couple Management Apps9
+2.2.2. Adoption of LDR Apps and the Friction of "Gamification"10
+2.2.3. Passive Connection through "Ambient Awareness"11
+2.2.4. Overcoming Decision Fatigue: Weighted Consensus Swiping11
+2.2.5. Commercial Revenue Models and User Experience Friction in Mobile Applications11
+2.3. Similar Systems and Gap Analysis13
+2.3.1. Gamified Couple Systems: Couple Tree vs. Candle14
+2.3.2. Why Unrelated Apps (Location, Health & Airport Utilities) Are in the Mix16
+2.3.3. Standalone Wishlist & Gift Exchange Platforms: Giftlist vs. Elfster18
+2.3.4. Comparative Feature Matrix20
+2.3.5. Critique of Traditional (Waterfall) Methodology22
+2.3.6. Defense of Agile Software Development23
+2.3.7. Tailoring Agile and Extreme Programming (XP) for a Solo Developer23
+2.4. Technology Review25
+2.4.1. Frontend Development: Android Native (Java ) vs. Cross-Platform25
+2.4.2. Backend & Real-Time Sync: Firebase Firestore25
+2.4.3. Logistics, Mapping & Decision Infrastructure26
+2.5. CONCLUSION26
+3. Methodology26
+3.1. Introduction26
+3.2. Agile Methodology27
+Sprint Structure27
+Sprint Breakdown28
+Sprint 1 – Architecture, Authentication & Pair Handshake (August: Weeks 1–4)28
+Sprint 2 – Real-Time Flight Engine & Travel Status (September: Weeks 5–8)28
+Sprint 3 – Health Hub, Consensus Swiper & Ambient Widgets (October: Weeks 9–12)28
+Sprint 4 – Refinement, System Evaluation & Documentation (November: Weeks 13–16)29
+Sprint Summary Table30
+3.3. Use Case Diagram30
+3.4. Use Case Scenarios31
+UC-01: Authenticate & Pair Devices31
+UC-02: Track Flight Logistics32
+UC-03: Share Health & Cycle Log32
+UC-04: Resolve Decision via Swiper32
+UC-05: Send Widget Poke / Alert33
+UC-06: View Live Location Map33
+UC-07: Manage Shared Wishlist33
+3.5. Activity Diagrams34
+3.5.1. Authenticate & Pair Devices Activity Diagram34
+3.5.2. Decision Swiper Activity Diagram35
+3.6. Sequence Diagrams36
+3.6.1. Flight Tracking Sequence Diagram36
+3.6.2. Home Widget "Poke" Sequence Diagram36
+3.7. Class Diagram37
+3.8. Conclusion37
+4. References38
+Proposal
+Name
+:
+Alister Goh Zhen Hong
+Matric No
+:
+2402081351
+Program
+:
+Bachelor of Software Engineering (Hons)
+IT Project Supervisor
+:
+Ms. Ain Nazihah Binti Pakasa
+Introduction
+Long-distance relationship (LDR) couples currently face significant "Information Fragmentation," having to jump between multiple high-maintenance apps like Life360 for location, airline apps for flight status, and notes for shared lists. Furthermore, many dedicated couple apps (e.g., Couple Tree) prioritize "digital fluff"—virtual pets, furnished gardens, or daily emotional "essays" that require users to scrape the "bottom of their brain barrels" for deep thoughts every morning.
+While one partner may enjoy these inefficiencies, the other—often the logical or forgetful type—finds these forced interactions mentally draining. There is a distinct lack of a utility-first LDR hub that automates logistics without demanding constant, active emotional labor or high battery consumption. 
+This project proposes an Android-native utility system that centralizes logistics—including airline-grade flight tracking, health cycle syncing (inspired by Blood), and shared wishlists (inspired by Elfster)—into a low-friction dashboard. It prioritizes passive "Ambient Awareness" through home-screen widgets and automated status updates, allowing partners to stay connected through practical data rather than repetitive gamification.
+Problem Statements
+Friction of Daily Access & Emotional Fatigue
+Existing apps often require manual daily logins and forced deep thinking prompts to maintain streaks. For logical or busy users, these tasks feel like digital chores, leading to app abandonment when they lack the mental bandwidth for journaling. 
+Feature Bloat & Financial Pressure  
+Competitors often focus on virtual pets and house-furnishing leaderboards that become predictable and boring. These systems frequently pressure users into spending real money on tokens or subscriptions to progress, distracting from the actual purpose of relationship maintenance.  
+Logistical Fragmentation & Battery Drain 
+There is no unified, low-power solution for LDR logistics. Couples currently jump between fragmented platforms, and GPS-heavy trackers like Life360 are notoriously battery-intensive, lacking a "Together Mode" to disable tracking when the couple is physically in the same location. 
+Objectives
+Quick and easy pairing and syncing 
+To develop a secure mobile application module that enables real-time synchronization between two devices through a unique 6-digit verification token pairing mechanism. 
+Flight tracker within the app 
+To integrate a background travel monitoring framework that processes pasted flight telemetry data to display real-time status updates and arrival estimations passively to the partner. 
+Integrated lifestyle hub 
+To design a centralized dashboard that enables users to coordinate shared calendar events, manage lifestyle wishlists with post-purchase privacy shielding, and manually log health cycles.
+Decision helper 
+To implement a preference-shielded activity selection utility using a swipe-based interface to facilitate joint decision-making without real-time choice bias.
+Dynamic ambient widgets 
+To deploy passive home-screen desktop widgets that provide glanceable status indicators, including distance metrics, photo cycling, and a single-button notification ping for ambient awareness.
+Scope
+User Scope
+Couples in LDRs where one partner seeks logistical automation (the "logical" type) and the other seeks consistent updates. 
+System Scope
+An Android-native application (API 30+) using Firebase for real-time syncing. The system integrates external Aviation APIs and prioritizes low-power background tasks to protect battery life. 
+Revenue Model
+The app will use a multi-tiered monetization strategy to attract impulsive buyers while remaining student-friendly:
+Freemium/Ads
+The app is free with non-intrusive banner ads.
+Impulse Subscription
+A low-cost monthly tier ($0.99) to remove ads and unlock power features. 
+One-Time “Freedom” Purchase
+A single payment option (equivalent to 10 months of subscription) to unlock everything forever. 
+Ko-fi Function
+An optional "funsies" donation button for users who wish to support the developer's work with no additional features attached.
+Methodology
+The Agile model in the software development life cycle will be used to develop the application. Agile is an adaptable and iterative approach that emphasizes teamwork and producing usable software in small steps through time-boxed iterations and continuous feedback. This model is chosen to allow for the developer to manage this project alongside other subjects, an internship, and personal testing with their partner. By developing in incremental, rapid cycles, the project can maintain a flexible baseline, ensuring requirement satisfaction and a functional delivery by December 2026.
+Software Tools
+IDE: Android Studio
+Backend: Firebase (Firestore, Auth, Cloud Functions).
+Documentation: Google Office Suite (Docs, Sheets).
+Hardware: Two physical Android devices and a development laptop.
+Conclusion
+This project prioritizes logical utility over the "forced deep thinking" typical of current couple apps. By centralizing flight logistics, health tracking, and decision-making into a low-friction Android system, it creates a practical bridge between partners. The Agile methodology ensures the project remains manageable across two semesters, delivering a high-quality, privacy-focused tool that respects the user's battery life and mental bandwidth.
+Literature Review
+Introduction
+This chapter will provide a review of academic literature, HCI principles, and current mobile platforms which relate to technology-assisted relationship management in Long-Distance Relationship (LDR) couples.
+The objective of this review is to build the rationale and context of Project Cecily, an Android-native, utility-focused LDR app. The review starts with explaining the essential differences in functioning between dating apps (matchmaking services) and couple management applications, a misunderstanding common in the general audience. Next, the review looks at the psychological issues of LDR couples, paying special attention to the dilemma of gamified emotional check-ins versus Ambient Awareness.
+Additionally, this chapter considers the reasons why LDR couples have to hop from one fragmented and unconnected single-utility application to another, such as airport transfer apps, location safety tools like Life360, and health apps like Blood and Flo, to handle basic day-to-day logistics. A comparative analysis is performed on popular couple apps like Couple Tree and Candle against these single-utility apps to reveal their functional deficiencies.
+Lastly, this chapter provides a review of software development methodologies and mobile technology stacks, explaining the choice of Agile (Scrum/XP), Java, Android Studio, Firebase Firestore, aviation telemetry APIs in background mode, and home screen widgets for the development of Project Cecily.
+Literature Review Map 
+LITERATURE REVIEW MAP  Project Cecily Background Study Similar Systems Analysis Overview of LDR & Couple Apps (Li et al., 2022; Jiang & Hancock, 2013) Ambient Awareness (Zhao & Rosson, 2016)Interaction Fatigue (Holtzman et al., 2021)Regional Context (Sarawak DEB, 2022)Methodology Review Technology Review Gamified SystemsCouple Tree (2026)Candle (2026)Transport & TrackingLife360 (2026)MYairports (MAHB, 2023)(Dubey et al., 2022)Health & Cycle SyncBlood (2026)Flo (2026)(Pöhler et al., 2024) Transit Expectations(Watkins et al., 2011) Agile vs Traditional (Gemino et al., 2021)Agile & XP Practices (Beck et al., 2001; Day, 2022)Android Studio & Java SDK (Android Dev., 2023)Firebase Firestore (Firebase, 2023)Google Maps SDK (Google Maps 2023)Aviation APIs
+LITERATURE REVIEW MAP  Project Cecily Background Study Similar Systems Analysis Overview of LDR & Couple Apps (Li et al., 2022; Jiang & Hancock, 2013) Ambient Awareness (Zhao & Rosson, 2016)Interaction Fatigue (Holtzman et al., 2021)Regional Context (Sarawak DEB, 2022)Methodology Review Technology Review Gamified SystemsCouple Tree (2026)Candle (2026)Transport & TrackingLife360 (2026)MYairports (MAHB, 2023)(Dubey et al., 2022)Health & Cycle SyncBlood (2026)Flo (2026)(Pöhler et al., 2024) Transit Expectations(Watkins et al., 2011) Agile vs Traditional (Gemino et al., 2021)Agile & XP Practices (Beck et al., 2001; Day, 2022)Android Studio & Java SDK (Android Dev., 2023)Firebase Firestore (Firebase, 2023)Google Maps SDK (Google Maps 2023)Aviation APIs
+LITERATURE REVIEW MAP  Project Cecily 
+LITERATURE REVIEW MAP 
+ Project Cecily 
+Background Study 
+Background Study 
+Similar Systems Analysis 
+Similar Systems Analysis 
+Overview of LDR & Couple Apps (Li et al., 2022; Jiang & Hancock, 2013) Ambient Awareness (Zhao & Rosson, 2016)Interaction Fatigue (Holtzman et al., 2021)Regional Context (Sarawak DEB, 2022)
+Overview of LDR & Couple Apps (Li et al., 2022; Jiang & Hancock, 2013) 
+Ambient Awareness (Zhao & Rosson, 2016)
+Interaction Fatigue (Holtzman et al., 2021)
+Regional Context (Sarawak DEB, 2022)
+Methodology Review 
+Methodology Review 
+Technology Review 
+Technology Review 
+Gamified SystemsCouple Tree (2026)Candle (2026)Transport & TrackingLife360 (2026)MYairports (MAHB, 2023)(Dubey et al., 2022)Health & Cycle SyncBlood (2026)Flo (2026)(Pöhler et al., 2024) Transit Expectations(Watkins et al., 2011) 
+Gamified SystemsCouple Tree (2026)Candle (2026)
+Transport & TrackingLife360 (2026)MYairports (MAHB, 2023)(Dubey et al., 2022)
+Health & Cycle SyncBlood (2026)Flo (2026)(Pöhler et al., 2024) 
+Transit Expectations(Watkins et al., 2011) 
+Agile vs Traditional (Gemino et al., 2021)Agile & XP Practices (Beck et al., 2001; Day, 2022)
+Agile vs Traditional (Gemino et al., 2021)
+Agile & XP Practices (Beck et al., 2001; Day, 2022)
+Android Studio & Java SDK (Android Dev., 2023)Firebase Firestore (Firebase, 2023)Google Maps SDK (Google Maps 2023)Aviation APIs
+Android Studio & Java SDK (Android Dev., 2023)
+Firebase Firestore (Firebase, 2023)
+Google Maps SDK (Google Maps 2023)
+Aviation APIs
+Figure 2.1: Literature Review Map for Project Cecily showing Background Study, Similar Systems, Methodology, and Technology. 
+Background Study
+Differentiating Dating (Matchmaking) Apps from Couple Management Apps 
+A recurring source of confusion among the general audience is the difference between Dating Applications and Couple Management Applications. While both of these platforms are used by dating and married couples, they have virtually opposite target audiences, user data structures, and core loop functions. 
+Dating (Matchmaking) Applications: Dating applications, which include Tinder, Bumble, Hinge, and other similar products, are all focused on finding and approaching strangers. Their core loop is based on discovering, swiping, and chatting with potential matches via short-text messages. Meanwhile, couple-focused programs such as Between, Couple Tree, and Project Cecily enable two users to build a closed, one-to-one network within the app. There are no third parties, relationship feeds or search systems in couple management applications. After two sides successfully pass an invite code, a one-to-one encrypted chatroom appears for two-sided synchronization. 
+Couple Management Applications: The research conducted by Jiang and Hancock (2013) showed that asynchronous digital communication channels could effectively recreate the intimacy of a physical relationship, provided that both sides share sufficiently sensitive, personally meaningful information. Li et al. (2022) note that in terms of maintaining long-distance relationships, one-to-two social tools present the best possible approximation of a married couple’s social support system. Thus, it may be said that these couple management tools enable intimate digital conversations between partners. 
+The fundamental difference between the two types of dating apps is essential to understanding what functions couple-oriented software such as Project Cecily is capable of. The latter lacks any of the public discovery-oriented features of Tinder, Bumble, or other platforms mentioned above. 
+Adoption of LDR Apps and the Friction of "Gamification" 
+Long-distance relationships are relying more and more on mobile applications to keep their LDRs close. But most LDR software today focuses too much on gamification. Applications have virtual pets, furnished gardens, avatar dressing and journaling prompts or diary streaks which users are compelled to update.
+While gamification can be fun at first, studies on Human-Computer Interaction show that it has limits to its effectiveness, especially in daily relationship maintenance.
+Interaction Fatigue: Holtzman et al. (2021) found that the association between relationship satisfaction for LDRs who used text messages and other communication apps for interacting was strong. But when it came to compulsory electronic communication, the tendency was that maintaining a long-distance relationship became a “digital chore.” People who use relationship maintenance mobile applications are usually tired and busy; they don’t always want to write emotional essays or do diary prompts to refresh a streak. 
+Asymmetric Engagement: For instance, one partner may find virtual pets and gardens amusing while the other sees it as a waste of time. Thus the partner who has the “practical eye” is put in the uncomfortable position of choosing between virtual games or maintaining a good LDR. 
+Passive Connection through "Ambient Awareness" 
+Ambient awareness is the feeling of presence of another person or people around you. It provides a daily source of practical information on what the other person is doing without necessitating interaction or conversation. Automatic flight tracking, health or cycle tracking, and desktop widgets are examples of ambient awareness features. Watkins et al. (2011) showed that people were happier when they had access to current information. Their work demonstrated that transitively aware people had lesser stress while on the move or waiting. When it comes to the application of ambient awareness in long-distance relationships, Pöhler et al. (2024) explain the value of exchanging “physical” vectors or indicators as proxies for being present with another person. In addition to helping people feel closer to each other despite the distance, these ambient awareness features reduce cognitive load. In countries that have made digital transformation blueprint documents like the Sarawak Digital Economy Blueprint 2030 (Sarawak Digital Economy Corporation, 2022), ambient awareness features would facilitate the achievement of the vision through utilitarian apps that average citizens would easily adopt. The Project Cecily app uses ambient awareness to develop an automated application for couples in long-distance relationships. 
+Overcoming Decision Fatigue: Weighted Consensus Swiping 
+When an LDR couple finally meets or plans to meet, they tend to face “decision paralysis” on where to go or what to do. Taking inspiration from the quick swipe feature common in discovery mobile applications, project Cecily would implement the swiping gestures in a closed 1-to-1 session for decision-making purposes. This allows the couple to anonymously vote for their preferred choice (e.g., food or activity) and reach a consensus. 
+Commercial Revenue Models and User Experience Friction in Mobile Applications 
+A critical factor influencing long-term user retention in relationship technology is the economic design of the platform. Commercial couple applications employ several monetization strategies, each creating distinct operational and psychological trade-offs: 
+Freemium and In-App Advertising: Ad-supported freemium models display banner ads or interstitial video pop-ups during user interactions. In intimate relationship tools, unsolicited advertisements intrude upon private communication spaces, inducing digital fatigue and creating a perception of commercial surveillance.
+Impulse Subscriptions and Emotional Paywalls: Platforms frequently restrict core functionality—such as historical cycle tracking, custom desktop home widgets, or unlimited preference swipes—behind recurring monthly or annual subscription tiers. These "emotional paywalls" capitalize on impulsive subscription sign-ups during initial relationship milestones. However, recurring paywalls create financial friction when partners reside in different economic regions or operate under student budgets.
+One-Time "Freedom" Purchases: As an alternative to recurring subscriptions, one-time lifetime access fees remove paywalls permanently. Software ergonomics research indicates that users express higher trust and lower churn rates when software is offered under transparent, non-recurring models that preserve full access to core logistics.
+Micro-Donation and Creator Support Mechanisms (e.g., Ko-fi Integration): Voluntary micro-contribution protocols allow users to financially support developer server costs without locking essential features behind paywalls. By leveraging external micro-donation links (such as Ko-fi), personal utility applications maintain an open baseline while providing an optional, non-coercive financial support channel. 
+E-Commerce Affiliate Link Redirection: Standalone wishlist platforms monetized via affiliate marketing automatically intercept and rewrite user-submitted store URLs to append tracking parameters. While generating platform commission, affiliate URL tampering introduces security risks, tracking script bloat, and broken deep-links when opening regional mobile shopping applications. 
+Understanding these commercial models demonstrates why the proposed project adopts an "Open-Baseline Utility Strategy." By delivering all core operational features (flight tracking, shared health/cycle status, decision swiping, and desktop widgets) without paywalls or forced subscriptions, the system eliminates financial pressure between partners while supporting non-intrusive voluntary contributions. 
+Similar Systems and Gap Analysis 
+To understand what Project Cecily needs to build, existing commercial tools were evaluated across two categories: dedicated couple platforms and unrelated single-purpose utilities. 
+THE LDR FRAGMENTATION GAP 
+CURRENT STATE (Fragmented): 
+Couple Tree / Candle:
+Gamified Prompts & Games Only - No Logistics
+Life360 / MYairports: 
+Tracking Only - Battery Heavy, No Home Widgets 
+Blood / Flo: 
+Health Tracking Only - Isolated User Profiles
+Giftlist / Elfster 
+Gift Registries Only - Built for Groups/Santa
+> User Consequence: Extreme App-Jumping, High Battery Drain, & Digital Fatigue 
+PROPOSED SOLUTION (Project Cecily): 
+Project Cecily: Centralized 1-to-1 LDR Utility Hub 
+Automated Flight Engine & Travel Status 
+Integrated 1-to-1 Cycle/Health Sync 
+Weighted Consensus Swiper (Dates/Food/Trips) 
+Low-Power Ambient Home Widgets (Poke / Status) 
+Integrated Surprise-Preserving Shared Wishlist 
+Figure 2.2: The LDR Logistical Fragmentation Gap versus the Proposed Unified Utility Solution. 
+Gamified Couple Systems: Couple Tree vs. Candle 
+Commercial couple applications generally rely on gamification and active prompts:
+Couple Tree: Focuses on growing a virtual forest by answering daily relationship questions, reading daily horoscopes, and playing balance games (Figure 2.3). If partners do not manually log in and complete questions, their virtual trees stop growing. It completely lacks background logistical engines or travel integrations. 
+Figure 2.3: Couple Tree Interface showing gamified forest growth, daily relationship questions, and streak requirements. 
+Candle: Focuses on "1-minute daily rituals," including daily question prompts, photo challenges, and "Thumb Kisses" (Figure 2.4). While Candle attempts to reduce time commitment, it remains an active engagement tool that relies on daily streaks. It offers no background automation for flight logistics or lifestyle planning. 
+Figure 2.4: Candle Interface illustrating daily 1-minute rituals, photo challenges, and thumb kisses. 
+Why Unrelated Apps (Location, Health & Airport Utilities) Are in the Mix 
+Because mainstream couple apps prioritize emotional mini-games, LDR couples are forced to adopt unrelated, single-purpose utilities to manage basic life logistics: 
+Location Trackers (Life360): Couples rely on Life360 for location safety and transit monitoring (Figure 2.5). As Dubey et al. (2022) note, real-time location tracking enhances operational visibility during movement. However, Life360 consumes significant battery and lacks home-screen desktop widgets that allow quick "pokes" or micro-alerts outside the main application. It treats users as nodes in a family safety network rather than intimate partners. 
+Figure 2.5: Life360 Interface demonstrating real-time GPS tracking alongside the absence of interactive home-screen pokes/widgets. 
+Regional Transport Utilities (e.g., MYairports): Couples traveling to visit each other check flight status via airport portals like MYairports (MAHB, 2023). However, these systems are built for single passengers. They do not automatically push real-time arrival updates or ETA changes to a remote partner's phone screen. 
+Standalone Health Portals (e.g., Blood, Flo): Female partners track menstrual health and cycle phases using specialized platforms like Blood (Blood, 2026) or Flo (Flo, 2026) (Figure 2.6). While these platforms offer detailed personal insights, their data schemas are designed for individual users. Sharing this information requires partners to send manual screenshots or hand over login credentials. They lack a safe, bi-directional 1-to-1 pair sync mode that allows a remote partner to provide proactive emotional support based on synchronized cycle phases. 
+Figure 2.6: Blood Cycle Tracking Interface illustrating isolated individual user logging and shared support recommendations. 
+Couples are forced to jump between four or five disconnected apps every day. Project Cecily solves this by integrating travel logistics, cycle awareness, consensus decision swiping, and ambient widgets into a single dashboard. 
+Standalone Wishlist & Gift Exchange Platforms: Giftlist vs. Elfster 
+When planning reunions, holidays, or gift exchanges across geographical distances, couples often turn to dedicated gift registry platforms to manage wishlists: 
+Giftlist: Designed as a general gift registry platform allowing users to aggregate items they want from various online stores. Its key feature is surprise preservation: when a partner or friend buys an item from the list, they can mark it as "reserved" or "purchased." The platform updates the item status for everyone viewing the list while intentionally hiding the reservation status from the list owner. While this prevents duplicate purchases while keeping gifts a surprise, Giftlist operates as a completely disconnected single-purpose utility. It lacks relationship dashboard integration, real-time messaging, or transit synchronization.
+Figure 2.7: Elfster and Giftlist User Interface illustrating group wishlist management, secret gift assignments, and reservation tracking.  
+Elfster: Primarily built for group "Secret Santa" gift exchanges. It pairs participants randomly and provides anonymous wishlist sharing. While Elfster handles gift coordination well for large families or workplaces, applying it to a strict 1-to-1 LDR couple dynamic highlights a distinct functional mismatch: in a 2-person relationship, the "Secret Santa" assignment is redundant, yet couples still use it because standalone couple apps lack native wishlist management.
+To resolve this, the proposed system incorporates a Surprise-Preserving Shared Wishlist natively into the 1-to-1 couple dashboard. When Partner A adds a gift idea, place to visit, or reunion goal, Partner B can mark it as reserved or completed in Firebase Firestore. The database state updates for Partner B without revealing the reservation state to Partner A, blending the utility of Giftlist and Elfster directly into the daily LDR workflow. 
+Comparative Feature Matrix 
+Feature / Characteristic
+Couple Tree
+Candle
+Life360
+Blood / Flo
+Giftlist
+Elfster
+Proposed System
+Primary Focus
+Gamified Forest
+Daily Rituals
+GPS Safety
+Health Logs
+Gift Registry
+Secret Santa
+LDR Utility Hub
+1-to-1 Secure Pair Sync
+Yes
+Yes
+No (Group)
+No
+No
+No (Group)
+Yes
+Automated Flight Telemetry Engine
+No
+No
+No
+No
+No
+No
+Yes (Real-time API)
+Integrated Cycle / Health Sync
+No
+No
+No
+Yes (Isolated)
+No
+No
+Yes (Shared Pair Mode)
+Consensus Decision Swiper
+No
+Yes (Dates)
+No
+No
+No
+No
+Yes (Food / Dates / Trips)
+Home Widgets (Poke / Ambient)
+Basic
+Basic
+No
+No
+No
+No
+Yes (Interactive Widgets)
+Surprise-Preserving Wishlist
+No
+No
+No
+No
+Yes
+Yes (Group)
+Yes (Integrated Pair Sync)
+Zero Daily Streak Pressure
+No
+No
+Yes
+Yes
+Yes
+Yes
+Yes (Passive Updates)
+Local Context (MY / Sarawak)
+No
+No
+General
+General
+General
+General
+Yes
+Table 2.1: Comparative Feature Checklist Matrix of Existing Couple Apps and Single-Utility Platforms vs. Proposed System. Methodology review
+Figure 2.8: Software Development Lifecycle (SDLC) Evaluation Matrix (Waterfall vs. Agile/XP) 
+Critique of Traditional (Waterfall) Methodology
+Selecting an appropriate software development lifecycle (SDLC) model is critical to project feasibility and risk management. Traditional development models, such as the Waterfall model, follow a strictly linear and sequential path: system requirements must be fully locked before architectural design begins, implementation occurs in a single phase, and verification occurs only after the complete codebase is written.  
+While Waterfall offers predictability in projects with static, well-understood parameters, it presents severe structural vulnerabilities for modern mobile application development: 
+Inflexible Requirement Freezing: In Waterfall, modifying system requirements once implementation has commenced requires costly retrofitting. Mobile software relying on third-party real-time integrations—such as external Aviation Telemetry APIs, Google Maps SDK, and WebSocket database listeners—operates under fluid technical boundaries. If an API endpoint schema changes or an OS background execution policy is updated, a Waterfall workflow struggles to adapt without invalidating previously approved design artifacts.
+Deferred Integration Testing: In a sequential lifecycle, complete module integration occurs late in the project timeline. For a system featuring interdependent subsystems (such as native Java home widgets querying Firebase Firestore state changes triggered by background flight parsers), discovering inter-module communication failures during late-stage verification poses catastrophic schedule risks.
+Delayed Stakeholder Feedback: Verification occurs at the end of the development cycle. Consequently, user interface flaws or usability issues are discovered when resolving them requires extensive code rewrites
+As Al-Saqqa et al. (2020) observe, rigid linear methodologies account for a significant proportion of software project delays and budget overruns when applied to dynamic mobile environments. Therefore, the traditional Waterfall approach was deemed unsuitable for this project. 
+Defense of Agile Software Development
+To overcome the failure modes of linear methodologies, the software engineering discipline heavily favors Agile Software Development. Agile paradigms decompose system development into short, time-boxed iterative cycles known as sprints. Each sprint yields a working, testable increment of the application, transforming project delivery into a progressive evolution rather than a single high-risk deployment.  
+Agile offers distinct operational advantages for mobile utility platforms:  
+Adaptive Requirement Handling: Rather than locking requirements upfront, Agile treats user stories as evolving specifications. Requirements for real-time flight telemetry, cycle tracking synchronization, and decision swiping can be refined incrementally based on empirical testing.
+Early and Continuous Risk Reduction: By deploying functional increments at the conclusion of each sprint, technical risks—such as Firestore WebSocket latency or widget update performance—are identified and resolved early in the timeline.
+Continuous Stakeholder Validation: Bi-weekly reviews with the project supervisor allow working software to be demonstrated continuously. Feedback is incorporated immediately into the upcoming sprint backlog rather than waiting for a final project defense.
+In an extensive empirical evaluation of project management frameworks, Gemino et al. (2021) demonstrated that Agile approaches achieve statistically higher rates of project success, stakeholder satisfaction, and code quality compared to rigid Waterfall implementations, particularly in projects managed under constrained schedules 
+Tailoring Agile and Extreme Programming (XP) for a Solo Developer 
+While standard Agile frameworks such as Scrum are designed for multi-disciplinary teams requiring daily stand-up meetings, dedicated Scrum Masters, and formal Product Owners, applying pure Scrum to a solo developer project introduces unnecessary administrative overhead.
+To maximize engineering efficiency without sacrificing rigor, this project adopts a hybrid Agile/Extreme Programming (XP) strategy specifically tailored for single-developer execution (Beck et al., 2001; Day, 2022):
+Table 2.2: Solo-Developer Agile and Extreme Programming (XP) Engineering Practices Matrix. 
+SOLO-DEVELOPER AGILE/XP PRACTICES MATRIX 
+Time-Boxed Sprints (Scrum Structure):
+Four 4-week Sprints spanning August to late November.
+Consolidated Roles: Student = Developer/PO; Supervisor = Advisor/Scrum Master.
+Test-First Development (XP Practice):
+Core business logic (string parsing, token matching, consensus math) is validated via unit tests before UI component binding.
+Continuous Integration & Refactoring (XP Practice):
+Frequent commits to GitHub prevent configuration drift and regression. 
+Codebase kept simple and modular in native Java SDK. 
+Consolidated Role Structure: The student developer assumes the operational responsibilities of Product Owner and Lead Developer, while the project supervisor acts as an external advisor providing bi-weekly backlog reviews.
+Time-Boxed Sprint Cadence: Development is structured into four 4-week Sprints spanning August through late November. This timeline provides rigid milestone boundaries while accommodating concurrent university coursework.
+Test-First Development (TFD): Prior to writing UI layouts in XML or binding Firebase listeners in Java, core algorithmic logic—such as flight string regex parsing, 6-digit handshake verification, and weighted swipe vector matching—is tested independently. This prevents logic bugs from propagating into the presentation layer.
+Continuous Integration & Refactoring: Source code is managed via GitHub version control, with feature branches merged systematically to maintain a stable main branch. Refactoring is practiced continuously to keep the native Java codebase simple and modular.
+By combining Scrum's structured sprint cadence with XP's developer-centric engineering practices, the methodology provides a robust, low-overhead framework designed to deliver a fully functional, tested native Android platform within the allocated 16-week timeline. 
+Technology Review
+PROJECT CECILY TECHNICAL ARCHITECTURE 
+Android Native (Java ) UI 
+[ AppWidget Provider ] 
+Low-Power Desktop Ambient Widgets (Includes Quick "Poke" & Alerts
+[ Real-Time Listener Service ] 
+Background Flight Telemetry API
+[ Google Maps SDK Integration ] 
+Location & Route Visualization
+[ Firebase Firestore ]
+Real-Time WebSocket Pair Sync
+Figure 2.9: Technical Architecture Diagram (Java, Firebase, Google Maps SDK, Aviation API) 
+Frontend Development: Android Native (Java ) vs. Cross-Platform 
+While cross-platform frameworks like Flutter or React Native allow simultaneous iOS and Android deployment, native Android development using Java and Android Studio (Android Developers, 2023) was selected for Project Cecily due to core platform compatibility:
+Native Interactive Home Widgets (AppWidgetProvider): Project Cecily relies heavily on home-screen ambient widgets. Native Java APIs offer straightforward access to Android's RemoteViews and AppWidgetManager classes, providing robust power management and immediate gesture responsiveness for interactive desktop widgets (such as tapping a button to "poke" a partner or display flight countdowns) without cross-platform bridge overhead.
+Stable SDK Lifecycle Management: Developing in Java ensures deep compatibility with legacy and modern Android SDK versions, facilitating reliable background event handling and system broadcast listeners.
+Backend & Real-Time Sync: Firebase Firestore 
+Firebase Firestore (Firebase, 2023) was chosen as the cloud database due to its NoSQL document structure and real-time WebSocket capabilities. When one partner updates a wishlist, logs a cycle event, sends a widget poke, or completes a decision swipe, Firestore pushes the change to the partner's device instantly via Java listener adapters without requiring manual screen refreshes. 
+Logistics, Mapping & Decision Infrastructure 
+To eliminate manual flight checking, Project Cecily uses background flight tracking. The system parses pasted flight numbers, queries external Aviation Telemetry APIs, and updates status fields in Firestore in real time. Google Maps SDK for Android (Google Maps Platform, 2023) provides mapping and location visualization for transit coordination. Additionally, the consensus resolver stores temporary swipe vectors in Firestore, matching overlapping "YES" swipes for dates, food, or vacation ideas to return an instant match to both devices. 
+CONCLUSION 
+The literature and market review reveals a clear gap in relationship software. Existing couple applications focus heavily on gamified tasks, virtual pets, and daily streak maintenance, which often lead to digital burnout and friction for logical or busy users. Conversely, functional tools like Life360, airport portals, and health apps (Blood, Flo) treat users as isolated individuals, forcing LDR couples to jump between multiple disjointed platforms to manage their shared lives. 
+Project Cecily bridges this gap by combining real-time flight telemetry, integrated cycle awareness, consensus decision swiping, and interactive ambient widgets into a unified, low-power Android application. The technical stack—Java, Android Studio, Firebase Firestore, Google Maps SDK, and Aviation APIs—provides the precise native capabilities required to deliver this solution efficiently. 
+Methodology
+Introduction
+This chapter details the software development methodology and system modeling framework adopted for the design and development of Project Cecily. The chapter is organized into four main sections: the Agile development methodology, the use case diagram and scenarios, the activity diagrams, and the sequence diagrams.
+The Agile methodology section outlines the iterative development lifecycle selected for the project. Requirements for real-time flight telemetry, cycle synchronization, decision swiping, and home-screen widgets are expected to evolve through user testing, making an adaptive, iterative approach necessary. This section presents the sprint structure, sprint breakdown, and a summary of all four development sprints spanning August through late November.
+The Use Case Diagram provides a high-level visual representation of the system’s actors and their functional interactions. Following the diagram, Use Case Scenarios specify preconditions, main success flows, and error extensions for each identified system function.
+The Activity Diagrams illustrate the step-by-step control flows and decision logic for key system workflows. Finally, the Sequence Diagrams map time-ordered message exchanges between system components (Android Native App, Firebase Firestore, Aviation API, and Desktop Widgets).
+Agile Methodology
+Project Cecily adopts an Agile software development methodology enriched with Extreme Programming (XP) practices, adapted specifically for a solo developer context. Al-Saqqa et al. (2020) state that Agile methodologies reduce project failure risks and improve responsiveness to changing requirements. Furthermore, Gemino et al. (2021) demonstrated that Agile projects consistently achieve higher user and stakeholder satisfaction compared to rigid sequential models.
+As a solo developer project, standard team roles are consolidated: the developer acts as the Product Owner and implementer, while the project supervisor, Ms. Ain Nazihah Binti Pakasa, acts as an advisor (similar to a Scrum Master) during bi-weekly progress consultations.
+Sprint Structure 
+The project schedule spans a total of 16 weeks, running from August to the end of November. Development is broken into four distinct 4-week sprints. Each sprint follows a consistent structure drawn from XP and Scrum practices:
+Sprint Planning: Define sprint goals, break user stories into concrete development tasks, and set acceptance criteria.
+Development & Execution: Write native Java code in Android Studio, integrate Firebase Firestore, apply test-first development, and commit code regularly to GitHub version control.
+Sprint Review (Supervisor Consultation): Demonstrate working increments to the project supervisor to validate progress against project objectives.
+Sprint Retrospective: Evaluate blockers, refine code structure, and re-prioritize the product backlog for the next sprint.
+Sprint Breakdown 
+Sprint 1 – Architecture, Authentication & Pair Handshake (August: Weeks 1–4) 
+Focus: Establishing foundational Android application architecture, user registration, and secure 1-to-1 pairing.
+Key Activities:
+Set up Android Studio project structure with native Java SDK.
+Implement user registration and authentication using Firebase Authentication.
+Develop a secure 6-digit invite code generation and matching protocol in Firebase Firestore to establish a linked 1-to-1 pair session.
+Build the core UI shell and main navigation tabs.
+Deliverable: A functional Android mobile application that allows two users to log in, exchange an invite code, and form a secure linked pair profile in Firebase Firestore.
+Sprint 2 – Real-Time Flight Engine & Travel Status (September: Weeks 5–8) 
+Focus: Developing flight telemetry tracking and location status visualization.
+Key Activities:
+Implement string parsing logic in Java to extract flight numbers from user text inputs.
+Integrate external Aviation Telemetry APIs to pull live flight status (takeoff, arrival, delay, gate).
+Integrate Google Maps SDK to render partner location and airport markers on an interactive map.
+Configure real-time WebSocket listeners in Firebase Firestore to stream status updates instantaneously to the partner's device.
+Deliverable: A working travel module that automatically fetches flight status from a pasted flight code and updates the partner’s screen in real time.
+Sprint 3 – Health Hub, Consensus Swiper & Ambient Widgets (October: Weeks 9–12) 
+Focus: Building cycle awareness synchronization, decision swiping, and native home-screen widgets.
+Key Activities:
+Build the Lifestyle & Health Hub allowing cycle/period logging with shared 1-to-1 partner view.
+Build the Weighted Consensus Resolver with swipe gesture detection for date/food choices.
+Implement Firestore matching logic that identifies overlapping "YES" swipes and alerts both devices.
+Develop low-power native Android desktop home-screen widgets (AppWidgetProvider) for quick "Poke" interactions and status indicators.
+Deliverable: A complete feature set enabling cycle status sharing, decision swiping, and home-screen desktop widget interactions.
+Sprint 4 – Refinement, System Evaluation & Documentation (November: Weeks 13–16) 
+Focus: Final UI/UX optimization, performance testing, and formal project evaluation.
+Key Activities:
+Conduct System Usability Scale (SUS) evaluation with representative LDR couples.
+Measure real-time sync latency and widget battery/memory consumption on test devices.
+Fix UI edge cases, network reconnection handling, and exception logic.
+Complete final thesis report and user documentation.
+Deliverable: A fully built, evaluated, and documented Android application (Project Cecily) ready for final presentation by the end of November.
+Sprint Summary Table 
+Table 3.1: Four-Sprint Agile Development Breakdown (August – November 16-Week Schedule). 
+Sprint
+Timeline
+Focus
+Key Activities
+Basis / Reference
+1
+August
+(Weeks 1–4)
+Foundation & Pair Handshake
+Android Java setup; Firebase Auth; 6-digit pair code handshake logic; Firestore user schema.
+Firebase (2023)
+2
+September
+(Weeks 5–8)
+Flight Engine & Tracking
+Flight number text parser; Aviation Telemetry API integration; Google Maps SDK integration; real-time status listener.
+Watkins et al. (2011); Dubey et al. (2022)
+3
+October
+(Weeks 9–12)
+Lifestyle Hub & Widgets
+Cycle tracking sync; Consensus decision swiper; AppWidgetProvider desktop home widgets for "Poke" and status updates.
+Zhao & Rosson (2016); Pöhler et al. (2024)
+4
+November
+(Weeks 13–16)
+Testing & Final Evaluation
+SUS usability testing; real-time sync latency measurement; battery profiling; bug fixing & report writing.
+Gemino et al. (2021); Day (2022)
+Use Case Diagram 
+The use case diagram for Project Cecily identifies two main actors: the User (Partner A) and the Paired Partner (Partner B). Both partners interact with the native Android application to exchange status updates, check flight details, log health cycles, swipe on decision cards, and send home-screen widget pokes. 
+Figure 3.1: Project Cecily Use Case Diagram showing Partner A and Partner B System Interactions. 
+Use Case Scenarios
+UC-01: Authenticate & Pair Devices 
+Actor: User (Partner A), Paired Partner (Partner B)
+Precondition: App installed on both Android devices; internet connection available.
+Postcondition: Users authenticated and linked in a 1-to-1 pair collection in Firebase Firestore.
+Trigger: User opens app and selects "Create Pair Code" or "Enter Invite Code".
+Main Success Scenario:
+Partner A signs up via Firebase Auth and generates a 6-digit pair code.
+Partner B opens the app, selects "Join Pair", and enters the code.
+The system validates code in Firestore and links the two user IDs.
+Both users are redirected to the shared main dashboard.
+Extensions:
+1a. Invalid or expired code: System displays "Code invalid" error.
+UC-02: Track Flight Logistics 
+Actor: User
+Precondition: User is paired; valid flight code is available.
+Postcondition: Flight status monitored; updates displayed on user and partner screens.
+Trigger: User pastes or enters a flight number (e.g., "MH2712").
+Main Success Scenario:
+The user pastes the flight number into the travel module.
+System parses string and queries Aviation Telemetry API.
+System updates Firestore with departure time, gate, and estimated arrival.
+Partner’s device receives Firestore push update and updates map/card view.
+Extensions:
+1a. API unavailable: System displays last saved status with warning.
+UC-03: Share Health & Cycle Log 
+Actor: User (Female Partner)
+Precondition: Users are paired.
+Postcondition: Cycle status logged and securely shared in a pair workspace.
+Trigger: User logs start/end date or symptoms in Health Hub.
+Main Success Scenario:
+The user selects cycle dates in the calendar.
+The system computes phase (e.g., Ovulation, Luteal) and saves to Firestore pair record.
+Partner’s app fetches updates and shows passive mood/support tips.
+UC-04: Resolve Decision via Swiper 
+Actor: User (Partner A), Paired Partner (Partner B)
+Precondition: Both partners are paired; active session started for "Food" or "Dates".
+Postcondition: Consensus match calculated and displayed to both users.
+Trigger: User initiates a decision session.
+Main Success Scenario:
+The user starts a swiping session (e.g., "Dinner Options in Kuching").
+Users swipe Left (No) or Right (Yes) on options.
+System records swipe choices in Firestore.
+When both users swipe "Yes" on the same item, the system calculates a match and triggers a "Match Found!" screen on both devices.
+UC-05: Send Widget Poke / Alert 
+Actor: User
+Precondition: Home widget added to Android home screen; devices paired.
+Postcondition: Poke counter incremented and vibration/toast alert triggered on partner device.
+Trigger: User taps "Poke" button on desktop widget.
+Main Success Scenario:
+The user taps the "Poke" button on the home screen widget.
+AppWidgetProvider triggers background update to Firestore.
+The partner's device receives a push alert and updates the partner widget UI.
+UC-06: View Live Location Map
+Actor: User, Paired Partner
+Precondition: Google Maps SDK configured; location permissions granted.
+Postcondition: Location coordinates and airport markers displayed on map.
+Trigger: User navigates to Location tab.
+Main Success Scenario:
+User opens Location view.
+App reads current coordinates and fetches partner's last known location from Firestore.
+Google Maps view renders both markers with distance calculation.
+UC-07: Manage Shared Wishlist
+Actor: User, Paired Partner
+Precondition: Pair connection active.
+Postcondition: Shared item added, updated, or checked off in Firestore.
+Trigger: User adds a place to visit, gift idea, or travel goal.
+Main Success Scenario:
+The user enters the item title, category, and notes into the Wishlist tab.
+App writes new entry to pair's Firestore collection.
+Partner's device receives real-time listener update and refreshes wishlist UI list.
+Activity Diagrams
+Authenticate & Pair Devices Activity Diagram 
+Figure 3.2: Activity Diagram for UC-01: Authenticate and 1-to-1 Device Pairing Logic. 
+Decision Swiper Activity Diagram 
+Figure 3.3: Activity Diagram for UC-04: Weighted Consensus Decision Swiping Workflow. 
+Sequence Diagrams
+Flight Tracking Sequence Diagram 
+Figure 3.4: Sequence Diagram for Flight Telemetry Query and Real-Time Partner Synchronization. 
+Home Widget "Poke" Sequence Diagram 
+Figure 3.5: Sequence Diagram for Native Home Screen Widget "Poke" Interaction and Push Notification. 
+Class Diagram
+Figure 3.6: System Class Diagram displaying Data Models for User, Pair, FlightLog, CycleLog, and SwipeSession. 
+Conclusion
+This chapter presented the software development methodology and system modeling framework for Project Cecily. The adoption of an Agile approach enriched with XP practices provides the iterative flexibility needed to refine flight tracking, health cycle synchronization, decision swiping, and home-screen widgets through continuous testing across the 16-week August–November timeline.
+The four-sprint structure ensures working increments are delivered progressively, starting from pair authentication in Sprint 1 to final usability evaluation in Sprint 4. The UML models—including Use Case, Activity, Sequence, and Class diagrams—provide a clear structural and behavioral blueprint connecting each design decision directly to the project's objectives.
+References
+Al-Saqqa, S., Sawalha, S., & AbdelNabi, H. (2020). Agile software development: Methodologies and trends. International Journal of Interactive Mobile Technologies, 14(11), 246–270. https://doi.org/10.3991/ijim.v14i11.13269
+Android Developers. (2023). Android Studio documentation. Google. https://developer.android.com/studio
+Beck, K., Beedle, M., van Bennekum, A., Cockburn, A., Cunningham, W., Fowler, M., Highsmith, J., Hunt, A., Thomas, D., & Jeffries, R. (2001). Manifesto for Agile Software Development. https://agilemanifesto.org/
+Blood. (2026). Blood: Period & Cycle Tracker. pslove. https://my.getblood.com/pages/pslove-is-now-blood
+Candle. (2026). Candle: Couples & Relationship. https://www.trycandle.app/
+Couple Tree. (2026). Couple Tree: For Relationship. Tree of Memories. Apple App Store / Google Play Store.
+Day, J. (2022). Extreme programming explained: Embrace change (3rd ed.). Addison-Wesley.
+Dubey, G., Jayaswal, A. K., Srivastava, A., & Mishra, A. (2022). Real time location tracking for performance enhancement and services. In Lecture Notes in Electrical Engineering (Vol. 925, pp. 791–800). Springer. https://doi.org/10.1007/978-981-19-4831-2_65
+Elfster. (2026). Elfster: Secret Santa generator & gift exchange. Elfster Inc. https://www.elfster.com/
+Firebase. (2023). Firebase documentation: Build, release and monitor apps. Google. https://firebase.google.com/docs
+Flo. (2026). Flo Period & Ovulation Tracker. Flo Health Inc. https://flo.health/
+Gemino, A., Horner Reich, B., & Serrador, P. M. (2021). Agile, traditional, and hybrid approaches to project success: Is hybrid a poor second choice? Project Management Journal, 52(2), 161–175. https://doi.org/10.1177/8756972820973082
+Giftlist. (2026). Giftlist: The ultimate online gift registry & wishlist app. Giftlist. https://www.giftlist.com/
+Google Maps Platform. (2023). Maps SDK for Android documentation. Google. https://developers.google.com/maps/documentation/android-sdk
+Holtzman, S., DeClerck, D., Turcotte, K., Lisi, D., & Woodworth, M. (2021). Long-distance texting: Text messaging is linked with higher relationship satisfaction in long-distance relationships. Journal of Social and Personal Relationships, 38(12), 3543–3565. https://doi.org/10.1177/02654075211043296
+Jiang, L. C., & Hancock, J. T. (2013). Absence makes the communication grow fonder: Geographic separation, interpersonal media, and intimacy in dating relationships. Journal of Communication, 63(3), 556–577. https://doi.org/10.1111/jcom.12029
+Ko-fi. (2026). Ko-fi: Creator tipping & micro-donation platform. Ko-fi Labs. https://ko-fi.com/
+Li, C., Xu, Y., & Zhang, J. (2022). Does the Internet bring people closer together or further apart? Behavioral Sciences, 12(11), 425. https://doi.org/10.3390/bs12110425
+Life360. (2026). Life360: Live Location Sharing & Safety. Life360 Inc. Google Play Store / Apple App Store.
+MAHB. (2023). MYairports mobile application. Malaysia Airports Holdings Berhad. https://www.malaysiaairports.com.my/
+Pöhler, M., et al. (2024). DisClose: Negative body-related self-disclosure to mediate intimacy over distance. In Proceedings of the CHI Conference on Human Factors in Computing Systems. ACM. https://doi.org/10.1145/3613904.3642398
+Sarawak Digital Economy Corporation. (2022). Sarawak digital economy blueprint 2030. SDEC.
+Watkins, K. E., Ferris, B., Borning, A., Rutherford, G. S., & Layton, D. (2011). Where Is My Bus? Impact of mobile real-time information on the perceived and actual wait time of transit riders. Transportation Research Part A: Policy and Practice, 45(8), 839–848. https://doi.org/10.1016/j.tra.2011.06.010
+Zhao, C., & Rosson, M. B. (2016). Ambient awareness: From random noise to digital closeness in online social networks. Computers in Human Behavior, 60, 42–52. https://doi.org/10.1016/j.chb.2016.02.037

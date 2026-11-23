@@ -364,7 +364,10 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
 
         int myAccentColor = ThemeUtils.getAccentColor(this);
 
-        if (!isPaired || partnerTz == null || partnerTz.getID().equalsIgnoreCase(myTz.getID())) {
+        long now = System.currentTimeMillis();
+        boolean isSameOffset = partnerTz != null && (partnerTz.getOffset(now) == myTz.getOffset(now));
+
+        if (!isPaired || partnerTz == null || isSameOffset) {
             // Case 2: Single Centered Timezone View
             layoutDual.setVisibility(View.GONE);
             layoutSingle.setVisibility(View.VISIBLE);
@@ -408,8 +411,9 @@ public class FlightTrackerActivity extends AppCompatActivity implements FlightAd
             partnerDateFormat.setTimeZone(partnerTz);
             String partnerDateStr = partnerDateFormat.format(partnerCal.getTime());
 
-            int partnerOffsetHrs = partnerTz.getRawOffset() / (3600 * 1000);
-            int diffHrs = partnerOffsetHrs - myOffsetHrs;
+            int myOffsetHrsNow = myTz.getOffset(now) / (3600 * 1000);
+            int partnerOffsetHrs = partnerTz.getOffset(now) / (3600 * 1000);
+            int diffHrs = partnerOffsetHrs - myOffsetHrsNow;
             String diffStr = (diffHrs >= 0 ? "+" + diffHrs : String.valueOf(diffHrs)) + " hrs";
 
             TextView tvPartnerTitle = findViewById(R.id.tvPartnerTzTitle);

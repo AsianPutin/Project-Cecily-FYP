@@ -101,136 +101,9 @@ public class AppearanceActivity extends AppCompatActivity {
 
         setupThemeToggle();
         setupColorStyleToggle();
-        setupIconCustomization();
         setupColorSwatches();
         setupUnitToggles();
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
-    }
-
-    private void setupIconCustomization() {
-        MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
-        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
-
-        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
-
-        refreshIconToggleUI();
-
-        toggleIconLogoStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            String currentStyle = IconManager.getIconLogoStyle(this);
-            String newStyle = "DEFAULT";
-            if (checkedId == R.id.btnIconLogoBlack) {
-                newStyle = "BLACK";
-            } else if (checkedId == R.id.btnIconLogoWhite) {
-                newStyle = "WHITE";
-            }
-
-            if (!newStyle.equalsIgnoreCase(currentStyle)) {
-                showRestartRequiredDialog(newStyle, IconManager.getIconBgStyle(this));
-            }
-        });
-
-        toggleIconBgStyle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            String currentBg = IconManager.getIconBgStyle(this);
-            String newBg = (checkedId == R.id.btnIconBgDark) ? "DARK" : "LIGHT";
-
-            if (!newBg.equalsIgnoreCase(currentBg)) {
-                showRestartRequiredDialog(IconManager.getIconLogoStyle(this), newBg);
-            }
-        });
-    }
-
-    private void refreshIconToggleUI() {
-        MaterialButtonToggleGroup toggleIconLogoStyle = findViewById(R.id.toggleIconLogoStyle);
-        MaterialButtonToggleGroup toggleIconBgStyle = findViewById(R.id.toggleIconBgStyle);
-
-        if (toggleIconLogoStyle == null || toggleIconBgStyle == null) return;
-
-        String currentLogo = IconManager.getIconLogoStyle(this);
-        String currentBg = IconManager.getIconBgStyle(this);
-
-        if ("BLACK".equalsIgnoreCase(currentLogo)) {
-            toggleIconLogoStyle.check(R.id.btnIconLogoBlack);
-        } else if ("WHITE".equalsIgnoreCase(currentLogo)) {
-            toggleIconLogoStyle.check(R.id.btnIconLogoWhite);
-        } else {
-            toggleIconLogoStyle.check(R.id.btnIconLogoDefault);
-        }
-
-        if ("DARK".equalsIgnoreCase(currentBg)) {
-            toggleIconBgStyle.check(R.id.btnIconBgDark);
-        } else {
-            toggleIconBgStyle.check(R.id.btnIconBgLight);
-        }
-
-        updateIconPreview();
-    }
-
-    private boolean hasPendingIconChange = false;
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (hasPendingIconChange) {
-            hasPendingIconChange = false;
-            IconManager.applyLauncherComponent(this, IconManager.getIconLogoStyle(this));
-        }
-    }
-
-    private void showRestartRequiredDialog(String pendingLogoStyle, String pendingBgStyle) {
-        // Save new icon and background choices immediately
-        IconManager.setIconLogoStyle(this, pendingLogoStyle);
-        IconManager.setIconBgStyle(this, pendingBgStyle);
-        hasPendingIconChange = true;
-
-        // Set target menu flag so MainActivity opens AppearanceActivity on launch
-        getSharedPreferences("prefs_" + UserManager.getUserId(this), MODE_PRIVATE)
-                .edit()
-                .putString("restart_target_menu", "AppearanceActivity")
-                .apply();
-
-        refreshIconToggleUI();
-
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                .setTitle("Restart required")
-                .setMessage("Restart the app for this change to take effect. You will be automatically returned to this menu.")
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .setPositiveButton("Restart", (dialog, which) -> {
-                    dialog.dismiss();
-                    hasPendingIconChange = false;
-
-                    IconManager.applyLauncherComponent(this, pendingLogoStyle);
-
-                    // Restart App
-                    Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-                    if (intent != null) {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                    }
-                    finishAffinity();
-                    Runtime.getRuntime().exit(0);
-                })
-                .show();
-    }
-
-    private void updateIconPreview() {
-        MaterialCardView cardFrame = findViewById(R.id.cardIconPreviewFrame);
-        ImageView ivLogo = findViewById(R.id.ivIconPreviewLogo);
-
-        if (cardFrame != null && ivLogo != null) {
-            String logoStyle = IconManager.getIconLogoStyle(this);
-            int bgColor = IconManager.getIconBackgroundColor(this);
-
-            cardFrame.setCardBackgroundColor(bgColor);
-            if ("WHITE".equalsIgnoreCase(logoStyle)) {
-                ivLogo.setImageResource(R.drawable.ic_app_logo_mono_white);
-            } else if ("BLACK".equalsIgnoreCase(logoStyle) || "MONOCHROME".equalsIgnoreCase(logoStyle)) {
-                ivLogo.setImageResource(R.drawable.ic_app_logo_mono_black);
-            } else {
-                ivLogo.setImageResource(R.drawable.ic_app_logo);
-            }
-        }
     }
 
     private void setupThemeToggle() {
@@ -454,14 +327,12 @@ public class AppearanceActivity extends AppCompatActivity {
         super.onResume();
         ThemeUtils.applyAccentToActivity(this);
         updateSelectedAccentUI(ThemeUtils.getAccentColorHex(this));
-        updateIconPreview();
     }
 
     private void selectAccent(String hexColor) {
         ThemeUtils.saveAccentColor(this, hexColor);
         updateSelectedAccentUI(hexColor);
         ThemeUtils.applyAccentToActivity(this);
-        updateIconPreview();
     }
 
     private void updateSelectedAccentUI(String currentHex) {

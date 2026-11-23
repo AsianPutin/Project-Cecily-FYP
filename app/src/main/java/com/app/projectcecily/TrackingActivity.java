@@ -94,6 +94,7 @@ public class TrackingActivity extends AppCompatActivity {
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
+        OneHandedZoomGestureHelper.attach(this, mapView);
 
         GeoPoint defaultPos = new GeoPoint(1.5533, 110.3592);
         mapView.getController().setZoom(17.5);

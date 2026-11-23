@@ -120,9 +120,9 @@ public class DateCardGenerator {
             }
 
         } else {
-            // LDR MODE DATE IDEAS (Games, Movie Watch Parties, Virtual Dates)
+            // LDR MODE DATE IDEAS (Games, Watch Parties, Virtual Dates & Shared Activities)
 
-            // CO-OP GAMES
+            // 1. CO-OP MULTIPLAYER VIDEO GAMES
             if (prefs == null || prefs.prefCoOpGames) {
                 deck.add(new DateCard("ldr_game_1", "It Takes Two (Co-Op)", "Co-Op Video Game",
                         "The ultimate award-winning 2-player co-op adventure game! Solve puzzles and platform together.",
@@ -136,8 +136,21 @@ public class DateCardGenerator {
                 deck.add(new DateCard("ldr_game_4", "Minecraft World Building", "Creative World",
                         "Build your dream cozy house, explore caves, and survive the night together in your own server.",
                         "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_awayout", "A Way Out (Action Co-Op)", "Story Co-Op",
+                        "An intense story-driven prison escape heist adventure designed strictly for 2 co-op players.",
+                        "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_picopark", "Pico Park & Bread & Fred", "Funny Co-Op",
+                        "Cute, hilarious physics-based co-op games that test your patience and teamwork on call.",
+                        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_phasmo", "Phasmophobia Ghost Hunt", "Spooky Co-Op",
+                        "Grab flashlights and EMF readers to hunt ghosts and survive scary encounters on voice call.",
+                        "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_unravel", "Unravel Two", "Cozy Puzzle Platformer",
+                        "Control two adorable yarn figures connected together solving beautiful puzzle obstacles.",
+                        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", true));
             }
 
+            // 2. CASUAL & PARTY GAMES
             if (prefs == null || prefs.prefCasualGames) {
                 deck.add(new DateCard("ldr_game_5", "Roblox Obby & Hangout", "Casual Multiplayer",
                         "Explore fun Roblox obstacle courses, horror games, or cozy virtual cafes together.",
@@ -145,35 +158,87 @@ public class DateCardGenerator {
                 deck.add(new DateCard("ldr_game_6", "Portal 2 Co-Op Testing", "Puzzle Game",
                         "Play as Atlas and P-Body solving mind-bending portal physics puzzles together.",
                         "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_keeptalking", "Keep Talking & Nobody Explodes", "Communication Game",
+                        "One partner sees the bomb, the other reads the manual! Fast-paced communication test.",
+                        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_skribbl", "Skribbl.io & Gartic Phone", "Drawing & Party Game",
+                        "Draw funny prompts and guess each other's drawings over Discord or video call.",
+                        "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_geoguessr", "GeoGuessr World Search", "Geography Game",
+                        "Drop into random Google Street View locations around the world and guess where you are together.",
+                        "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_game_chess", "Online Chess & Card Games", "Casual Board Game",
+                        "Play online chess, Uno, or classic card games together while sipping coffee on call.",
+                        "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=800&q=80", true));
             }
 
-            // MOVIE & SHOW WATCH PARTIES
+            // 3. ANIME & SHOW WATCH PARTIES
             if (prefs == null || prefs.prefAnimeMovies) {
                 deck.add(new DateCard("ldr_movie_1", "Anime Movie Binge Night", "Watch Party",
                         "Stream 'Your Name', 'Weathering With You', or Studio Ghibli classics together on Discord or Teleparty.",
                         "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_movie_cartoons", "Nostalgic Cartoon Marathon", "Watch Party",
+                        "Revisit your favorite childhood cartoons, Disney classics, or animated shows together.",
+                        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_movie_youtube", "YouTube & Twitch Rabbit Hole", "Video Stream",
+                        "Share screen on Discord and binge funny YouTube videos, food tours, or live streams.",
+                        "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80", true));
             }
+
+            // 4. HORROR & MYSTERY
             if (prefs == null || prefs.prefHorrorMovies) {
                 deck.add(new DateCard("ldr_movie_2", "Late-Night Horror Movie", "Spooky Movie Night",
                         "Turn down the lights, get on voice call, and watch a spine-chilling horror movie together.",
                         "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_movie_truecrime", "True Crime & Mystery Docuseries", "Watch Party",
+                        "Binge intrigue-filled true crime documentaries or detective mystery thrillers on Teleparty.",
+                        "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80", true));
             }
+
+            // 5. ROMANCE & DRAMAS
             if (prefs == null || prefs.prefRomanceMovies) {
                 deck.add(new DateCard("ldr_movie_3", "K-Drama / Rom-Com Marathon", "Romance Binge",
                         "Cuddle up with blankets online and watch heart-warming romance shows together.",
                         "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80", true));
+                deck.add(new DateCard("ldr_movie_realitytv", "Reality TV & Cooking Shows", "Fun Binge",
+                        "Watch dramatic reality shows or intense baking and cooking competitions together on call.",
+                        "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80", true));
             }
 
-            // VIRTUAL DATES
+            // 6. VIRTUAL DATES & INTERACTIVE COUPLE ACTIVITIES
             deck.add(new DateCard("ldr_vdate_1", "Shared Spotify Jam Session", "Music Date",
                     "Listen to the exact same music playlist in real time on Spotify while chatting on call.",
                     "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80", true));
             deck.add(new DateCard("ldr_vdate_2", "Online Couple's Quiz & Trivia", "Virtual Date",
                     "Play online couple quizzes, 'Who Knows Who Better?', and fun trivia games on call.",
                     "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=800&q=80", true));
-            deck.add(new DateCard("ldr_vdate_3", "Discord Meal Date", "Virtual Dinner",
+            deck.add(new DateCard("ldr_vdate_3", "Discord Candlelit Dinner", "Virtual Dinner",
                     "Order your favourite food, turn on video call, and enjoy a virtual candlelit dinner together.",
                     "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_cooksame", "Cook the Same Recipe Live", "Interactive Cooking",
+                    "Buy ingredients for the exact same dish, cook together live on video call, and rate plating!",
+                    "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_powerpoint", "PowerPoint Presentation Night", "Virtual Date",
+                    "Create and present hilarious, wholesome, or silly custom PowerPoint slideshows to each other.",
+                    "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_vacation", "Google Earth Vacation Planner", "Travel Planning",
+                    "Explore street views and 3D landmarks together on Google Earth planning your next dream trip.",
+                    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_unboxing", "Care Package / Gift Unboxing", "Surprise Date",
+                    "Ship surprise care packages or secret gifts to each other and unbox them together live on video call.",
+                    "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_bedtime", "Bedtime Webtoon & Story Read", "Cozy Date",
+                    "Read chapters of a webtoon, comic, or audiobook aloud to each other before sleeping.",
+                    "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_museum", "Virtual Museum & Art Tour", "Culture Date",
+                    "Take interactive 3D virtual tours of famous world museums like the Louvre or Smithsonian online.",
+                    "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_lofi", "Co-Working & Lofi Study Session", "Ambient Date",
+                    "Keep video/voice call open while studying, working, or reading with background Lofi beats.",
+                    "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80", true));
+            deck.add(new DateCard("ldr_vdate_shopping", "Online Shopping for Each Other", "Fun Date",
+                    "Browse online fashion or gift stores together and pick out secret outfits or accessories for each other.",
+                    "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80", true));
         }
 
         // Randomize the card deck every time!

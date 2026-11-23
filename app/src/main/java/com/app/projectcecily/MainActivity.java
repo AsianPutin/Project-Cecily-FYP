@@ -533,9 +533,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDashCropEditorDialog(Bitmap rawBitmap) {
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_crop_profile_pic, null);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_crop_photo, null);
         CropImageView ivCropTarget = view.findViewById(R.id.ivCropTarget);
-        CircularOverlayView overlayView = view.findViewById(R.id.circularOverlayView);
+        SquircleOverlayView overlayView = view.findViewById(R.id.squircleOverlayView);
         Button btnRotate = view.findViewById(R.id.btnRotateCrop);
         Button btnSave = view.findViewById(R.id.btnSaveCroppedPic);
 
@@ -549,7 +549,7 @@ public class MainActivity extends AppCompatActivity {
         btnRotate.setOnClickListener(v -> ivCropTarget.rotate90());
 
         btnSave.setOnClickListener(v -> {
-            Bitmap cropped = ivCropTarget.getCroppedCircleBitmap(overlayView.getCircleRect());
+            Bitmap cropped = ivCropTarget.getCroppedSquareBitmap(overlayView.getCropRect(), 1080);
             Bitmap finalUpload = (cropped != null) ? cropped : rawBitmap;
             PhotoCycleManager.uploadPhoto(this, finalUpload, new PhotoCycleManager.UploadCallback() {
                 @Override

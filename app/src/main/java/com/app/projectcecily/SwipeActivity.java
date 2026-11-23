@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -302,33 +303,122 @@ public class SwipeActivity extends AppCompatActivity {
     }
 
     private void showMatchesDialog() {
-        ListView lvMatches = new ListView(this);
+        androidx.recyclerview.widget.RecyclerView rvMatches = new androidx.recyclerview.widget.RecyclerView(this);
+        rvMatches.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        rvMatches.setPadding(0, 16, 0, 16);
+        rvMatches.setClipToPadding(false);
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("Your Mutual Date Matches")
-                .setView(lvMatches)
+                .setView(rvMatches)
                 .setPositiveButton("Close", null)
                 .create();
 
         dbRef.child("matches").child(pairKey).get().addOnSuccessListener(snapshot -> {
-            List<String> matchNames = new ArrayList<>();
+            List<DateCard> matchCards = new ArrayList<>();
             if (snapshot.exists()) {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     DateCard card = ds.getValue(DateCard.class);
                     if (card != null) {
-                        matchNames.add("★ " + card.title + " (" + card.category + ")");
+                        matchCards.add(card);
                     }
                 }
             }
-            if (matchNames.isEmpty()) {
-                matchNames.add("No mutual matches yet! Keep swiping.");
-            }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, matchNames);
-            lvMatches.setAdapter(adapter);
+            MatchesAdapter adapter = new MatchesAdapter(matchCards, card -> deleteMatch(card, matchCards, rvMatches));
+            rvMatches.setAdapter(adapter);
+
+            androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback swipeCallback =
+                    new androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(0, androidx.recyclerview.widget.ItemTouchHelper.LEFT | androidx.recyclerview.widget.ItemTouchHelper.RIGHT) {
+                        @Override
+                        public boolean onMove(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, @NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder viewHolder, @NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder target) {
+                            return false;
+                        }
+
+                        @Override
+                        public void onSwiped(@NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder viewHolder, int direction) {
+                            int pos = viewHolder.getAdapterPosition();
+                            if (pos >= 0 && pos < matchCards.size()) {
+                                DateCard card = matchCards.get(pos);
+                                deleteMatch(card, matchCards, rvMatches);
+                            }
+                        }
+                    };
+
+            new androidx.recyclerview.widget.ItemTouchHelper(swipeCallback).attachToRecyclerView(rvMatches);
         });
 
         dialog.show();
+    }
+
+    private void deleteMatch(DateCard card, List<DateCard> matchCards, androidx.recyclerview.widget.RecyclerView rvMatches) {
+        int index = matchCards.indexOf(card);
+        if (index >= 0) {
+            matchCards.remove(index);
+            if (rvMatches.getAdapter() != null) {
+                rvMatches.getAdapter().notifyItemRemoved(index);
+            }
+        }
+
+        // Reset/delete swipe preference on deleter's end in Firebase
+        dbRef.child("swipes").child(pairKey).child(card.id).child(userId).removeValue();
+        // Remove mutual match from pair key in Firebase
+        dbRef.child("matches").child(pairKey).child(card.id).removeValue();
+    }
+
+    private static class MatchesAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<MatchesAdapter.ViewHolder> {
+
+        private final List<DateCard> items;
+        private final OnMatchDeleteListener deleteListener;
+
+        private interface OnMatchDeleteListener {
+            void onDelete(DateCard card);
+        }
+
+        MatchesAdapter(List<DateCard> items, OnMatchDeleteListener deleteListener) {
+            this.items = items;
+            this.deleteListener = deleteListener;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_date_match, parent, false);
+            return new ViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            DateCard card = items.get(position);
+            if ("EMPTY".equals(card.id)) {
+                holder.tvMatchTitle.setText(card.title);
+                holder.btnDeleteMatch.setVisibility(View.GONE);
+            } else {
+                holder.tvMatchTitle.setText("★ " + card.title + " (" + card.category + ")");
+                holder.btnDeleteMatch.setVisibility(View.VISIBLE);
+                holder.btnDeleteMatch.setOnClickListener(v -> deleteListener.onDelete(card));
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            if (items.isEmpty()) {
+                DateCard emptyCard = new DateCard("EMPTY", "No mutual matches yet! Keep swiping.", "", "", "", false);
+                items.add(emptyCard);
+            }
+            return items.size();
+        }
+
+        static class ViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
+            TextView tvMatchTitle;
+            ImageView btnDeleteMatch;
+
+            ViewHolder(View itemView) {
+                super(itemView);
+                tvMatchTitle = itemView.findViewById(R.id.tvMatchTitle);
+                btnDeleteMatch = itemView.findViewById(R.id.btnDeleteMatch);
+            }
+        }
     }
 
     private void showPreferencesDialog() {

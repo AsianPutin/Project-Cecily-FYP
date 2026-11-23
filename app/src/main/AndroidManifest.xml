@@ -39,19 +39,6 @@
             </intent-filter>
         </activity>
 
-        <activity-alias
-            android:name=".MainActivityMonochrome"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD4VevrotifkiWNNBvv229eGXf-tNcFiU4" />
